@@ -733,6 +733,7 @@ class AppManager implements IAppManager {
 
 		if (is_array($data)) {
 			$data = \OC_App::parseAppInfo($data, $lang);
+			$data = $this->purgeSettings($data, $appId);
 		}
 
 		if ($lang === null) {
@@ -850,5 +851,115 @@ class AppManager implements IAppManager {
 		}
 
 		return $appId;
+	}
+
+	/**
+	 * Purge class references from section configs in the appinfo.xml.
+	 *
+	 * Purged class references can be defined in appinfo.xml via an associative
+	 * array property under "appinfo.disable.classes" mapping the app ID to an
+	 * array of classes to be purged.
+	 *
+	 * Purged navigations can be defined in config.php via an associative array
+	 * property under "appinfo.disable.navigations" mapping app ID to an array
+	 * of route names to be purged.
+	 *
+	 * @example Remove the listed class for the "theming" app in *any* section
+	 *
+	 *  'appinfo.disable.classes' => array (
+	 *	  'theming' => [
+	 *		'OCA\Theming\Settings\PersonalSection',
+	 *	  ],
+	 *   ),
+	 *  'appinfo.disable.navigations' => array (
+	 *	  'theming' => [
+	 *		'dashboard.dashboard.index',
+	 *	  ],
+	 *   ),
+	 * @param array $data raw loaded appinfo data
+	 * @param string $appId the app where class references should be purged from
+	 * @return array app info
+	 */
+	private function purgeSettings(array $data, string $appId): array {
+		$data = $this->purgeClasses($data, $appId, "settings");
+		$data = $this->purgeClasses($data, $appId, "activity");
+		$data = $this->purgeNavigationsFromSettings($data, $appId);
+
+		return $data;
+	}
+
+	private function purgeClasses(array $data, string $appId, string $nodeName): array {
+		$appInfoPurgeAllClasses = $this->config->getSystemValue("appinfo.disable.classes", []);
+
+		if (!isset($appInfoPurgeAllClasses[$appId])) {
+			return $data;
+		}
+
+		if (!isset($data[$nodeName])) {
+			return $data;
+		}
+
+		$classesToPurge = $appInfoPurgeAllClasses[$appId];
+
+		// Note: parse() had parsed appinfo.xml into a nested array data
+		// structure that is less nested, flatter, than the original XML DOM
+		$data[$nodeName] = $this->purgeClassesIntern($data[$nodeName], $classesToPurge);
+
+		return $data;
+	}
+
+	/**
+	 * Receives list of config nodes mapping to array of class refs
+	 * Example input: { admin => ["ClassA", "ClassB", ...], admin-section => [...], ... }
+	 * @param array $listOfNodesWithClassRefs array of arrays of class names
+	 * @param array $classesToPurge array of classes to purge
+	 * @return array filtered input
+	 */
+	private function purgeClassesIntern(array $listOfNodesWithClassRefs, array $classesToPurge): array {
+		foreach ($classesToPurge as $classRefToPurge) {
+			foreach ($listOfNodesWithClassRefs as $nodeName => $classRefsInAppInfo) {
+				foreach ($classRefsInAppInfo as $index => $classRefInAppInfo) {
+					if ($classRefInAppInfo === $classRefToPurge) {
+						unset($classRefsInAppInfo[$index]);
+					}
+				}
+
+				$listOfNodesWithClassRefs[$nodeName] = $classRefsInAppInfo;
+
+				if (count($classRefsInAppInfo) === 0) {
+					unset($listOfNodesWithClassRefs[$nodeName]);
+				}
+			}
+		}
+
+		return $listOfNodesWithClassRefs;
+	}
+
+	private function purgeNavigationsFromSettings(array $data, string $appId): array {
+		$appInfoPurgeAllNavigations = $this->config->getSystemValue("appinfo.disable.navigations", []);
+
+		if (!isset($appInfoPurgeAllNavigations[$appId])) {
+			return $data;
+		}
+
+		if (!isset($data["navigations"]["navigation"])) {
+			return $data;
+		}
+
+		$appInfoPurge = $appInfoPurgeAllNavigations[$appId];
+
+		foreach ($appInfoPurge as $routeToPurge) {
+			foreach ($data["navigations"]["navigation"] as $index => $navigation) {
+				if ($navigation["route"] === $routeToPurge) {
+					unset($data["navigations"]["navigation"][$index]);
+				}
+			}
+		}
+
+		if (count($data["navigations"]["navigation"]) === 0) {
+			unset($data["navigations"]);
+		}
+
+		return $data;
 	}
 }
