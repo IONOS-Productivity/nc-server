@@ -70,7 +70,6 @@ p($theme->getTitle());
 			<div class="header-right">
 				<div id="unified-search"></div>
 				<div id="notifications"></div>
-				<div id="contactsmenu"></div>
 				<div id="user-menu"></div>
 			</div>
 		</header>
