@@ -6,6 +6,16 @@ build:
   image: alpine:3.18
   before_script:
     - apk add --no-cache curl jq zip git
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "stable27-ionos-adaptions"
+      when: always
+      variables:
+        RELEASE_VERSION_POSTFIX: ""  # Override globally-defined RELEASE_VERSION_POSTFIX
+    - if: ($CI_COMMIT_REF_NAME =~ /^.*\/dev\/.*$/ || $CI_COMMIT_REF_NAME =~ /^dev\/.+$/)
+      variables:
+        RELEASE_VERSION_POSTFIX: "-$CI_COMMIT_REF_SLUG-dev"
+      when: manual
+    - when: never
   script:
     - git submodule update --init
     - echo "zip relevant files to $TARGET_PACKAGE_NAME"
