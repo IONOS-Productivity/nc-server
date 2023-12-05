@@ -1,0 +1,26 @@
+variables:
+  RELEASE_VERSION_POSTFIX: "-dev"
+
+build:
+  stage: build
+  image: alpine:3.18
+  before_script:
+    - apk add --no-cache curl jq zip git
+  script:
+    - git submodule update --init
+    - echo "zip relevant files to $TARGET_PACKAGE_NAME"
+    - zip -r "$TARGET_PACKAGE_NAME" 3rdparty/ apps/ config/ core/ dist/ lib/ ocs/ ocs-provider/ resources/ themes/ AUTHORS composer.json composer.lock console.php COPYING cron.php index.html index.php occ package.json package-lock.json public.php remote.php robots.txt status.php version.php
+    - echo "publish $TARGET_PACKAGE_NAME to gitlab package registry"
+    - TARGET_PACKAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/easystorage/${TARGET_PACKAGE_VERSION}${RELEASE_VERSION_POSTFIX}/${TARGET_PACKAGE_NAME}"
+    - echo "TARGET_PACKAGE_URL:$TARGET_PACKAGE_URL"
+    - RESPONSE=$(curl --insecure --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file "./$TARGET_PACKAGE_NAME" "${TARGET_PACKAGE_URL}?select=package_file")
+    - echo "$RESPONSE" | jq
+  variables:
+    TARGET_PACKAGE_NAME: "easy-storage.zip"
+    TARGET_PACKAGE_VERSION: "latest"
+  artifacts:
+    name: "easy-storage-build-${CI_COMMIT_REF_NAME}"
+    paths:
+      - easy-storage.zip
+    expose_as: "EasyStorage build"
+    when: on_success
