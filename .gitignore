@@ -57,6 +57,7 @@
 /themes/*
 !/themes/example
 !/themes/README
+!/themes/ionos
 
 # just sane ignores
 .*.sw[po]
