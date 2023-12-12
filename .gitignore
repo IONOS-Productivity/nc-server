@@ -11,6 +11,9 @@
 /translationfiles
 /translationtool.phar
 
+# (C11N) overrides for the above
+!/config/activate-ionos-theme.config.php
+
 # ignore all apps except core ones
 /apps*/*
 !/apps/cloud_federation_api
