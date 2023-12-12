@@ -1,4 +1,5 @@
 variables:
+  GIT_SUBMODULE_FORCE_HTTPS: 1
   RELEASE_VERSION_POSTFIX: "-dev"
 
 build:
