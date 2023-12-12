@@ -3,7 +3,7 @@ variables:
 
 build:
   stage: build
-  image: alpine:3.18
+  image: reg.server.lan/moc-dev/moc-alpine:3.19.0
   before_script:
     - apk add --no-cache curl jq zip git
   rules:
