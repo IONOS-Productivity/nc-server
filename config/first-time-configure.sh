@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+SHIPPED_JSON="core/shipped.json"
+
 function ooc() {
 	php occ \
 		"${@}"
@@ -38,8 +40,6 @@ function main() {
 	ooc theming:config disable-user-theming true
 	ooc config:app:set theming backgroundMime --value backgroundColor
 
-	echo "Disable apps"
-
 	local disable_apps=(
 		"activity"
 		"circles"
@@ -65,6 +65,18 @@ function main() {
 		"weather_status"
 		"workflowengine"
 	)
+
+	echo "Remove apps from 'shipped' list ..."
+
+	for app in "${disable_apps[@]}"; do
+		echo "Unship app '${app}' ..."
+		cat ${SHIPPED_JSON} \
+			| jq --arg toUnforce "${app}" 'del(.defaultEnabled[] | select(. == $toUnforce))' \
+			| jq --arg toUnforce "${app}" 'del(.alwaysEnabled[] | select(. == $toUnforce))' > ${SHIPPED_JSON}.tmp \
+				&& mv ${SHIPPED_JSON}.tmp ${SHIPPED_JSON}
+	done
+
+	echo "Disable apps"
 
 	for app in ${disable_apps[@]}; do
 		echo "Disable app '${app}' ..."
