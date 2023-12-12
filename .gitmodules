@@ -3,10 +3,10 @@
 	url = https://github.com/nextcloud/3rdparty.git
 [submodule "themes/ionos"]
 	path = themes/ionos
-	url = git@gitlab.git-moc.server.lan:strato-dev/easystorage-theme.git
+	url = ../easystorage-theme.git
 [submodule "custom-apps/ionosglobalnav"]
 	path = custom-apps/ionosglobalnav
-	url = git@gitlab.git-moc.server.lan:strato-dev/ionosglobalnav.git
+	url = ../ionosglobalnav.git
 [submodule "custom-apps/enc_analytics"]
 	path = custom-apps/enc_analytics
-	url = git@gitlab.git-moc.server.lan:strato-dev/enc_analytics.git
+	url = ../enc_analytics.git
