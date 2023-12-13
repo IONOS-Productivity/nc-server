@@ -40,6 +40,8 @@ function main() {
 	ooc theming:config disable-user-theming true
 	ooc config:app:set theming backgroundMime --value backgroundColor
 
+	echo "reconfig mimetype images"
+	occ maintenance:mimetype:update-js
 
 	local enable_apps=(
 		"enc_analytics"
