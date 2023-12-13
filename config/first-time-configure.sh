@@ -40,17 +40,26 @@ function main() {
 	ooc theming:config disable-user-theming true
 	ooc config:app:set theming backgroundMime --value backgroundColor
 
+
+	local enable_apps=(
+		"enc_analytics"
+		"ionosglobalnav"
+	)
+
+	for app in ${enable_apps[@]}; do
+		echo "Enable app '${app}' ..."
+		ooc app:enable "${app}"
+	done
+
 	local disable_apps=(
 		"activity"
 		"circles"
 		"comments"
 		"contactsinteraction"
 		"dashboard"
-		"enc_analytics"
 		"files_sharing"
 		"files_versions"
 		"firstrunwizard"
-		"ionosglobalnav"
 		"logreader"
 		"nextcloud_announcements"
 		"privacy"
