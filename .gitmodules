@@ -10,3 +10,6 @@
 [submodule "custom-apps/enc_analytics"]
 	path = custom-apps/enc_analytics
 	url = ../enc_analytics.git
+[submodule "apps-external/extract"]
+	path = apps-external/extract
+	url = https://github.com/PaulLereverend/NextcloudExtract
