@@ -61,6 +61,7 @@ function main() {
 		"comments"
 		"contactsinteraction"
 		"dashboard"
+		"federatedfilesharing"
 		"files_versions"
 		"firstrunwizard"
 		"logreader"
