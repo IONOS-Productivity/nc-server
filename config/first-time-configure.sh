@@ -47,6 +47,7 @@ function main() {
 		"enc_analytics"
 		"extract"
 		"ionosglobalnav"
+		"viewer"
 	)
 
 	for app in ${enable_apps[@]}; do
