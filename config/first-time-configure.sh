@@ -45,6 +45,7 @@ function main() {
 
 	local enable_apps=(
 		"enc_analytics"
+		"extract"
 		"ionosglobalnav"
 	)
 
