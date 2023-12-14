@@ -59,7 +59,6 @@ function main() {
 		"comments"
 		"contactsinteraction"
 		"dashboard"
-		"files_sharing"
 		"files_versions"
 		"firstrunwizard"
 		"logreader"
