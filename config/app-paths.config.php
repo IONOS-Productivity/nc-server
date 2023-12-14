@@ -11,5 +11,10 @@ $CONFIG = [
 			'url' => '/custom-apps',
 			'writable' => true,
 		],
+		[
+			'path' => '/var/www/html/apps-external',
+			'url' => '/apps-external',
+			'writable' => true,
+		],
 	],
 ];
