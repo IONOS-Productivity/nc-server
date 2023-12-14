@@ -5,6 +5,7 @@ $CONFIG = [
   'appinfo.disable.classes' => [
     'settings' => [
       'OCA\\Settings\\Sections\\Personal\\Availability',
+      'OCA\\Settings\\Sections\\Personal\\PersonalInfo',
     ],
   ],
 ];
