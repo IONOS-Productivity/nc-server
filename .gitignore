@@ -14,6 +14,7 @@
 # (C11N) overrides for the above
 !/config/activate-ionos-theme.config.php
 !/config/app-paths.config.php
+!/config/disable-sections.config.php
 
 # ignore all apps except core ones
 /apps*/*
