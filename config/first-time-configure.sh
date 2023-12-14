@@ -41,7 +41,7 @@ function main() {
 	ooc config:app:set theming backgroundMime --value backgroundColor
 
 	echo "reconfig mimetype images"
-	occ maintenance:mimetype:update-js
+	ooc maintenance:mimetype:update-js
 
 	local enable_apps=(
 		"enc_analytics"
