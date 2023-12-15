@@ -48,6 +48,7 @@ function main() {
 		"extract"
 		"ionosglobalnav"
 		"viewer"
+		"easystoragesetts"
 	)
 
 	for app in ${enable_apps[@]}; do
