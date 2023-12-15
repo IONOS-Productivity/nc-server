@@ -70,7 +70,6 @@ function main() {
 		"recommendations"
 		"related_resources"
 		"serverinfo"
-		"settings"
 		"sharebymail"
 		"support"
 		"survey_client"
