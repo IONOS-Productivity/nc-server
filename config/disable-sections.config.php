@@ -10,5 +10,8 @@ $CONFIG = [
       'OCA\\Settings\\Settings\\Personal\\Security\\Password',
       'OCA\\Settings\\Settings\\Personal\\Security\\TwoFactor',
     ],
+    'federatedfilesharing' => [
+      'OCA\\FederatedFileSharing\\Settings\\PersonalSection',
+    ],
   ],
 ];
