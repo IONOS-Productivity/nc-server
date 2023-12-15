@@ -20,7 +20,7 @@ build:
   script:
     - git submodule update --init
     - echo "zip relevant files to $TARGET_PACKAGE_NAME"
-    - zip -r "$TARGET_PACKAGE_NAME" 3rdparty/ apps/ custom-apps/ apps-external/ config/ core/ dist/ lib/ ocs/ ocs-provider/ resources/ themes/ AUTHORS composer.json composer.lock console.php COPYING cron.php index.html index.php occ package.json package-lock.json public.php remote.php robots.txt status.php version.php
+    - zip -r "$TARGET_PACKAGE_NAME" 3rdparty/ apps/ custom-apps/ apps-external/ config/ core/ dist/ lib/ ocs/ ocs-provider/ resources/ themes/ AUTHORS composer.json composer.lock console.php COPYING cron.php index.html index.php occ package.json package-lock.json public.php remote.php robots.txt status.php version.php -x "apps/theming/img/background/**" -x "apps/*/tests/**" -x "apps-external/*/tests**" -x "**/cypress/**"
     - echo "publish $TARGET_PACKAGE_NAME to gitlab package registry"
     - TARGET_PACKAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/easystorage/${TARGET_PACKAGE_VERSION}${RELEASE_VERSION_POSTFIX}/${TARGET_PACKAGE_NAME}"
     - echo "TARGET_PACKAGE_URL:$TARGET_PACKAGE_URL"
