@@ -18,6 +18,7 @@ on:
       - master
       - stable*
       - ionos-dev
+      - mk/dev/HDFRONT-6801-build-frontend-artifact
 
 env:
   TARGET_PACKAGE_NAME: easy-storage.zip
