@@ -17,6 +17,7 @@ on:
       - main
       - master
       - stable*
+      - mk/poc/*
 
 env:
   TARGET_PACKAGE_NAME: easy-storage.zip
