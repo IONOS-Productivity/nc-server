@@ -681,8 +681,11 @@ class FactoryTest extends TestCase {
 	}
 
 	/**
-	 * test if available languages set can be reduced by configuration
-	 *
+	 * test
+	 * - if available languages set can be reduced by configuration
+	 * - if available languages set is not reduced to an empty set if
+	 *   the reduce config is an empty set
+	 * 
 	 * @dataProvider dataTestReduceToLanguages
 	 *
 	 * @param string $lang
