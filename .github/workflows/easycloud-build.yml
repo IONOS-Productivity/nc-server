@@ -103,7 +103,7 @@ jobs:
 
       - name: Create Dockerfile
         run: |
-          DOCKER_BUILD_FILE=$(cat << EOF
+          cat >Dockerfile << EOF
           FROM busybox as builder
           COPY ./${{ env.TARGET_PACKAGE_NAME }} /
           WORKDIR /builder
@@ -114,8 +114,6 @@ jobs:
           VOLUME /app
           COPY --from=builder /builder /app
           EOF
-          )
-          echo "$DOCKER_BUILD_FILE" > Dockerfile
 
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
