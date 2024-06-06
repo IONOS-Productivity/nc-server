@@ -49,6 +49,10 @@ jobs:
         with:
           submodules: true
 
+      - name: Download app dependencies
+        run: |
+          ./IONOS/apps-download.sh
+
       - name: Zip dependencies
         run: |
           buildDate=$(date +%s)
