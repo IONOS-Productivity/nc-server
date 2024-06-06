@@ -1,7 +1,7 @@
 name: EasyCloud Build
 
 # The EasyCloud source is packaged as a container image.
-# This is a workaround because releases can not be created without tags 
+# This is a workaround because releases can not be created without tags
 # and we want to be able to create snapshots from branches.
 
 on:
@@ -9,6 +9,9 @@ on:
     paths:
       - '.github/workflows/**'
       - 'src/**'
+      - 'IONOS/**'
+      - 'apps-external/**'
+      - 'apps-custom/**'
       - 'apps/**/appinfo/info.xml'
       - 'package.json'
       - 'package-lock.json'
