@@ -191,4 +191,24 @@ class ServerTest extends \Test\TestCase {
 
 		$config->setSystemValue('comments.managerFactory', $defaultManagerFactory);
 	}
+
+	public function testOverwriteDefaultMailer() {
+		$config = $this->server->getConfig();
+		$config->deleteSystemValue('custom_mailer_class');
+
+		$this->assertEquals('not_set', $config->getSystemValue('custom_mailer_class', 'not_set'), "custom_mailer_class is not set");
+
+		$serviceName = 'Mailer';
+		$instanceOf = '\OC\Mail\Mailer';
+
+		$this->assertInstanceOf($instanceOf, $this->server->query($serviceName), 'Service "' . $serviceName . '"" did not return the right class');
+		// $this->assertInstanceOf($instanceOf, $this->server->query($serviceName), 'Service "' . $serviceName . '"" did not return the right class. serviceName=' . $serviceName);
+
+		$instanceOf = 'Test\\Mail\\FakeMailer';
+		$config->setSystemValue('custom_mailer_class', 'Test\\Mail\\FakeMailer');
+
+		$this->assertInstanceOf($instanceOf, $this->server->query($serviceName), 'Service "' . $serviceName . '"" did not return the right class');
+
+		$config->deleteSystemValue('custom_mailer_class');
+	}
 }

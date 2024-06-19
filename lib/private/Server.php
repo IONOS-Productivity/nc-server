@@ -1056,6 +1056,21 @@ class Server extends ServerContainer implements IServerContainer {
 		});
 
 		$this->registerService(IMailer::class, function (Server $c) {
+			$config = $c->get(\OCP\IConfig::class);
+			$mailerClass = $config->getSystemValueString('custom_mailer_class', '');
+
+			if ($mailerClass !== '' && class_exists($mailerClass) && in_array(IMailer::class, class_implements($mailerClass), true)) {
+				return new $mailerClass(
+					$c->get(\OCP\IConfig::class),
+					$c->get(LoggerInterface::class),
+					$c->get(Defaults::class),
+					$c->get(IURLGenerator::class),
+					$c->getL10N('lib'),
+					$c->get(IEventDispatcher::class),
+					$c->get(IFactory::class)
+				);
+			}
+
 			return new Mailer(
 				$c->get(\OCP\IConfig::class),
 				$c->get(LoggerInterface::class),
