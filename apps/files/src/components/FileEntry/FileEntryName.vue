@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import type { Node, View } from '@nextcloud/files'
+import type { Node } from '@nextcloud/files'
 import type { PropType } from 'vue'
 
 import { showError, showSuccess } from '@nextcloud/dialogs'
@@ -45,12 +45,12 @@ import { emit } from '@nextcloud/event-bus'
 import { FileType, NodeStatus, Permission } from '@nextcloud/files'
 import { loadState } from '@nextcloud/initial-state'
 import { translate as t } from '@nextcloud/l10n'
-import axios from '@nextcloud/axios'
-import { isAxiosError } from 'axios'
-import Vue, { defineComponent } from 'vue'
+import axios, { isAxiosError } from '@nextcloud/axios'
+import { defineComponent } from 'vue'
 
 import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
 
+import { useNavigation } from '../../composables/useNavigation'
 import { useRenamingStore } from '../../store/renaming.ts'
 import logger from '../../logger.js'
 
@@ -91,17 +91,17 @@ export default defineComponent({
 	},
 
 	setup() {
+		const { currentView } = useNavigation()
 		const renamingStore = useRenamingStore()
+
 		return {
+			currentView,
+
 			renamingStore,
 		}
 	},
 
 	computed: {
-		currentView(): View {
-			return this.$navigation.active as View
-		},
-
 		isRenaming() {
 			return this.renamingStore.renamingNode === this.source
 		},
@@ -126,7 +126,7 @@ export default defineComponent({
 		},
 
 		linkTo() {
-			if (this.source.attributes.failed) {
+			if (this.source.status === NodeStatus.FAILED) {
 				return {
 					is: 'span',
 					params: {
@@ -283,7 +283,7 @@ export default defineComponent({
 			}
 
 			// Set loading state
-			Vue.set(this.source, 'status', NodeStatus.LOADING)
+			this.$set(this.source, 'status', NodeStatus.LOADING)
 
 			// Update node
 			this.source.rename(newName)
@@ -328,7 +328,7 @@ export default defineComponent({
 				// Unknown error
 				showError(t('files', 'Could not rename "{oldName}"', { oldName }))
 			} finally {
-				Vue.set(this.source, 'status', undefined)
+				this.$set(this.source, 'status', undefined)
 			}
 		},
 

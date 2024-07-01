@@ -48,20 +48,16 @@ export default defineComponent({
 	},
 
 	computed: {
-		currentView(): View {
-			return this.$navigation.active as View
-		},
-
 		currentDir() {
 			// Remove any trailing slash but leave root slash
-			return (this.$route?.query?.dir?.toString() || '/').replace(/^(.+)\/$/, '$1')
+			return (this.$route.query?.dir?.toString() || '/').replace(/^(.+)\/$/, '$1')
 		},
 		currentFileId() {
 			return this.$route.params?.fileid || this.$route.query?.fileid || null
 		},
 
 		fileid() {
-			return this.source?.fileid
+			return this.source.fileid ?? 0
 		},
 		uniqueId() {
 			return hashCode(this.source.source)
@@ -71,14 +67,14 @@ export default defineComponent({
 		},
 
 		extension() {
-			if (this.source.attributes?.displayName) {
-				return extname(this.source.attributes.displayName)
+			if (this.source.attributes?.displayname) {
+				return extname(this.source.attributes.displayname)
 			}
 			return this.source.extension || ''
 		},
 		displayName() {
 			const ext = this.extension
-			const name = String(this.source.attributes.displayName
+			const name = String(this.source.attributes.displayname
 				|| this.source.basename)
 
 			// Strip extension from name if defined
@@ -104,6 +100,13 @@ export default defineComponent({
 
 		isActive() {
 			return String(this.fileid) === String(this.currentFileId)
+		},
+
+		/**
+		 * Check if the source is in a failed state after an API request
+		 */
+		isFailedSource() {
+			return this.source.status === NodeStatus.FAILED
 		},
 
 		canDrag() {
@@ -143,6 +146,10 @@ export default defineComponent({
 			set(opened) {
 				this.actionsMenuStore.opened = opened ? this.uniqueId.toString() : null
 			},
+		},
+
+		isRenaming() {
+			return this.renamingStore.renamingNode === this.source
 		},
 	},
 
@@ -208,6 +215,11 @@ export default defineComponent({
 		},
 
 		execDefaultAction(event) {
+			// Ignore click if we are renaming
+			if (this.isRenaming) {
+				return
+			}
+
 			// Ignore right click.
 			if (event.button > 1) {
 				return

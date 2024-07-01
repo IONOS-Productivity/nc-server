@@ -60,7 +60,9 @@
 
 			<!-- password -->
 			<NcActionText v-if="pendingEnforcedPassword">
-				<LockIcon :size="20" />
+				<template #icon>
+					<LockIcon :size="20" />
+				</template>
 				{{ t('files_sharing', 'Password protection (enforced)') }}
 			</NcActionText>
 			<NcActionCheckbox v-else-if="pendingPassword"
@@ -134,7 +136,7 @@
 						{{ t('files_sharing', 'Customize link') }}
 					</NcActionButton>
 				</template>
-				
+
 				<NcActionButton :close-after-click="true"
 					@click.prevent="showQRCode = true">
 					<template #icon>
@@ -210,11 +212,12 @@
 </template>
 
 <script>
+import { emit } from '@nextcloud/event-bus'
 import { generateUrl } from '@nextcloud/router'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { Type as ShareTypes } from '@nextcloud/sharing'
 import Vue from 'vue'
-import VueQrcode from '@chenfengyuan/vue-qrcode';
+import VueQrcode from '@chenfengyuan/vue-qrcode'
 
 import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
 import NcActionInput from '@nextcloud/vue/dist/Components/NcActionInput.js'
@@ -230,7 +233,7 @@ import IconQr from 'vue-material-design-icons/Qrcode.vue'
 import ErrorIcon from 'vue-material-design-icons/Exclamation.vue'
 import LockIcon from 'vue-material-design-icons/Lock.vue'
 import CheckIcon from 'vue-material-design-icons/CheckBold.vue'
-import ClipboardIcon from 'vue-material-design-icons/ClipboardFlow.vue'
+import ClipboardIcon from 'vue-material-design-icons/ContentCopy.vue'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 
@@ -685,6 +688,9 @@ export default {
 						this.$emit('add:share', newShare, resolve)
 					})
 				}
+
+				await this.getNode()
+				emit('files:node:updated', this.node)
 
 				// Execute the copy link method
 				// freshly created share component

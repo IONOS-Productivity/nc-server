@@ -27,9 +27,6 @@ SPDX-FileCopyrightText: Andris Reinman
 
 
 This file is generated from multiple sources. Included packages:
-- @nextcloud/browser-storage
-	- version: 0.3.0
-	- license: GPL-3.0-or-later
 - semver
 	- version: 7.6.2
 	- license: ISC
@@ -37,7 +34,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 3.3.1
 	- license: GPL-3.0-or-later
 - @nextcloud/initial-state
-	- version: 2.1.0
+	- version: 2.2.0
 	- license: GPL-3.0-or-later
 - @nextcloud/router
 	- version: 2.2.0
@@ -45,14 +42,17 @@ This file is generated from multiple sources. Included packages:
 - @nextcloud/l10n
 	- version: 2.2.0
 	- license: GPL-3.0-or-later
+- @nextcloud/browser-storage
+	- version: 0.3.0
+	- license: GPL-3.0-or-later
 - @nextcloud/vue
 	- version: 8.11.2
 	- license: AGPL-3.0-or-later
 - @vueuse/core
-	- version: 10.9.0
+	- version: 10.11.0
 	- license: MIT
 - @vueuse/shared
-	- version: 10.9.0
+	- version: 10.11.0
 	- license: MIT
 - assert
 	- version: 2.1.0

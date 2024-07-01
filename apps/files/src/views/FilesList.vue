@@ -37,10 +37,12 @@
 
 					<!-- Uploader -->
 					<UploadPicker v-else-if="currentFolder"
-						:content="dirContents"
-						:destination="currentFolder"
-						:multiple="true"
+						allow-folders
 						class="files-list__header-upload-button"
+						:content="getContent"
+						:destination="currentFolder"
+						:forbidden-characters="forbiddenCharacters"
+						multiple
 						@failed="onUploadFail"
 						@uploaded="onUpload" />
 				</template>
@@ -79,9 +81,11 @@
 			<template v-if="dir !== '/'" #action>
 				<!-- Uploader -->
 				<UploadPicker v-if="currentFolder && canUpload && !isQuotaExceeded"
-					:content="dirContents"
-					:destination="currentFolder"
+					allow-folders
 					class="files-list__header-upload-button"
+					:content="getContent"
+					:destination="currentFolder"
+					:forbidden-characters="forbiddenCharacters"
 					multiple
 					@failed="onUploadFail"
 					@uploaded="onUpload" />
@@ -107,7 +111,7 @@
 </template>
 
 <script lang="ts">
-import type { View, ContentsWithRoot } from '@nextcloud/files'
+import type { ContentsWithRoot } from '@nextcloud/files'
 import type { Upload } from '@nextcloud/upload'
 import type { CancelablePromise } from 'cancelable-promise'
 import type { ComponentPublicInstance } from 'vue'
@@ -118,10 +122,10 @@ import { getCapabilities } from '@nextcloud/capabilities'
 import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
 import { Folder, Node, Permission } from '@nextcloud/files'
 import { translate as t } from '@nextcloud/l10n'
-import { join, dirname } from 'path'
-import { showError } from '@nextcloud/dialogs'
+import { join, dirname, normalize } from 'path'
+import { showError, showWarning } from '@nextcloud/dialogs'
 import { Type } from '@nextcloud/sharing'
-import { UploadPicker } from '@nextcloud/upload'
+import { UploadPicker, UploadStatus } from '@nextcloud/upload'
 import { loadState } from '@nextcloud/initial-state'
 import { defineComponent } from 'vue'
 
@@ -137,6 +141,7 @@ import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
 import ViewGridIcon from 'vue-material-design-icons/ViewGrid.vue'
 
 import { action as sidebarAction } from '../actions/sidebarAction.ts'
+import { useNavigation } from '../composables/useNavigation.ts'
 import { useFilesStore } from '../store/files.ts'
 import { usePathsStore } from '../store/paths.ts'
 import { useSelectionStore } from '../store/selection.ts'
@@ -186,19 +191,24 @@ export default defineComponent({
 		const uploaderStore = useUploaderStore()
 		const userConfigStore = useUserConfigStore()
 		const viewConfigStore = useViewConfigStore()
+		const { currentView } = useNavigation()
 
 		const enableGridView = (loadState('core', 'config', [])['enable_non-accessible_features'] ?? true)
+		const forbiddenCharacters = loadState<string[]>('files', 'forbiddenCharacters', [])
 
 		return {
+			currentView,
+
 			filesStore,
 			pathsStore,
 			selectionStore,
 			uploaderStore,
 			userConfigStore,
 			viewConfigStore,
-			enableGridView,
 
 			// non reactive data
+			enableGridView,
+			forbiddenCharacters,
 			Type,
 		}
 	},
@@ -224,12 +234,21 @@ export default defineComponent({
 			}, 500)
 		},
 
-		userConfig(): UserConfig {
-			return this.userConfigStore.userConfig
+		/**
+		 * Get a callback function for the uploader to fetch directory contents for conflict resolution
+		 */
+		getContent() {
+			const view = this.currentView
+			return async (path?: string) => {
+				// as the path is allowed to be undefined we need to normalize the path ('//' to '/')
+				const normalizedPath = normalize(`${this.currentFolder?.path ?? ''}/${path ?? ''}`)
+				// use the current view to fetch the content for the requested path
+				return (await view.getContents(normalizedPath)).contents
+			}
 		},
 
-		currentView(): View {
-			return this.$navigation.active || this.$navigation.views.find((view) => view.id === (this.$route.params?.view ?? 'files'))!
+		userConfig(): UserConfig {
+			return this.userConfigStore.userConfig
 		},
 
 		pageHeading(): string {
@@ -284,8 +303,8 @@ export default defineComponent({
 				...(this.userConfig.sort_folders_first ? [v => v.type !== 'folder'] : []),
 				// 3: Use sorting mode if NOT basename (to be able to use displayName too)
 				...(this.sortingMode !== 'basename' ? [v => v[this.sortingMode]] : []),
-				// 4: Use displayName if available, fallback to name
-				v => v.attributes?.displayName || v.basename,
+				// 4: Use displayname if available, fallback to name
+				v => v.attributes?.displayname || v.basename,
 				// 5: Finally, use basename if all previous sorting methods failed
 				v => v.basename,
 			]
@@ -445,7 +464,7 @@ export default defineComponent({
 
 			logger.debug('View changed', { newView, oldView })
 			this.selectionStore.reset()
-			this.resetSearch()
+			this.triggerResetSearch()
 			this.fetchContent()
 		},
 
@@ -453,7 +472,7 @@ export default defineComponent({
 			logger.debug('Directory changed', { newDir, oldDir })
 			// TODO: preserve selection on browsing?
 			this.selectionStore.reset()
-			this.resetSearch()
+			this.triggerResetSearch()
 			this.fetchContent()
 
 			// Scroll to top, force virtual scroller to re-render
@@ -474,8 +493,8 @@ export default defineComponent({
 
 		subscribe('files:node:deleted', this.onNodeDeleted)
 		subscribe('files:node:updated', this.onUpdatedNode)
-		subscribe('nextcloud:unified-search.search', this.onSearch)
-		subscribe('nextcloud:unified-search.reset', this.onSearch)
+		subscribe('nextcloud:unified-search:search', this.onSearch)
+		subscribe('nextcloud:unified-search:reset', this.onResetSearch)
 
 		// reload on settings change
 		this.unsubscribeStoreCallback = this.userConfigStore.$subscribe(() => this.fetchContent(), { deep: true })
@@ -484,8 +503,8 @@ export default defineComponent({
 	unmounted() {
 		unsubscribe('files:node:deleted', this.onNodeDeleted)
 		unsubscribe('files:node:updated', this.onUpdatedNode)
-		unsubscribe('nextcloud:unified-search.search', this.onSearch)
-		unsubscribe('nextcloud:unified-search.reset', this.onSearch)
+		unsubscribe('nextcloud:unified-search:search', this.onSearch)
+		unsubscribe('nextcloud:unified-search:reset', this.onResetSearch)
 		this.unsubscribeStoreCallback()
 	},
 
@@ -590,8 +609,7 @@ export default defineComponent({
 		onUpload(upload: Upload) {
 			// Let's only refresh the current Folder
 			// Navigating to a different folder will refresh it anyway
-			const destinationSource = dirname(upload.source)
-			const needsRefresh = destinationSource === this.currentFolder?.source
+			const needsRefresh = dirname(upload.source) === this.currentFolder!.source
 
 			// TODO: fetch uploaded files data only
 			// Use parseInt(upload.response?.headers?.['oc-fileid']) to get the fileid
@@ -603,6 +621,11 @@ export default defineComponent({
 
 		async onUploadFail(upload: Upload) {
 			const status = upload.response?.status || 0
+
+			if (upload.status === UploadStatus.CANCELLED) {
+				showWarning(t('files', 'Upload was cancelled by user'))
+				return
+			}
 
 			// Check known status codes
 			if (status === 507) {
@@ -653,10 +676,21 @@ export default defineComponent({
 		},
 
 		/**
-		 * Reset the search query
+		 * Handle reset search query event
 		 */
-		resetSearch() {
+		onResetSearch() {
+			// Reset debounced calls to not set the query again
+			this.onSearch.clear()
+			// Reset filter query
 			this.filterText = ''
+		},
+
+		/**
+		 * Trigger a reset of the local search (part of unified search)
+		 * This is usful to reset the search on directory / view change
+		 */
+		triggerResetSearch() {
+			emit('nextcloud:unified-search:reset')
 		},
 
 		openSharingSidebar() {
@@ -668,7 +702,7 @@ export default defineComponent({
 			if (window?.OCA?.Files?.Sidebar?.setActiveTab) {
 				window.OCA.Files.Sidebar.setActiveTab('sharing')
 			}
-			sidebarAction.exec(this.currentFolder, this.currentView, this.currentFolder.path)
+			sidebarAction.exec(this.currentFolder, this.currentView!, this.currentFolder.path)
 		},
 		toggleGridView() {
 			this.userConfigStore.update('grid_view', !this.userConfig.grid_view)
