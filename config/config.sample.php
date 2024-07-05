@@ -2828,4 +2828,23 @@ $CONFIG = [
  * Defaults to `\OC::$SERVERROOT . '/resources/config/ca-bundle.crt'`.
  */
 'default_certificates_bundle_path' => \OC::$SERVERROOT . '/resources/config/ca-bundle.crt',
+
+/**
+ * Request path without /index.php/ maps to a controller path in the form
+ * <app name>.<controller name>.<handler>.
+ *
+ * - For a FooController.php the controller name is "foo" (lowercase)
+ * - A handler would be a method in FooController that was annotated with
+ *   - either #[FrontpageRoute] attribute
+ *   - or configured in routes.php
+ *
+ * Defaults to ``[]`` (no redirects)
+ */
+'redirects' => [
+   /**
+    * Example:
+    * '^\/settings' => 'acmesettings.page.index'
+    */
+],
+
 ];
