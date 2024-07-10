@@ -51,20 +51,23 @@ jobs:
         with:
           node-version-file: "package.json"
 
-      - name: Install dependencies & build
+      - name: Install dependencies & build simplesettings app
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
-          npm --version
           cd apps-custom/simplesettings
           npm ci
           npm run build
-          cd ../..
+
+      - name: Install dependencies & build user_oidc app
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+          PUPPETEER_SKIP_DOWNLOAD: true
+        run: |
           cd apps-external/user_oidc
           npm ci
           npm run build
-          cd ../..
 
       - name: Zip dependencies
         run: |
