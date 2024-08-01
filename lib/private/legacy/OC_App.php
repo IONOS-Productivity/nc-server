@@ -322,12 +322,26 @@ class OC_App {
 			}
 		}
 
+		$config = \OC::$server->getConfig();
+		$forcedAppDirs = $config->getSystemValue("forced_app_dirs", []);
+		$forcedAppDir = $forcedAppDirs[$appId];
+		$forcedAppDirAvailable = null;
+		if ($forcedAppDir) {
+			foreach ($possibleApps as $possibleApp) {
+				if ($possibleApp['url'] == '/' . $forcedAppDir) {
+					$forcedAppDirAvailable = $possibleApp;
+				}
+			}
+		}
+
 		if (empty($possibleApps)) {
 			return false;
 		} elseif (count($possibleApps) === 1) {
 			$dir = array_shift($possibleApps);
 			$app_dir[$appId] = $dir;
 			return $dir;
+		} elseif ($forcedAppDirAvailable != null) {
+			return $forcedAppDirAvailable;
 		} else {
 			$versionToLoad = [];
 			foreach ($possibleApps as $possibleApp) {
