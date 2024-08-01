@@ -29,17 +29,29 @@ namespace OC\Template;
 
 use OCP\App\AppPathNotFoundException;
 use OCP\App\IAppManager;
+use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 
 class JSResourceLocator extends ResourceLocator {
 	protected JSCombiner $jsCombiner;
 	protected IAppManager $appManager;
+	protected IConfig $config;
 
-	public function __construct(LoggerInterface $logger, JSCombiner $JSCombiner, IAppManager $appManager) {
+	public function __construct(LoggerInterface $logger, JSCombiner $JSCombiner, IAppManager $appManager, IConfig $config) {
 		parent::__construct($logger);
 
 		$this->jsCombiner = $JSCombiner;
 		$this->appManager = $appManager;
+		$this->config = $config;
+	}
+
+	private function isOverriddenApp(string $appId): bool {
+		$forcedAppDirs = $this->config->getSystemValue("forced_app_dirs", []);
+		$forcedAppDir = $forcedAppDirs[$appId];
+		if (!$forcedAppDir) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -86,7 +98,7 @@ class JSResourceLocator extends ResourceLocator {
 			|| $this->appendScriptIfExist($this->serverroot, $theme_dir.$script)
 			|| $this->appendScriptIfExist($this->serverroot, $script)
 			|| $this->appendScriptIfExist($this->serverroot, $theme_dir."dist/$app-$scriptName")
-			|| $this->appendScriptIfExist($this->serverroot, "dist/$app-$scriptName")
+			|| (!$this->isOverriddenApp($app) && $this->appendScriptIfExist($this->serverroot, "dist/$app-$scriptName"))
 			|| $this->appendScriptIfExist($appRoot, $script, $appWebRoot)
 			|| $this->cacheAndAppendCombineJsonIfExist($this->serverroot, $script.'.json')
 			|| $this->cacheAndAppendCombineJsonIfExist($appRoot, $script.'.json', $appWebRoot)
