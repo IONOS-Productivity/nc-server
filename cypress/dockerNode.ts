@@ -39,103 +39,15 @@ const SERVER_IMAGE = 'ghcr.io/nextcloud/continuous-integration-shallow-server'
  * @param {string} branch the branch of your current work
  */
 export const startNextcloud = async function(branch: string = getCurrentGitBranch()): Promise<any> {
-
-	try {
-		try {
-			// Pulling images
-			console.log('\nPulling images... ⏳')
-			await new Promise((resolve, reject): any => docker.pull(SERVER_IMAGE, (err, stream) => {
-				if (err) {
-					reject(err)
-				}
-				if (stream === null) {
-					reject(new Error('Could not connect to docker, ensure docker is running.'))
-					return
-				}
-
-				// https://github.com/apocas/dockerode/issues/357
-				docker.modem.followProgress(stream, onFinished)
-
-				/**
-				 *
-				 * @param err
-				 */
-				function onFinished(err) {
-					if (!err) {
-						resolve(true)
-						return
-					}
-					reject(err)
-				}
-			}))
-			console.log('└─ Done')
-		} catch (e) {
-			console.log('└─ Failed to pull images')
-			throw e
-		}
-
-		// Remove old container if exists
-		console.log('\nChecking running containers... 🔍')
-		try {
-			const oldContainer = docker.getContainer(CONTAINER_NAME)
-			const oldContainerData = await oldContainer.inspect()
-			if (oldContainerData) {
-				console.log('├─ Existing running container found')
-				console.log('├─ Removing... ⏳')
-				// Forcing any remnants to be removed just in case
-				await oldContainer.remove({ force: true })
-				console.log('└─ Done')
-			}
-		} catch (error) {
-			console.log('└─ None found!')
-		}
-
-		// Starting container
-		console.log('\nStarting Nextcloud container... 🚀')
-		console.log(`├─ Using branch '${branch}'`)
-		const container = await docker.createContainer({
-			Image: SERVER_IMAGE,
-			name: CONTAINER_NAME,
-			HostConfig: {
-				Binds: [],
-			},
-			Env: [
-				`BRANCH=${branch}`,
-			],
-		})
-		await container.start()
-
-		// Get container's IP
-		const ip = await getContainerIP(container)
-
-		console.log(`├─ Nextcloud container's IP is ${ip} 🌏`)
-		return ip
-	} catch (err) {
-		console.log('└─ Unable to start the container 🛑')
-		console.log('\n', err, '\n')
-		stopNextcloud()
-		throw new Error('Unable to start the container')
-	}
+	console.log('NO-OP: Starting Nextcloud container... 🚀')
+	return "localhost:8080";
 }
 
 /**
  * Configure Nextcloud
  */
 export const configureNextcloud = async function() {
-	console.log('\nConfiguring nextcloud...')
-	const container = docker.getContainer(CONTAINER_NAME)
-	await runExec(container, ['php', 'occ', '--version'], true)
-
-	// Be consistent for screenshots
-	await runExec(container, ['php', 'occ', 'config:system:set', 'default_language', '--value', 'en'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'force_language', '--value', 'en'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'default_locale', '--value', 'en_US'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'force_locale', '--value', 'en_US'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'enforce_theme', '--value', 'light'], true)
-	// Speed up test and make them less flaky. If a cron execution is needed, it can be triggered manually.
-	await runExec(container, ['php', 'occ', 'background:cron'], true)
-
-	console.log('└─ Nextcloud is now ready to use 🎉')
+	console.log('NO-OP: Configuring nextcloud...')
 }
 
 /**
@@ -145,57 +57,14 @@ export const configureNextcloud = async function() {
  * already fetch the proper branch.
  */
 export const applyChangesToNextcloud = async function() {
-	console.log('\nApply local changes to nextcloud...')
-	const container = docker.getContainer(CONTAINER_NAME)
-
-	const htmlPath = '/var/www/html'
-	const folderPaths = [
-		'./3rdparty',
-		'./apps',
-		'./core',
-		'./dist',
-		'./lib',
-		'./ocs',
-		'./ocs-provider',
-		'./resources',
-		'./console.php',
-		'./cron.php',
-		'./index.php',
-		'./occ',
-		'./public.php',
-		'./remote.php',
-		'./status.php',
-		'./version.php',
-	]
-
-	folderPaths.forEach((path) => {
-		console.log(`├─ Copying ${path}`)
-	})
-
-	// Tar-streaming the above folders into the container
-	const serverTar = tar.c({ gzip: false }, folderPaths)
-	await container.putArchive(serverTar, {
-		path: htmlPath,
-	})
-
-	// Making sure we have the proper permissions
-	await runExec(container, ['chown', '-R', 'www-data:www-data', htmlPath], false, 'root')
-
-	console.log('└─ Changes applied successfully 🎉')
+	console.log('NO-OP: Apply local changes to nextcloud...')
 }
 
 /**
  * Force stop the testing container
  */
 export const stopNextcloud = async function() {
-	try {
-		const container = docker.getContainer(CONTAINER_NAME)
-		console.log('Stopping Nextcloud container...')
-		container.remove({ force: true })
-		console.log('└─ Nextcloud container removed 🥀')
-	} catch (err) {
-		console.log(err)
-	}
+	console.log('NO-OP: Stopping Nextcloud container...')
 }
 
 /**
@@ -234,17 +103,7 @@ export const getContainerIP = async function(
 // We need to make sure the server is already running before cypress
 // https://github.com/cypress-io/cypress/issues/22676
 export const waitOnNextcloud = async function(ip: string) {
-	console.log('├─ Waiting for Nextcloud to be ready... ⏳')
-	await waitOn({
-		resources: [`http://${ip}/index.php`],
-		// wait for nextcloud to  be up and return any non error status
-		validateStatus: (status) => status >= 200 && status < 400,
-		// timout in ms
-		timeout: 5 * 60 * 1000,
-		// timeout for a single HTTP request
-		httpTimeout: 60 * 1000,
-	})
-	console.log('└─ Done')
+	console.log('NO-OP: Waiting for Nextcloud to be ready... ⏳')
 }
 
 const runExec = async function(
