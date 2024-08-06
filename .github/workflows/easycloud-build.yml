@@ -22,6 +22,7 @@ on:
       - master
       - stable*
       - ionos-dev
+      - tl/tmp/kh/dev/build-via-makefile
 
 env:
   TARGET_PACKAGE_NAME: easy-storage.zip
