@@ -25,6 +25,7 @@
 				</SharingEntrySimple>
 			</ul>
 
+			<h3>Internal shares</h3>
 			<!-- add new share input -->
 			<SharingInput v-if="!loading"
 				:can-reshare="canReshare"
@@ -34,6 +35,28 @@
 				:shares="shares"
 				@open-sharing-details="toggleShareDetailsView" />
 
+			<!-- will move _into_ the dropdown component -->
+			<div style="border-top: 1px dotted grey;"></div>
+
+			<!-- internal link copy -->
+			<SharingEntryInternal :file-info="fileInfo" />
+
+			<div style="border-top: 1px dotted grey;"></div>
+			<!-- will move _into_ the dropdown component -->
+
+			<!-- other shares list -->
+			<SharingList v-if="!loading"
+				 ref="shareList"
+				 :shares="shares"
+				 :file-info="fileInfo"
+				 @open-sharing-details="toggleShareDetailsView" />
+
+			<!-- inherited shares -->
+			<SharingInherited v-if="canReshare && !loading" :file-info="fileInfo" />
+
+			<hr>
+			<h3>External shares</h3>
+
 			<!-- link shares list -->
 			<SharingLinkList v-if="!loading"
 				ref="linkShareList"
@@ -41,19 +64,6 @@
 				:file-info="fileInfo"
 				:shares="linkShares"
 				@open-sharing-details="toggleShareDetailsView" />
-
-			<!-- other shares list -->
-			<SharingList v-if="!loading"
-				ref="shareList"
-				:shares="shares"
-				:file-info="fileInfo"
-				@open-sharing-details="toggleShareDetailsView" />
-
-			<!-- inherited shares -->
-			<SharingInherited v-if="canReshare && !loading" :file-info="fileInfo" />
-
-			<!-- internal link copy -->
-			<SharingEntryInternal :file-info="fileInfo" />
 		</div>
 
 		<!-- additional entries, use it with cautious -->
@@ -431,5 +441,9 @@ export default {
 	&__additionalContent {
 		margin: 44px 0;
 	}
+}
+
+h3 {
+	font-weight: bold;
 }
 </style>
