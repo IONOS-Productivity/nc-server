@@ -29,17 +29,20 @@ namespace OC\Template;
 
 use OCP\App\AppPathNotFoundException;
 use OCP\App\IAppManager;
+use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 
 class JSResourceLocator extends ResourceLocator {
 	protected JSCombiner $jsCombiner;
 	protected IAppManager $appManager;
+	protected IConfig $config;
 
-	public function __construct(LoggerInterface $logger, JSCombiner $JSCombiner, IAppManager $appManager) {
+	public function __construct(LoggerInterface $logger, JSCombiner $JSCombiner, IAppManager $appManager, IConfig $config) {
 		parent::__construct($logger);
 
 		$this->jsCombiner = $JSCombiner;
 		$this->appManager = $appManager;
+		$this->config = $config;
 	}
 
 	/**
@@ -116,11 +119,32 @@ class JSResourceLocator extends ResourceLocator {
 	public function doFindTheme($script) {
 	}
 
+
+	/**
+	 * Test if the script is disabled (contained in the "disabled_scripts" server config)
+	 * @param string $file the webroot-relative path to the file (usually dist/something.js for core or js/something.js for apps)
+	 * @return bool true if the webroot-relative script path is contained in the "disabled_scripts" server config
+	 */
+	private function isScriptDisabled(string $file) {
+		/* disabled_scripts = [
+		 *    "full/server-root-relative/path/to/the/script.js",
+		 *    "dist/foo.js",
+		 *    "apps/foo_app/js/bar.js"
+		 * ]
+		 */
+		$disabledScripts = $this->config->getSystemValue("disabled_scripts", []);
+		return in_array($file, $disabledScripts);
+	}
+
 	/**
 	 * Try to find ES6 script file (`.mjs`) with fallback to plain javascript (`.js`)
 	 * @see appendIfExist()
 	 */
 	protected function appendScriptIfExist(string $root, string $file, ?string $webRoot = null) {
+		if ($this->isScriptDisabled($file . '.mjs') || $this->isScriptDisabled($file . '.js')) {
+			return false;
+		}
+
 		if (!$this->appendIfExist($root, $file . '.mjs', $webRoot)) {
 			return $this->appendIfExist($root, $file . '.js', $webRoot);
 		}
