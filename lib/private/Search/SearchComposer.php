@@ -211,7 +211,24 @@ class SearchComposer {
 			return $provider1['order'] <=> $provider2['order'];
 		});
 
-		return $providers;
+		return $this->reduceProviders($providers);
+	}
+
+	/**
+	 * reduce providers based on 'unified_search.providers_allowed' core app config array
+	 * @param array $providers
+	 * @return array
+	 */
+	private function reduceProviders(array $providers): array {
+		$allowedProviders = $this->appConfig->getValueArray('core', 'unified_search.providers_allowed');
+
+		if (empty($allowedProviders)) {
+			return $providers;
+		}
+
+		return array_values(array_filter($providers, function ($p) use ($allowedProviders) {
+			return in_array($p['id'], $allowedProviders);
+		}));
 	}
 
 	/**
