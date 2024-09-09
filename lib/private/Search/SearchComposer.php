@@ -197,6 +197,15 @@ class SearchComposer {
 			return $provider1['order'] <=> $provider2['order'];
 		});
 
+		// reduce providers to array with id = "files"
+		$providers_original = $providers;
+		$providers = [];
+		foreach ($providers_original as $provider) {
+			if ($provider['id'] === 'files') {
+				$providers[] = $provider;
+			}
+		}
+
 		return $providers;
 	}
 
