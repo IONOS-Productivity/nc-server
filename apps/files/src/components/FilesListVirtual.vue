@@ -537,15 +537,11 @@ export default defineComponent({
 					width: var(--icon-preview-size);
 					height: var(--icon-preview-size);
 				}
-
-				// Slightly increase the size of the folder icon
+				// Slightly decrease the size of the folder icon
 				&.folder-icon,
-				&.folder-open-icon {
-					margin: -3px;
-					svg {
-						width: calc(var(--icon-preview-size) + 6px);
-						height: calc(var(--icon-preview-size) + 6px);
-					}
+				&.folder-open-icon svg {
+					width: calc(var(--icon-preview-size) - 6px);
+					height: calc(var(--icon-preview-size) - 6px);
 				}
 			}
 
@@ -762,6 +758,15 @@ tbody.files-list__tbody.files-list__tbody--grid {
 			// Visual balance, we use half of the clickable area
 			// as a margin around the preview
 			padding-top: var(--half-clickable-area);
+
+			& > span {
+				// Slightly decrease the size of the folder icon
+				&.folder-icon,
+				&.folder-open-icon svg {
+					width: calc(var(--icon-preview-size) - 20px);
+					height: calc(var(--icon-preview-size) - 20px);
+				}
+			}
 		}
 
 		a.files-list__row-name-link {
