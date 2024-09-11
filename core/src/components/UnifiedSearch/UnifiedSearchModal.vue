@@ -67,6 +67,7 @@
 					</NcActionButton>
 				</NcActions>
 				<SearchableList :label-text="t('core', 'Search people')"
+					v-if="peopleSearchEnabled"
 					:search-list="userContacts"
 					:empty-content-text="t('core', 'Not found')"
 					data-cy-unified-search-filter="people"
@@ -268,6 +269,14 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
+
+		/**
+		 * Show people search filter
+		 */
+		peopleSearchEnabled: {
+			type: Boolean,
+			default: true,
+		}
 	},
 
 	emits: ['update:open', 'update:query'],
