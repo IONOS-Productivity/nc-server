@@ -29,7 +29,7 @@ use OCA\Theming\Themes\DarkTheme;
 use OCA\Theming\Themes\DefaultTheme;
 use OCA\Theming\Themes\DyslexiaFont;
 use OCA\Theming\Themes\HighContrastTheme;
-use OCA\Theming\Themes\LightTheme;
+use OCA\Theming\Themes\Ionos\LightTheme;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -143,7 +143,7 @@ class ThemesService {
 			$this->setEnabledThemes($enabledThemes);
 			return $enabledThemes;
 		}
-		
+
 		return $themesIds;
 	}
 
