@@ -65,6 +65,7 @@
 					</NcActionButton>
 				</NcActions>
 				<SearchableList :label-text="t('core', 'Search people')"
+					v-if="peopleSearchEnabled"
 					:search-list="userContacts"
 					:empty-content-text="t('core', 'Not found')"
 					data-cy-unified-search-filter="people"
@@ -225,6 +226,14 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
+
+		/**
+		 * Show people search filter
+		 */
+		peopleSearchEnabled: {
+			type: Boolean,
+			default: false,
+		}
 	},
 
 	emits: ['update:open', 'update:query'],
@@ -325,6 +334,9 @@ export default defineComponent({
 		subscribe('nextcloud:unified-search:add-filter', this.handlePluginFilter)
 		getProviders().then((providers) => {
 			this.providers = providers
+			unifiedSearchLogger.debug(`getProviders`, { providers: this.providers })
+			console.log("this.getProviders", providers);
+			console.log("this.externalFilters", this.externalFilters);
 			this.externalFilters.forEach(filter => {
 				this.providers.push(filter)
 			})
