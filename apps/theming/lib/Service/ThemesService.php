@@ -59,6 +59,13 @@ class ThemesService {
 			$darkHighContrastTheme->getId() => $darkHighContrastTheme,
 			$dyslexiaFont->getId() => $dyslexiaFont,
 		];
+
+		// reduce CSS and JS files delivered to the client. Default theme is always loaded
+		$this->themesProviders = [
+			$defaultTheme->getId() => $defaultTheme,
+			$lightTheme->getId() => $lightTheme,
+			$darkTheme->getId() => $darkTheme,
+		];
 	}
 
 	/**
