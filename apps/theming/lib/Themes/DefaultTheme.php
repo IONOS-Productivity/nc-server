@@ -93,19 +93,19 @@ class DefaultTheme implements ITheme {
 	}
 
 	public function getCSSVariables(): array {
-		$colorMainText = '#222222';
+		$colorMainText = '#2e4360';
 		$colorMainTextRgb = join(',', $this->util->hexToRGB($colorMainText));
 		// Color that still provides enough contrast for text, so we need a ratio of 4.5:1 on main background AND hover
-		$colorTextMaxcontrast = '#6b6b6b'; // 4.5 : 1 for hover background and background dark
+		$colorTextMaxcontrast = '#2e4360'; // 4.5 : 1 for hover background and background dark
 		$colorMainBackground = '#ffffff';
 		$colorMainBackgroundRGB = join(',', $this->util->hexToRGB($colorMainBackground));
 		$colorBoxShadow = $this->util->darken($colorMainBackground, 70);
 		$colorBoxShadowRGB = join(',', $this->util->hexToRGB($colorBoxShadow));
 
-		$colorError = '#DB0606';
-		$colorWarning = '#A37200';
-		$colorSuccess = '#2d7b41';
-		$colorInfo = '#0071ad';
+		$colorError = '#FF6159';
+		$colorWarning = '#FFAA00';
+		$colorSuccess = '#12CF76';
+		$colorInfo = '#11c7e6';
 
 		$user = $this->userSession->getUser();
 		// Chromium based browsers currently (2024) have huge performance issues with blur filters
@@ -169,7 +169,7 @@ class DefaultTheme implements ITheme {
 			'--color-info-rgb' => join(',', $this->util->hexToRGB($colorInfo)),
 			'--color-info-hover' => $this->util->mix($colorInfo, $colorMainBackground, 80),
 			'--color-info-text' => $this->util->darken($colorInfo, 4),
-			'--color-favorite' => '#A37200',
+			'--color-favorite' => '#FFAA00',
 
 			// used for the icon loading animation
 			'--color-loading-light' => '#cccccc',
@@ -230,6 +230,81 @@ class DefaultTheme implements ITheme {
 	}
 
 	public function getCustomCss(): string {
-		return '';
+		return "
+			[data-cy-files-navigation].app-navigation {
+				background-color: #F4F7FA !important;
+
+				.app-navigation-entry {
+					&.active[data-v-c00d5366] {
+						background-color: #BCC8D4 !important;
+			
+						.app-navigation-entry-link[data-v-c00d5366] {
+							color: #001B41 !important;
+						}
+
+						&:hover {
+							background-color: #BCC8D4 !important;
+						}
+					}
+					&:hover {
+						background-color: #DBE2E8 !important;
+					}
+				}
+				
+				.app-navigation-entry--opened {
+					background: #BCC8D4 !important;
+
+					.app-navigation-entry__children {
+						.app-navigation-entry-wrapper {
+							background: #fff !important;
+						}
+					}
+				}
+			}
+
+			.files-list[data-v-1e2b43b6] {
+				.files-list__row {
+					&:hover {
+						background-color: #DBEDF8 !important;
+					}
+
+					&.active {
+						background-color: #DBEDF8 !important; /* Example active state */
+					}
+
+					.files-list__row-icon {
+						color: #1474C4 !important;
+					}
+
+					.material-design-icon {
+						color: #1474C4 !important;
+					}
+
+					.files-list__row-actions {
+						.icon-vue {
+							color: #1474C4 !important;
+						}
+				}
+			}
+
+			.checkbox-radio-switch__icon {
+				.material-design-icon.checkbox-blank-outline-icon {
+					color: #718095 !important;
+				}
+
+				.material-design-icon.checkbox-marked-icon {
+					color: #1474C4 !important;
+				}
+
+				.material-design-icon minus-box-icon {
+					color: #1474C4 !important;
+				}
+			}
+
+			.button-vue--vue-secondary[data-v-44398b0c] {
+				background-color: #0B2A63 !important;
+				color: #FFFFFF !important;
+			}
+		";
 	}
 }
