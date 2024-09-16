@@ -1,0 +1,4 @@
+# See https://github.com/ossf/scorecard/blob/v5.0.0/config/README.md
+annotations:
+  - checks:
+      - all_checks
