@@ -55,7 +55,7 @@
 		<template #footer>
 			<ul class="app-navigation-entry__settings">
 				<!-- User storage usage statistics -->
-				<NavigationQuota />
+				<SidebarQuota />
 
 				<!-- Files settings modal toggle-->
 				<NcAppNavigationItem :aria-label="t('files', 'Open the files app settings')"
@@ -85,7 +85,7 @@ import IconCog from 'vue-material-design-icons/Cog.vue'
 import NcAppNavigation from '@nextcloud/vue/dist/Components/NcAppNavigation.js'
 import NcAppNavigationItem from '@nextcloud/vue/dist/Components/NcAppNavigationItem.js'
 import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
-import NavigationQuota from '../components/NavigationQuota.vue'
+import SidebarQuota from '../components/SidebarQuota.vue'
 import SettingsModal from './Settings.vue'
 
 import { useNavigation } from '../composables/useNavigation'
@@ -98,11 +98,11 @@ export default defineComponent({
 	components: {
 		IconCog,
 
-		NavigationQuota,
 		NcAppNavigation,
 		NcAppNavigationItem,
 		NcIconSvgWrapper,
 		SettingsModal,
+		SidebarQuota,
 	},
 
 	setup() {
