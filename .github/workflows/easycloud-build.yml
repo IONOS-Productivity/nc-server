@@ -10,6 +10,7 @@ on:
       - '.github/workflows/**'
       - 'src/**'
       - 'apps/**/appinfo/info.xml'
+      - 'apps-custom/**'
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.json'
