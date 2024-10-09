@@ -23,7 +23,7 @@
 				data-cy-unified-search-input
 				:value.sync="searchQuery"
 				type="text"
-				:label="t('core', 'Search apps, files, tags, messages') + '...'"
+				:label="t('core', 'Search files') + '...'"
 				@update:value="debouncedFind" />
 			<div class="unified-search-modal__filters" data-cy-unified-search-filters>
 				<NcActions :menu-name="t('core', 'Places')" :open.sync="providerActionMenuIsOpen" data-cy-unified-search-filter="places">
@@ -64,6 +64,7 @@
 						{{ t('core', 'Custom date range') }}
 					</NcActionButton>
 				</NcActions>
+				<!--
 				<SearchableList :label-text="t('core', 'Search people')"
 					:search-list="userContacts"
 					:empty-content-text="t('core', 'Not found')"
@@ -79,6 +80,7 @@
 						</NcButton>
 					</template>
 				</SearchableList>
+				-->
 				<NcButton v-if="localSearch" data-cy-unified-search-filter="current-view" @click="searchLocally">
 					{{ t('core', 'Filter in current view') }}
 					<template #icon>
