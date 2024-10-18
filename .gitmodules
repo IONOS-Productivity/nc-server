@@ -34,3 +34,6 @@
 [submodule "custom-npms/nc-mdi-svg"]
 	path = custom-npms/nc-mdi-svg
 	url = git@github.com:IONOS-Productivity/nc-MaterialDesign-SVG.git
+[submodule "apps-custom/nc_ionos_processes"]
+	path = apps-custom/nc_ionos_processes
+	url = git@github.com:IONOS-Productivity/nc_ionos_processes.git
