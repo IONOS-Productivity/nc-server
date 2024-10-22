@@ -275,7 +275,7 @@ export default defineComponent({
 		 */
 		peopleSearchEnabled: {
 			type: Boolean,
-			default: true,
+			default: false,
 		}
 	},
 
