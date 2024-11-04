@@ -80,12 +80,13 @@ jobs:
 
       - name: Merge SBOMs
         # https://github.com/CycloneDX/cyclonedx-cli#merge-command
+        # Using v1_3 because with the default (1.6) the upload failed at the DT web interface
         #
         # The generated SBOM is fixed with sed to remove potentially bad characters
         # Slashes are not allowed after the @ in the meta/component's bom-ref
         # attribute and purl node.
         run: |
-          cyclonedx merge --input-files bom.composer.xml bom.npm.xml --output-file bom.xml
+          cyclonedx merge --input-files bom.composer.xml bom.npm.xml --output-file bom.xml --output-version v1_3
           sed -i -r 's;(pkg:composer/__root__)@[^"<]+;\1@merged-sbom;' bom.xml
 
       # Pass merged BOM to next Job
