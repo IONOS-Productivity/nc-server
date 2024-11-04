@@ -56,4 +56,26 @@ jobs:
         with:
           output: './bom.npm.xml'
 
-      # TODO: merge BOMs, upload BOMs
+  merge-sboms:
+    needs: generate-sbom
+    runs-on: ubuntu-latest
+
+    # https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs/running-jobs-in-a-container
+    container:
+      image: cyclonedx/cyclonedx-cli:0.27.1
+    steps:
+      - name: Merge SBOMs
+        # https://github.com/CycloneDX/cyclonedx-cli#merge-command
+        run: |
+          cyclonedx merge --input-files bom.composer.xml bom.npm.xml --output-file bom.xml
+
+  upload-sboms:
+    needs: merge-sboms
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dump merged SBOM
+        run: |
+          cat bom.xml
+
+      # TODO: upload BOMs
