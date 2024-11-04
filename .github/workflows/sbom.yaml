@@ -1,0 +1,453 @@
+name: SBOM generation
+
+# SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2024 STRATO AG
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+on:
+  push:
+    branches:
+      # Enable once approved
+      - ionos-stable
+      - feature/sbom-generation
+
+jobs:
+  generate-sbom:
+    runs-on: self-hosted
+
+    permissions:
+      contents: read
+
+    name: generate-sbom
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          submodules: true
+
+      # Same installation step as in hidrive-next-build.yaml
+      - name: Setup PHP with PECL extension
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
+        with:
+          tools: composer:v2
+          extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
+        env:
+          runner: self-hosted
+
+      - name: Install CycloneDX
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer global config --no-plugins allow-plugins.cyclonedx/cyclonedx-php-composer true
+          composer global require cyclonedx/cyclonedx-php-composer
+
+      #
+      # Nextcloud
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (Nextcloud - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer CycloneDX:make-sbom --output-file=bom.nextcloud.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "package.json"
+
+      - name: "Install dependencies (Nextcloud - npm)"
+        env:
+          FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+        run: |
+          npm ci
+
+      - name: Generate SBOM (Nextcloud - npm)
+        # Switch --ignore-npm-errors is used to not fail on inconsistencies
+        # found by npm ls, which complains about (mostly) "extraneous" packages
+        # found in node_modules, which are apparently related to us using npm
+        # overrides in package.json and presumably npm ls not being capable
+        # of analyzing this correctly.
+        #
+        run: |
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file './bom.nextcloud.npm.xml'
+
+
+      #
+      # Theme
+      #
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "themes/nc-ionos-theme/IONOS/package.json"
+
+      - name: "Install dependencies (theme - npm)"
+        run: |
+          cd themes/nc-ionos-theme/IONOS
+          npm ci
+
+      - name: Generate SBOM (theme - npm)
+        #
+        # See previous step's comment on these options
+        #
+        run: |
+          cd themes/nc-ionos-theme/IONOS
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../../bom.hidrive-next-theme.xml'
+
+
+      # Apps
+      #
+      # Apps reference custom-npms via relative paths and can therefor not
+      # have their dependencies installed and analyzed and be built in
+      # isolation.
+      #
+
+      #
+      # App: simplesettings
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:simplesettings - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/simplesettings
+          composer CycloneDX:make-sbom --output-file=../../bom.app-simplesettings.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "apps-custom/simplesettings/package.json"
+
+      - name: "Install dependencies (apps:simplesettings - npm)"
+        env:
+          FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+        run: |
+          cd apps-custom/simplesettings
+          npm ci
+
+      - name: Generate SBOM (apps:simplesettings - npm)
+        #
+        # See previous step's comment on these options
+        #
+        run: |
+          cd apps-custom/simplesettings
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-simplesettings.npm.xml'
+
+
+      #
+      # App: googleanalytics
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:googleanalytics - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/googleanalytics
+          composer CycloneDX:make-sbom --output-file=../../bom.app-googleanalytics.xml
+
+
+      #
+      # App: nc_ionos_processes
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:nc_ionos_processes - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/nc_ionos_processes
+          composer CycloneDX:make-sbom --output-file=../../bom.app-ionos-processes.xml
+
+
+      #
+      # App: nc_themeing
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:nc_theming - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/nc_theming
+          composer CycloneDX:make-sbom --output-file=../../bom.app-theming.xml
+
+      #
+      # App: viewer
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:viewer - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-external/viewer
+          composer CycloneDX:make-sbom --output-file=../../bom.app-viewer.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "apps-external/viewer/package.json"
+
+      - name: "Install dependencies (apps:viewer - npm)"
+        run: |
+          cd apps-external/viewer
+          npm ci
+
+      - name: Generate SBOM (apps:viewer - npm)
+        #
+        # See previous step's comment on these options
+        #
+        run: |
+          cd apps-external/viewer
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-viewer.npm.xml'
+
+
+      #
+      # App: user_oidc
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:user_oidc - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-external/user_oidc
+          composer CycloneDX:make-sbom --output-file=../../bom.app-user_oidc.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "apps-external/user_oidc/package.json"
+
+      - name: "Install dependencies (apps:user_oidc - npm)"
+        run: |
+          cd apps-external/user_oidc
+          npm ci
+
+      - name: Generate SBOM (apps:user_oidc - npm)
+        #
+        # See previous step's comment on these options
+        #
+        run: |
+          cd apps-external/user_oidc
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-user_oidc.npm.xml'
+
+      #
+      # App: groupquota
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:groupquota - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-external/groupquota
+          composer CycloneDX:make-sbom --output-file=../../bom.app-groupquota.xml
+
+      #
+      # App: richdocuments
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:richdocuments - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-external/richdocuments
+          composer CycloneDX:make-sbom --output-file=../../bom.app-richdocuments.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "apps-external/richdocuments/package.json"
+
+      - name: "Install dependencies (apps:richdocuments - npm)"
+        run: |
+          cd apps-external/richdocuments
+          npm ci
+
+      - name: Generate SBOM (apps:richdocuments - npm)
+        #
+        # See previous step's comment on these options
+        #
+        run: |
+          cd apps-external/richdocuments
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-richdocuments.npm.xml'
+
+      #
+      # App: files_downloadlimit
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:files_downloadlimit - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-external/files_downloadlimit
+          composer CycloneDX:make-sbom --output-file=../../bom.app-files_downloadlimit.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "apps-external/files_downloadlimit/package.json"
+
+      - name: "Install dependencies (apps:files_downloadlimit - npm)"
+        run: |
+          cd apps-external/files_downloadlimit
+          npm ci
+
+      - name: Generate SBOM (apps:files_downloadlimit - npm)
+        #
+        # See previous step's comment on these options
+        #
+        run: |
+          cd apps-external/files_downloadlimit
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-files_downloadlimit.npm.xml'
+
+      #
+      # App: serverinfo
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:serverinfo - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-external/serverinfo
+          composer CycloneDX:make-sbom --output-file=../../bom.app-serverinfo.xml
+
+
+      # Pass BOMs to next Job
+      # https://github.com/actions/upload-artifact
+      - name: Store partial BOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: bom-partials
+          path: |
+            bom.nextcloud.*.xml
+            bom.hidrive-next-theme.xml
+            bom.app-*.xml
+
+  merge-sboms:
+    needs: generate-sbom
+    runs-on: self-hosted
+
+    # https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs/running-jobs-in-a-container
+    container:
+      image: ${{ vars.HARBOR_URL_PREFIX }}/cyclonedx-cli:0.27.1
+      credentials:
+        username: ${{ secrets.HARBOR_USERNAME }}
+        password: ${{ secrets.HARBOR_PASSWORD }}
+
+    steps:
+      - name: Download partial BOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: bom-partials
+
+      - name: Merge SBOMs
+        # https://github.com/CycloneDX/cyclonedx-cli#merge-command
+        # Using v1_3 because with the default (1.6) the upload failed at the DT web interface
+        #
+        # The generated SBOM is fixed with awk to remove XML schema violating
+        # elements or values that prevent upload to Dependency Track.
+        run: |
+          echo "Merge BOMs for: Nextcloud"
+          merge_bom() {
+            cyclonedx merge --input-files bom.${1}.composer.xml bom.${1}.npm.xml --output-file bom.xml --output-version v1_3 ;
+            awk '/^  <metadata>/ { ignore=1 } /^  <\/metadata>/ { ignore=0; next; } { if (!ignore) print }' bom.xml >bom.${1}.xml ;
+          }
+
+          merge_bom "nextcloud"
+          merge_bom "app-simplesettings"
+          merge_bom "app-viewer"
+          merge_bom "app-user_oidc"
+          merge_bom "app-richdocuments"
+          merge_bom "app-files_downloadlimit"
+
+      - name: Show BOMs
+        run: |
+          ls -l bom.*.xml
+
+      # Pass merged BOM to next Job
+      # https://github.com/actions/upload-artifact
+      - name: Store merged BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-boms
+          path: |
+            bom.nextcloud.xml
+            bom.hidrive-next-theme.xml
+            bom.app-simplesettings.xml
+            bom.app-googleanalytics.xml
+            bom.app-ionos-processes.xml
+            bom.app-theming.xml
+            bom.app-viewer.xml
+            bom.app-user_oidc.xml
+            bom.app-groupquota.xml
+            bom.app-richdocuments.xml
+            bom.app-files_downloadlimit.xml
+            bom.app-serverinfo.xml
+
+  upload-sboms:
+    needs: merge-sboms
+    runs-on: self-hosted
+    steps:
+      - name: Download partial BOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: final-boms
+
+      - name: Upload SBOMs
+        run: |
+          cert_file="$( mktemp )"
+          echo "${{ secrets.IONOS_CA }}" > ${cert_file}
+
+          wc -l bom.*.xml
+
+          echo "Upload to: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}/api/v1/bom"
+
+          upload_bom() {
+          	echo "Upload Nextcloud SBOM ${1} for object ${2} ..."
+
+            curl \
+              --cacert "${cert_file}" \
+              --fail \
+              -D- \
+              -X POST "${{ vars.DEPENDENCY_TRACK_BASE_URL }}/api/v1/bom" \
+              -H "Content-Type: multipart/form-data" \
+              -H "X-API-Key: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}" \
+              -F "project=${2}" \
+              -F "bom=@${1}"
+          }
+
+          upload_bom "bom.nextcloud.xml" "${{ vars.DT_OBJECT_NEXTCLOUD }}" \
+          	&& upload_bom "bom.hidrive-next-theme.xml" "${{ vars.DT_OBJECT_THEME }}" \
+          	&& upload_bom "bom.app-simplesettings.xml" "${{ vars.DT_OBJECT_APP_SIMPLESETTINGS }}" \
+          	&& upload_bom "bom.app-googleanalytics.xml" "${{ vars.DT_OBJECT_APP_GOOGLE_ANALYTICS }}" \
+          	&& upload_bom "bom.app-ionos-processes.xml" "${{ vars.DT_OBJECT_APP_IONOS_PROCESSES }}" \
+          	&& upload_bom "bom.app-theming.xml" "${{ vars.DT_OBJECT_APP_THEMING }}" \
+          	&& upload_bom "bom.app-viewer.xml" "${{ vars.DT_OBJECT_APP_VIEWER }}" \
+          	&& upload_bom "bom.app-user_oidc.xml" "${{ vars.DT_OBJECT_APP_USER_OIDC }}" \
+          	&& upload_bom "bom.app-groupquota.xml" "${{ vars.DT_OBJECT_APP_GROUPQUOTA }}" \
+          	&& upload_bom "bom.app-richdocuments.xml" "${{ vars.DT_OBJECT_APP_RICHDOCUMENTS }}" \
+          	&& upload_bom "bom.app-files_downloadlimit.xml" "${{ vars.DT_OBJECT_APP_FILES_DOWNLOADLIMIT }}" \
+          	&& upload_bom "bom.app-serverinfo.xml" "${{ vars.DT_OBJECT_APP_SERVERINFO }}" \
+          	|| exit 1
