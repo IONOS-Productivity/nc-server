@@ -189,8 +189,13 @@
 =======
     "workbox-webpack-plugin": "^7.1.0",
     "vue-material-design-icons": "file:./custom-npms/nc-vue-material-design-icons/dist",
+<<<<<<< HEAD
     "@mdi/svg": "file:./custom-npms/nc-mdi-svg/dist"
 >>>>>>> 1ea66423597 (IONOS(nc-mdi-svg): use custom nc-MaterialDesign-SVG dist)
+=======
+    "@mdi/svg": "file:./custom-npms/nc-mdi-svg/dist",
+    "@mdi/js": "file:./custom-npms/nc-mdi-js"
+>>>>>>> 2df712471a1 (IONOS(build): switch to custom mdi icons)
   },
   "browserslist": [
     "extends @nextcloud/browserslist-config"
@@ -200,6 +205,14 @@
     "npm": "^10.5.0"
   },
   "overrides": {
+<<<<<<< HEAD
     "colors": "1.4.0"
   }
+=======
+    "colors": "1.4.0",
+    "vue-material-design-icons" : "$vue-material-design-icons",
+    "@mdi/svg" : "$@mdi/svg",
+    "@mdi/js" : "$@mdi/js"
+    }
+>>>>>>> 2df712471a1 (IONOS(build): switch to custom mdi icons)
 }
