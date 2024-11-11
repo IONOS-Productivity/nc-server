@@ -12,6 +12,7 @@ on:
       - 'apps/**/appinfo/info.xml'
       - 'package.json'
       - 'package-lock.json'
+      - 'themes/**'
       - 'tsconfig.json'
       - '**.js'
       - '**.ts'
