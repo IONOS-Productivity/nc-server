@@ -60,6 +60,12 @@ jobs:
         with:
           node-version-file: "package.json"
 
+      - name: Install Dependencies
+        run: sudo apt-get update && sudo apt-get install -y make zip unzip
+
+      - name: Verify dependencies versions
+        run: make --version && node --version && npm --version
+
       - name: Build Nextcloud
         run: make -f IONOS/Makefile build_nextcloud FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
 
