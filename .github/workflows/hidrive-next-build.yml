@@ -66,6 +66,17 @@ jobs:
       - name: Verify dependencies versions
         run: make --version && node --version && npm --version
 
+      - name: Setup PHP with PECL extension
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
+        with:
+          tools: composer:v2
+          extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
+        env:
+          runner: self-hosted
+
+      - name: Verify PHP install
+        run: php -i && php -m
+
       - name: Build Nextcloud
         run: make -f IONOS/Makefile build_nextcloud FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
 
