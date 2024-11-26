@@ -234,15 +234,15 @@ jobs:
 #        with:
 #          name: hidrive_next_build_zip
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v1
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Log in to the Container registry
+#        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Dockerfile
         run: |
@@ -252,6 +252,14 @@ jobs:
           VOLUME /app
           echo "Hello, World!" > /app/index.html
           EOF
+
+      - name: Create .docker auth file
+        run: |
+          mkdir -p /kaniko/.docker
+          GITHUB_AUTH="{\"auth\":\"$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)\"}"
+          HARBOR_AUTH="{\"auth\":\"$(echo -n ${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }} | base64)\"}"
+          # echo "{\"auths\":{\"ghcr.io\":$GITHUB_AUTH, \"harbor.infra.cluster.ionos.com\":$HARBOR_AUTH}}" > /kaniko/.docker/config.json
+          echo "{\"auths\":{\"ghcr.io\":$GITHUB_AUTH}" > /kaniko/.docker/config.json
 
       - name: Build and push Docker image with Kaniko
         run: |
