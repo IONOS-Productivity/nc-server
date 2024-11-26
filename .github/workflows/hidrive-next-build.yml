@@ -217,7 +217,8 @@ jobs:
           exit 1 # make it red to grab attention
 
   hidirve-next-artifact-to-ghcr_io-kaniko:
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: docker://gcr.io/kaniko-project/executor:debug
 
