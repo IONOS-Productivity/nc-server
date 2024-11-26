@@ -220,7 +220,7 @@ jobs:
 #    runs-on: ubuntu-latest
     runs-on: self-hosted
     container:
-      image: docker://gcr.io/kaniko-project/executor:debug
+      image: gcr.io/kaniko-project/executor:debug
 
     permissions:
       contents: read
