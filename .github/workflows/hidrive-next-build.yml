@@ -250,7 +250,7 @@ jobs:
           FROM scratch
           WORKDIR /app
           VOLUME /app
-          echo "Hello, World!" > /app/index.html
+          RUN echo "Hello, World!" > /app/index.html
           EOF
 
       - name: Create .docker auth file
@@ -259,21 +259,38 @@ jobs:
           GITHUB_AUTH="{\"auth\":\"$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)\"}"
           HARBOR_AUTH="{\"auth\":\"$(echo -n ${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }} | base64)\"}"
           # echo "{\"auths\":{\"ghcr.io\":$GITHUB_AUTH, \"harbor.infra.cluster.ionos.com\":$HARBOR_AUTH}}" > /kaniko/.docker/config.json
-          echo "{\"auths\":{\"ghcr.io\":$GITHUB_AUTH}" > /kaniko/.docker/config.json
+          echo "{\"auths\":{\"ghcr.io\":$GITHUB_AUTH}}" > /kaniko/.docker/config.json
+
+      - name: Determine Docker Image Tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "DOCKER_IMAGE_TAG=$TAG_NAME" >> $GITHUB_ENV
+          else
+            echo "DOCKER_IMAGE_TAG=tmp-latest" >> $GITHUB_ENV
+          fi
+
+      - name: Lowercase the image name
+        run: echo "IMAGE_NAME_LOWERCASED=`echo ${{env.IMAGE_NAME}} | tr '[:upper:]' '[:lower:]'`" >>${GITHUB_ENV}
 
       - name: Build and push Docker image with Kaniko
         run: |
-          /kaniko/executor --dockerfile=${{ inputs.dockerfile-path }} \
-          --context=dir://${{ inputs.docker-context }} \
-          --destination=${{ env.REGISTRY }}:${{ env.DOCKER_IMAGE_TAG }}
-        env:
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_IMAGE_TAG: ${{ github.sha }}
+          /kaniko/executor \
+          --build-arg GITHUB_USERNAME=${{ github.actor }} \
+          --build-arg GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+          --label org.opencontainers.image.url="${{ github.repository }}" \
+          --label org.opencontainers.image.source="${{ github.repository }}" \
+          --label org.opencontainers.image.title="nc-server" \
+          --label org.opencontainers.image.revision="dea43087f4851f2d44cbfb487ad94dd83280ea8d" \
+          --label org.opencontainers.image.created="2024-11-26T11:59:51.396Z" \
+          --label org.opencontainers.image.version="pr-60" \
+          --label org.opencontainers.image.description="HiDrive Next server" \
+          --label org.opencontainers.image.licenses="AGPL-3.0" \
+          --context . \
+          --verbosity info \
+          --destination "${{ env.REGISTRY }}/${{env.IMAGE_NAME_LOWERCASED}}:${{ env.DOCKER_IMAGE_TAG }}"
 
       - name: Show changes on failure
         if: failure()
         run: |
-          git status
-          git --no-pager diff
           exit 1 # make it red to grab attention
