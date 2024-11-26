@@ -48,6 +48,37 @@ jobs:
       contents: read
       packages: write
 
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        with:
+          submodules: true
+
+      - name: Create dummy zip
+        run: |
+          zip -r ${{ env.TARGET_PACKAGE_NAME }} . -x ".git/*" ".github/*"
+
+      - name: Upload artifact result for job hidrive-next-build
+        uses: actions/upload-artifact@v4
+        with:
+          name: hidrive_next_build_zip
+          path: ${{ env.TARGET_PACKAGE_NAME }}
+
+      - name: Show changes on failure
+        if: failure()
+        run: |
+          git status
+          git --no-pager diff
+          exit 1 # make it red to grab attention
+
+  hidrive-next-build-disabled:
+    if: false
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     name: hidrive-next-build
     steps:
       - name: Checkout server
