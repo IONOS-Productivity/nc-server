@@ -229,10 +229,10 @@ jobs:
     needs: hidrive-next-build
 
     steps:
-      - name: Download artifact zip
-        uses: actions/download-artifact@v4
-        with:
-          name: hidrive_next_build_zip
+#      - name: Download artifact zip
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: hidrive_next_build_zip
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -247,15 +247,10 @@ jobs:
       - name: Create Dockerfile
         run: |
           cat >Dockerfile << EOF
-          FROM busybox as builder
-          COPY ./${{ env.TARGET_PACKAGE_NAME }} /
-          WORKDIR /builder
-          RUN unzip /${{ env.TARGET_PACKAGE_NAME }} -d /builder
-
           FROM scratch
           WORKDIR /app
           VOLUME /app
-          COPY --from=builder /builder /app
+          echo "Hello, World!" > /app/index.html
           EOF
 
       - name: Build and push Docker image with Kaniko
