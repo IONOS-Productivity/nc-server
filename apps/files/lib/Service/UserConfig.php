@@ -6,6 +6,7 @@
 namespace OCA\Files\Service;
 
 use OCA\Files\AppInfo\Application;
+use OCP\AppFramework\Services\IAppConfig;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -53,7 +54,7 @@ class UserConfig {
 	protected IConfig $config;
 	protected ?IUser $user = null;
 
-	public function __construct(IConfig $config, IUserSession $userSession) {
+	public function __construct(IConfig $config, IUserSession $userSession, protected IAppConfig $appConfig) {
 		$this->config = $config;
 		$this->user = $userSession->getUser();
 	}
@@ -146,6 +147,13 @@ class UserConfig {
 			return $value;
 		}, $this->getAllowedConfigKeys());
 
-		return array_combine($this->getAllowedConfigKeys(), $userConfigs);
+		$userConfigsMerged = array_combine($this->getAllowedConfigKeys(), $userConfigs);
+
+		// override user configs with app configs
+		$configs = array_map(function (string $key) use ($userConfigsMerged) {
+			return $this->appConfig->getAppValueBool($key, $userConfigsMerged[$key]);
+		}, $this->getAllowedConfigKeys());
+
+		return array_combine($this->getAllowedConfigKeys(), $configs);
 	}
 }
