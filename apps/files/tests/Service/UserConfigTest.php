@@ -9,6 +9,7 @@ namespace OCA\Files\Tests\Service;
 
 use OCA\Files\AppInfo\Application;
 use OCA\Files\Service\UserConfig;
+use OCP\AppFramework\Services\IAppConfig;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -34,6 +35,9 @@ class UserConfigTest extends \Test\TestCase {
 	/** @var IUserSession|\PHPUnit\Framework\MockObject\MockObject */
 	private $userSessionMock;
 
+	/** @var IAppConfig|\PHPUnit\Framework\MockObject\MockObject */
+	private $appConfigMock;
+
 	/**
 	 * @var UserConfig|\PHPUnit\Framework\MockObject\MockObject
 	 */
@@ -42,6 +46,7 @@ class UserConfigTest extends \Test\TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->configMock = $this->createMock(IConfig::class);
+		$this->appConfigMock = $this->createMock(IAppConfig::class);
 
 		$this->userUID = static::getUniqueID('user_id-');
 		\OC::$server->getUserManager()->createUser($this->userUID, 'test');
@@ -67,6 +72,7 @@ class UserConfigTest extends \Test\TestCase {
 			->setConstructorArgs([
 				$this->configMock,
 				$this->userSessionMock,
+				$this->appConfigMock,
 			])
 			->setMethods($methods)
 			->getMock();
@@ -100,7 +106,7 @@ class UserConfigTest extends \Test\TestCase {
 		$this->expectException(\Exception::class);
 		$this->expectExceptionMessage('No user logged in');
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$userConfig->setConfig('crop_image_previews', true);
 	}
 
@@ -108,7 +114,7 @@ class UserConfigTest extends \Test\TestCase {
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Unknown config key');
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$userConfig->setConfig('unknown_key', true);
 	}
 
@@ -116,7 +122,7 @@ class UserConfigTest extends \Test\TestCase {
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Invalid config value');
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$userConfig->setConfig('crop_image_previews', 'foo');
 	}
 
@@ -124,7 +130,7 @@ class UserConfigTest extends \Test\TestCase {
 		$this->configMock->expects($this->once())
 			->method('setUserValue')
 			->with($this->userUID, Application::APP_ID, 'crop_image_previews', '1');
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$userConfig->setConfig('crop_image_previews', true);
 	}
 
@@ -135,7 +141,13 @@ class UserConfigTest extends \Test\TestCase {
 				return $default;
 			});
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		// pass the default app settings unchanged
+		$this->appConfigMock->method('getAppValueBool')
+			->willReturnCallback(function ($key, $default) {
+				return $default;
+			});
+
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$configs = $userConfig->getConfigs();
 		$this->assertEquals([
 			'crop_image_previews' => true,
@@ -162,7 +174,13 @@ class UserConfigTest extends \Test\TestCase {
 				return $default;
 			});
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		// pass the default app settings unchanged
+		$this->appConfigMock->method('getAppValueBool')
+			->willReturnCallback(function ($key, $default) {
+				return $default;
+			});
+
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$configs = $userConfig->getConfigs();
 		$this->assertEquals([
 			'crop_image_previews' => false,
@@ -170,6 +188,38 @@ class UserConfigTest extends \Test\TestCase {
 			'sort_favorites_first' => true,
 			'sort_folders_first' => true,
 			'grid_view' => false,
+			'folder_tree' => true,
+		], $configs);
+	}
+
+	public function testGetsConfigsOverrideWithAppsValuesSuccessfully(): void {
+		$this->userSessionMock->method('getUser')->willReturn($this->userMock);
+
+		// set all user values to true
+		$this->configMock->method('getUserValue')
+			->willReturnCallback(function () {
+				return true;
+			});
+
+		// emulate override by the app config values
+		$this->appConfigMock->method('getAppValueBool')
+			->willReturnCallback(function ($key, $default) {
+				if ($key === 'crop_image_previews') {
+					return false;
+				} elseif ($key === 'show_hidden') {
+					return false;
+				}
+				return $default;
+			});
+
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
+		$configs = $userConfig->getConfigs();
+		$this->assertEquals([
+			'crop_image_previews' => false,
+			'show_hidden' => false,
+			'sort_favorites_first' => true,
+			'sort_folders_first' => true,
+			'grid_view' => true,
 			'folder_tree' => true,
 		], $configs);
 	}
