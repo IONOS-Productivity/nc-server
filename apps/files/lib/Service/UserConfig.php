@@ -149,8 +149,11 @@ class UserConfig {
 			return $value;
 		}, $this->getAllowedConfigKeys());
 
-		$configs = array_map(function (string $key) use ($userConfigs) {
-			return $this->appConfig->getAppValueBool($key, $userConfigs[$key] ?? $this->getDefaultConfigValue($key));
+		$userConfigsMerged = array_combine($this->getAllowedConfigKeys(), $userConfigs);
+
+		// override user configs with app configs
+		$configs = array_map(function (string $key) use ($userConfigsMerged) {
+			return $this->appConfig->getAppValueBool($key, $userConfigsMerged[$key]);
 		}, $this->getAllowedConfigKeys());
 
 		return array_combine($this->getAllowedConfigKeys(), $configs);
