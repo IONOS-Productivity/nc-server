@@ -112,6 +112,14 @@ class UserConfigTest extends \Test\TestCase {
 		$userConfig->setConfig('unknown_key', true);
 	}
 
+	public function testThrowsInvalidArgumentExceptionForInvalidConfigValue(): void {
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Invalid config value');
+
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig->setConfig('crop_image_previews', 'foo');
+	}
+
 	public function testSetsConfigSuccessfully(): void {
 		$this->configMock->expects($this->once())
 			->method('setUserValue')

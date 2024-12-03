@@ -115,7 +115,7 @@ class UserConfig {
 			throw new \InvalidArgumentException('Unknown config key');
 		}
 
-		if (!in_array($value, $this->getAllowedConfigValues($key))) {
+		if (!in_array($value, $this->getAllowedConfigValues($key), true)) {
 			throw new \InvalidArgumentException('Invalid config value');
 		}
 
