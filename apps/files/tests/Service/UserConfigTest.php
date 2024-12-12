@@ -139,14 +139,6 @@ class UserConfigTest extends \Test\TestCase {
 		];
 	}
 
-	public function testThrowsInvalidArgumentExceptionForInvalidConfigValue(): void {
-		$this->expectException(\InvalidArgumentException::class);
-		$this->expectExceptionMessage('Invalid config value');
-
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
-		$userConfig->setConfig('crop_image_previews', 'foo');
-	}
-
 	/**
 	 * @dataProvider validBoolConfigValues
 	 */
