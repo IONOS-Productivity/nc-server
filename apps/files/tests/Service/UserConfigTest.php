@@ -176,6 +176,15 @@ class UserConfigTest extends \Test\TestCase {
 		], $configs);
 	}
 
+	private function getDefaultConfigValue(string $key) {
+		foreach (UserConfig::ALLOWED_CONFIGS as $config) {
+			if ($config['key'] === $key) {
+				return $config['default'];
+			}
+		}
+		return '';
+	}
+
 	public function testGetsConfigsOverrideWithUserValuesSuccessfully(): void {
 		$this->userSessionMock->method('getUser')->willReturn($this->userMock);
 		$this->configMock->method('getUserValue')
@@ -183,9 +192,9 @@ class UserConfigTest extends \Test\TestCase {
 
 				// Override the default values
 				if ($key === 'crop_image_previews') {
-					return !$default;
+					return !$this->getDefaultConfigValue($key);
 				} elseif ($key === 'show_hidden') {
-					return !$default;
+					return !$this->getDefaultConfigValue($key);
 				}
 
 				return $default;
@@ -209,35 +218,58 @@ class UserConfigTest extends \Test\TestCase {
 		], $configs);
 	}
 
-	public function testGetsConfigsOverrideWithAppsValuesSuccessfully(): void {
+	public static function overrideConfigValues(): array {
+		// app config key, default value, user value, admin value, expected value, test description
+		return [
+			// default value is set due to no user and no admin values
+			['show_hidden', false, null, null, false, "user has no setting, admin has no setting - user gets default setting"],
+
+			// admin value is set due to no user value
+			['show_hidden', false, null, true, true, "user has no setting, admin value is set - user gets admin setting"],
+			['show_hidden', false, null, false, false, "user has no setting, admin value is set - user gets admin setting"],
+
+			// admin value is ignored in favor of user value
+			['show_hidden', false, true, null, true, "user overrides default setting, admin has no setting - user gets user setting"],
+			['show_hidden', false, true, true, true, "user overrides default setting, admin value is set - user gets user setting"],
+			['show_hidden', false, true, false, true, "user overrides default setting, admin value is set - user gets user setting"],
+
+			['show_hidden', false, false, null, false, "user sets default setting, admin has no setting - user gets user setting"],
+			['show_hidden', false, false, true, false, "user sets default setting, admin value is set - user gets user setting"],
+			['show_hidden', false, false, false, false, "user sets default setting, admin value is set - user gets user setting"],
+		];
+	}
+
+	/**
+	 * @dataProvider overrideConfigValues
+	 */
+	public function testGetsConfigsOverrideWithAppsValuesSuccessfully(string $appConfigKey, bool $defaultValue, $userValue, $adminValue, $expectedValue, $testDescription): void {
 		$this->userSessionMock->method('getUser')->willReturn($this->userMock);
 
-		// set all user values to true
+		// emulate override by the user config values
 		$this->configMock->method('getUserValue')
-			->willReturnCallback(function () {
-				return true;
+			->willReturnCallback(function ($userId, $appId, $key, $default) use ($appConfigKey, $userValue) {
+				if ($key === $appConfigKey) {
+					return $userValue === null ? $default : $userValue;
+				}
+				return $default;
 			});
 
 		// emulate override by the app config values
 		$this->appConfigMock->method('getAppValueBool')
-			->willReturnCallback(function ($key, $default) {
-				if ($key === 'crop_image_previews') {
-					return false;
-				} elseif ($key === 'show_hidden') {
-					return false;
+			->willReturnCallback(function ($key, $default) use ($adminValue, $appConfigKey) {
+				if ($key === $appConfigKey) {
+					return $adminValue === null ? $default : $adminValue;
 				}
 				return $default;
 			});
 
 		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$configs = $userConfig->getConfigs();
-		$this->assertEquals([
-			'crop_image_previews' => false,
-			'show_hidden' => false,
-			'sort_favorites_first' => true,
-			'sort_folders_first' => true,
-			'grid_view' => true,
-			'folder_tree' => true,
-		], $configs);
+
+		// ony the expected value should be different from the default
+		$expectedConfigs = $configs;
+		$expectedConfigs[$appConfigKey] = $expectedValue;
+
+		$this->assertEquals($expectedConfigs, $configs, $testDescription);
 	}
 }

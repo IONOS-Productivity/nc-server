@@ -147,7 +147,9 @@ class UserConfig {
 			$value = $this->config->getUserValue($userId, Application::APP_ID, $key, null);
 			if ($value === null) {
 				$value = $this->appConfig->getAppValueBool($key, $this->getDefaultConfigValue($key));
-			} else if (is_bool($this->getDefaultConfigValue($key)) && is_string($value)) {
+			}
+
+			if (is_bool($this->getDefaultConfigValue($key)) && is_string($value)) {
 				// If the default value is expected to be a boolean, we need to cast the value
 				return $value === '1';
 			}
