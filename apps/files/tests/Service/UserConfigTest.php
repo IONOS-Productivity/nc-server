@@ -122,7 +122,7 @@ class UserConfigTest extends \Test\TestCase {
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Invalid config value');
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$userConfig->setConfig('crop_image_previews', 'foo');
 	}
 
@@ -147,7 +147,7 @@ class UserConfigTest extends \Test\TestCase {
 			->method('setUserValue')
 			->with($this->userUID, Application::APP_ID, 'crop_image_previews', $expectedValue);
 
-		$userConfig = new UserConfig($this->configMock, $this->userSessionMock);
+		$userConfig = new UserConfig($this->configMock, $this->userSessionMock, $this->appConfigMock);
 		$userConfig->setConfig('crop_image_previews', $boolValue);
 	}
 
