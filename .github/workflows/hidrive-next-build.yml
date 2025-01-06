@@ -77,6 +77,9 @@ jobs:
       - name: Print PHP install
         run: php -i && php -m
 
+      - name: Print Composer version
+        run: whereis composer && composer --version
+
       - name: Build Nextcloud
         run: make -f IONOS/Makefile build_nextcloud FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
 
