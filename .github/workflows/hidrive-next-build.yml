@@ -93,7 +93,8 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
-        run: make -f IONOS/Makefile build_dep_viewer_app
+#        run: make -f IONOS/Makefile build_dep_viewer_app
+        run: cd apps-external/viewer && composer install --no-dev -o && npm ci && npm run build -- --debug
 
       - name: Install dependencies & build user_oidc app
         env:
