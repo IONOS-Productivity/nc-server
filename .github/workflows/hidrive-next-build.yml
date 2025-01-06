@@ -101,7 +101,8 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
-        run: make -f IONOS/Makefile build_dep_user_oidc_app
+#        run: make -f IONOS/Makefile build_dep_user_oidc_app
+        run: cd apps-external/user_oidc && composer install --no-dev -o && npm ci && npm run build -- --debug
 
       - name: Install dependencies for external apps nc_ionos_processes
         run: make -f IONOS/Makefile build_dep_nc_ionos_processes_app
