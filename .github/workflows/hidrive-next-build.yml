@@ -43,7 +43,7 @@ permissions:
 jobs:
   hidrive-next-build:
     runs-on: self-hosted
-    timeout-minutes: 10
+    timeout-minutes: 60
 
     permissions:
       contents: read
