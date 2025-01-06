@@ -51,6 +51,10 @@ jobs:
 
     name: hidrive-next-build
     steps:
+      - name: Wait for 10m to emulate work
+        run: |
+          timeout 10m bash -c 'while true; do echo "Still working..."; sleep 60; done'
+
       - name: Checkout server
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
         with:
