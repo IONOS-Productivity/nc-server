@@ -336,7 +336,7 @@ css += '}'
 
 // DARK THEME MEDIA QUERY
 css += '@media (prefers-color-scheme: dark) { body {'
-css += generateVariablesAliases(true)
+css += generateVariablesAliases()
 css += '}}'
 
 // DARK THEME
@@ -346,7 +346,7 @@ css += '}'
 
 // DARK THEME
 css += '[data-themes*=dark] {'
-css += generateVariablesAliases(true)
+css += generateVariablesAliases()
 css += '}'
 
 // WRITE CSS
