@@ -55,7 +55,13 @@
 /apps/files_external/3rdparty/irodsphp/prods/test*
 /apps/files_external/tests/config.*.php
 # IONOS: this should not be upsteamed!
+<<<<<<< HEAD
 !/apps-external/*
+=======
+!/apps-external/viewer
+!/apps-external/user_oidc
+!/apps-external/serverinfo
+>>>>>>> 9a77eee2506 (IONOS(serverinfo): add external app)
 !/apps-custom/*
 
 # apps modules
