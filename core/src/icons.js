@@ -128,6 +128,25 @@ const icons = {
 	'view-previous': path.join(__dirname, '../img', 'actions', 'arrow-left.svg'),
 }
 
+icons.add = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'plus.svg')
+icons.confirm = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'arrow-right.svg')
+icons.rename = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'pencil.svg')
+icons.external = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'folder-move.svg')
+icons.download = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'download.svg')
+icons.upload = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'upload.svg')
+icons.delete = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'trash-can.svg')
+icons.more = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'dots-horizontal.svg')
+icons.public = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'link.svg')
+icons.comment = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'comment.svg')
+icons.home = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'home.svg')
+icons['triangle-s'] = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'chevron-down.svg')
+icons['triangle-n'] = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'chevron-up.svg')
+icons['triangle-e'] = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'chevron-right.svg')
+icons['toggle-pictures'] = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'view-grid.svg')
+icons['toggle-filelist'] = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'format-list-bulleted-square.svg')
+icons.folder = path.join(__dirname, '../../custom-npms/nc-mdi-svg/dist/svg/', 'folder.svg')
+console.log("after", icons.folder)
+
 const iconsColor = {
 	'add-folder-description': {
 		path: path.join(__dirname, '../img', 'actions', 'add-folder-description.svg'),
@@ -154,7 +173,7 @@ const iconsColor = {
 		color: 'grey',
 	},
 	'delete-color': {
-		path: path.join(__dirname, '../img', 'actions', 'delete.svg'),
+		path: icons.delete,
 		color: 'red',
 	},
 	'file': {
@@ -166,7 +185,7 @@ const iconsColor = {
 		color: 'grey',
 	},
 	'filetype-folder': {
-		path: path.join(__dirname, '../img', 'filetypes', 'folder.svg'),
+		path: icons.folder,
 		// TODO: replace primary ?
 		color: 'primary',
 	},
