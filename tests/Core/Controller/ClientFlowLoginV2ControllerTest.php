@@ -332,12 +332,20 @@ class ClientFlowLoginV2ControllerTest extends TestCase {
 
 		$result = $this->controller->generateAppPassword('stateToken');
 
+<<<<<<< HEAD
 		$this->assertInstanceOf(StandaloneTemplateResponse::class, $result);
+=======
+		$this->assertInstanceOf(Http\StandaloneTemplateResponse::class, $result);
+>>>>>>> a3cf89ccbee (IONOS(login-flow-v2): reject unknown api clients by user agent)
 		$this->assertSame(Http::STATUS_FORBIDDEN, $result->getStatus());
 		$this->assertSame('Please use original client', $result->getParams()['message']);
 	}
 
+<<<<<<< HEAD
 	public function testGenerateAppPassworValid(): void {
+=======
+	public function testGenerateAppPassworValid() {
+>>>>>>> a3cf89ccbee (IONOS(login-flow-v2): reject unknown api clients by user agent)
 		$this->session->method('get')
 			->willReturnCallback(function ($name) {
 				if ($name === 'client.flow.v2.state.token') {
