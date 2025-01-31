@@ -51,10 +51,8 @@ jobs:
           npm ci
 
       - name: Generate SBOM (npm)
-        # https://github.com/CycloneDX/gh-node-module-generatebom
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          output: './bom.npm.xml'
+        run: |
+          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file './bom.npm.xml'
 
       # Pass BOMs to next Job
       # https://github.com/actions/upload-artifact
