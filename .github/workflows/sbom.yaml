@@ -80,9 +80,8 @@ jobs:
 
       - name: Merge SBOMs
         # https://github.com/CycloneDX/cyclonedx-cli#merge-command
-        # Using v1_3 because with the default (1.6) the upload failed at the DT web interface
         run: |
-          cyclonedx merge --input-files bom.composer.xml bom.npm.xml --output-file bom.xml --output-version v1_3
+          cyclonedx merge --input-files bom.composer.xml bom.npm.xml --output-file bom.xml
 
       # Pass merged BOM to next Job
       # https://github.com/actions/upload-artifact
