@@ -51,4 +51,10 @@
 [submodule "apps-external/serverinfo"]
 	path = apps-external/serverinfo
 	url = git@github.com:nextcloud/serverinfo.git
+<<<<<<< HEAD
 >>>>>>> 9a77eee2506 (IONOS(serverinfo): add external app)
+=======
+[submodule "apps-external/groupquota"]
+	path = apps-external/groupquota
+	url = git@github.com:nextcloud/groupquota.git
+>>>>>>> c92fd7d3c08 (IONOS(groupquota): add external app v0.2.1)

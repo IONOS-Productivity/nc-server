@@ -61,7 +61,11 @@
 !/apps-external/viewer
 !/apps-external/user_oidc
 !/apps-external/serverinfo
+<<<<<<< HEAD
 >>>>>>> 9a77eee2506 (IONOS(serverinfo): add external app)
+=======
+!/apps-external/groupquota
+>>>>>>> c92fd7d3c08 (IONOS(groupquota): add external app v0.2.1)
 !/apps-custom/*
 
 # apps modules
