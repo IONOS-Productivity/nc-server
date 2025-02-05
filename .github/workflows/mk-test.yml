@@ -1,0 +1,172 @@
+name: MK POC Test
+
+# SPDX-FileCopyrightText: 2025 STRATO GmbH
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches:
+      - mk/poc/github_actions_playground
+
+env:
+  TARGET_PACKAGE_NAME: hidrive-next.tar.gz
+  # set this to folder name in the repository e.g. <my_test_folder/>
+  # in order to be able the to test the workflow in "own" folder
+  ARTIFACTORY_DEBUG_PREFIX: "mk_ignore/"
+  ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
+
+permissions:
+  contents: read
+
+jobs:
+  hidrive-next-build:
+    runs-on: self-hosted
+
+    permissions:
+      contents: read
+      packages: write
+
+    name: hidrive-next-build
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        with:
+          submodules: true
+
+#      - name: Set up node with version from package.json's engines
+#        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+#        with:
+#          node-version-file: "package.json"
+
+      - name: Install Dependencies
+        run: sudo apt-get update && sudo apt-get install -y make zip unzip tar && tar --version && whereis tar
+
+#      - name: Setup PHP with PECL extension
+#        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
+#        with:
+#          tools: composer:v2
+#          extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
+#        env:
+#          runner: self-hosted
+
+#      - name: Print PHP install
+#        run: php -i && php -m
+
+      - name: Build Hidrive Next
+        run: echo "Build Hidrive Next"
+
+      - name: Compress dependencies to ${{ env.TARGET_PACKAGE_NAME }}
+        run: |
+          ls -al && tar --create --gzip --file "${{ env.TARGET_PACKAGE_NAME }}" --verbose \
+            --exclude='./.git' \
+            --exclude='./vendor' \
+            --exclude='./tests' \
+            --exclude='.editorconfig' \
+            --exclude='.gitignore' \
+            src/ README.md
+
+      - name: Upload artifact result for job hidrive-next-build
+        uses: actions/upload-artifact@v4
+        with:
+          name: hidrive_next_build_artifact
+          path: ${{ env.TARGET_PACKAGE_NAME }}
+
+      - name: Show changes on failure
+        if: failure()
+        run: |
+          git status
+          git --no-pager diff
+          exit 1 # make it red to grab attention
+
+  hidrive-next-artifact-to-arfifactory:
+    runs-on: self-hosted
+
+    permissions:
+      contents: read
+      packages: write
+
+    name: Push artifact to artifactory
+    needs: hidrive-next-build
+
+    steps:
+      - name: Download artifact zip
+        uses: actions/download-artifact@v4
+        with:
+          name: hidrive_next_build_artifact
+
+      # This action sets up the JFrog CLI with the Artifactory URL and access token
+      - uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JF_ARTIFACTORY_URL }}
+          JF_USER: ${{ secrets.JF_ARTIFACTORY_USER }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - run: |
+          # Ping the server
+          jf rt ping
+          # Collect environment variables for the build
+          #jf rt bce
+          # Collect VCS details from git and add them to the build
+          #jf rt bag
+          # Publish build info
+          #jf rt bp
+
+      - name: Upload Build to Artifactory
+        run: |
+          export BUILD_NAME="hidrive_next-snapshot"
+          export BUILD_NUMBER="${{ github.run_number }}"
+
+          # differentiate between "ionos-dev", "pr-<number>", "branch/<branch-name>"
+          export BUILD_SOURCE="branch/${{ github.ref_name }}"
+
+          # check if in pull request
+          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ]; then
+              export BUILD_SOURCE="pr-${{ github.event.pull_request.number }}"
+          else
+            # check if current branch is ionos-dev
+            if [ "${{ github.ref_name }}" == "ionos-dev" ]; then
+                export BUILD_SOURCE="ionos-dev"
+            fi
+          fi
+
+          export PACKAGE_BUILD_NAME="${{ env.ARTIFACTORY_DEBUG_PREFIX }}/${BUILD_SOURCE}"
+
+          export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${PACKAGE_BUILD_NAME}/"
+          export PATH_TO_DIRECTORY_BUILD="${PATH_TO_DIRECTORY}/build-${BUILD_NUMBER}/"
+
+          # Upload the build to Artifactory as build
+          jf rt upload "hidrive-next.tar.gz" \
+          --build-name $BUILD_NAME \
+          --build-number $BUILD_NUMBER \
+          $PATH_TO_DIRECTORY_BUILD
+
+          # Promote current build to the "latest" build
+          jf rt upload "hidrive-next.tar.gz" \
+          --build-name $BUILD_NAME \
+          --build-number $BUILD_NUMBER \
+          $PATH_TO_DIRECTORY
+
+      - name: Collect Build Info
+        run: |
+          export BUILD_NAME="hidrive_next-snapshot"
+          export BUILD_NUMBER="${{ github.run_number }}"
+
+          jf rt build-collect-env $BUILD_NAME $BUILD_NUMBER
+
+      - name: Publish Build Info
+        if: false
+        run: |
+          export BUILD_NAME="hidrive_next-snapshot"
+          export BUILD_NUMBER="${{ github.run_number }}"
+
+          jf rt build-publish $BUILD_NAME $BUILD_NUMBER
+
+      - name: Show changes on failure
+        if: failure()
+        run: |
+          git status
+          git --no-pager diff
+          exit 1 # make it red to grab attention
