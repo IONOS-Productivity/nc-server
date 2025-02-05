@@ -119,6 +119,8 @@
     "@cypress/vue2": "^2.1.1",
     "@cypress/webpack-preprocessor": "^6.0.2",
     "@jest/globals": "^29.7.0",
+    "@mdi/js": "file:./custom-npms/nc-mdi-js",
+    "@mdi/svg": "file:./custom-npms/nc-mdi-svg/dist",
     "@nextcloud/babel-config": "^1.2.0",
     "@nextcloud/cypress": "^1.0.0-beta.12",
     "@nextcloud/eslint-config": "^8.4.1",
@@ -142,7 +144,7 @@
     "babel-loader-exclude-node-modules-except": "^1.2.1",
     "babel-plugin-module-resolver": "^5.0.2",
     "colord": "^2.9.3",
-    "css-loader": "^6.8.1",
+    "css-loader": "^7.1.2",
     "cypress": "^13.13.3",
     "cypress-axe": "^1.5.0",
     "cypress-delete-downloads-folder": "^0.0.6",
@@ -174,9 +176,9 @@
     "raw-loader": "^4.0.2",
     "regextras": "^0.8.0",
     "sass": "^1.75.0",
-    "sass-loader": "^13.2.2",
+    "sass-loader": "^16.0.4",
     "sinon": "<= 5.0.7",
-    "style-loader": "^3.3.1",
+    "style-loader": "^4.0.0",
     "tar": "^7.4.3",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.0",
@@ -184,15 +186,13 @@
     "tslib": "^2.6.2",
     "typescript": "^5.5.4",
     "vue-loader": "^15.9.8",
+    "vue-material-design-icons": "file:./custom-npms/nc-vue-material-design-icons/dist",
     "vue-template-compiler": "^2.7.16",
     "wait-on": "^7.2.0",
     "webpack": "^5.93.0",
     "webpack-cli": "^5.0.2",
     "webpack-merge": "^6.0.1",
-    "workbox-webpack-plugin": "^7.1.0",
-    "vue-material-design-icons": "file:./custom-npms/nc-vue-material-design-icons/dist",
-    "@mdi/svg": "file:./custom-npms/nc-mdi-svg/dist",
-    "@mdi/js": "file:./custom-npms/nc-mdi-js"
+    "workbox-webpack-plugin": "^7.1.0"
   },
   "browserslist": [
     "extends @nextcloud/browserslist-config"
@@ -203,9 +203,9 @@
   },
   "overrides": {
     "colors": "1.4.0",
-    "vue-material-design-icons" : "$vue-material-design-icons",
-    "@mdi/svg" : "$@mdi/svg",
-    "@mdi/js" : "$@mdi/js",
-    "@nextcloud/vue" : "$@nextcloud/vue"
-    }
+    "vue-material-design-icons": "$vue-material-design-icons",
+    "@mdi/svg": "$@mdi/svg",
+    "@mdi/js": "$@mdi/js",
+    "@nextcloud/vue": "$@nextcloud/vue"
+  }
 }
