@@ -104,8 +104,12 @@ jobs:
   upload-sboms:
     needs: merge-sboms
     runs-on: ubuntu-latest
-
     steps:
+      - name: Download partial BOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: final-bom
+
       - name: Dump merged SBOM
         run: |
           cat bom.xml
