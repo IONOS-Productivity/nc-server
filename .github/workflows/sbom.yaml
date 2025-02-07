@@ -49,7 +49,7 @@ jobs:
         with:
           node-version-file: "package.json"
 
-      - name: Nextcloud: install npm dependencies
+      - name: "Nextcloud: install npm dependencies"
         env:
           FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
         run: |
