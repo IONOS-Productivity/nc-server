@@ -26,6 +26,12 @@ jobs:
           # Submodules are checked independently
           submodules: false
 
+      - name: Install CycloneDX
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer global config --no-plugins allow-plugins.cyclonedx/cyclonedx-php-composer true
+          composer global require cyclonedx/cyclonedx-php-composer
+
       #
       # Nextcloud
       #
@@ -35,7 +41,6 @@ jobs:
       - name: Generate SBOM (Nextcloud - composer)
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
         run: |
-          composer global require cyclonedx/cyclonedx-php-composer
           composer CycloneDX:make-sbom --output-file=bom.nextcloud.composer.xml
 
       # SBOM for NPM (install and generate)
@@ -73,7 +78,6 @@ jobs:
         working-directory: ./apps-custom/googleanalytics
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
         run: |
-          composer global require cyclonedx/cyclonedx-php-composer
           composer CycloneDX:make-sbom --output-file=bom.app-googleanalytics.xml
 
 
