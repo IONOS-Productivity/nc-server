@@ -26,6 +26,10 @@ jobs:
           # Submodules are checked independently
           submodules: false
 
+      #
+      # Nextcloud
+      #
+
       # SBOM for composer (generate)
 
       - name: Generate SBOM (Nextcloud - composer)
@@ -56,6 +60,23 @@ jobs:
         #
         run: |
           npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file './bom.nextcloud.npm.xml'
+
+
+
+      #
+      # Custom App: googleanalytics
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (Custom App googleanalytics - composer)
+        working-directory: ./apps-custom/googleanalytics
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer global require cyclonedx/cyclonedx-php-composer
+          composer CycloneDX:make-sbom --output-file=bom.app-googleanalytics.xml
+
+
 
       # Pass BOMs to next Job
       # https://github.com/actions/upload-artifact
@@ -89,6 +110,8 @@ jobs:
           echo "Merge BOMs for: Nextcloud"
           cyclonedx merge --input-files bom.nextcloud.composer.xml bom.nextcloud.npm.xml --output-file bom.xml --output-version v1_3
           awk '/^  <metadata>/ { ignore=1 } /^  <\/metadata>/ { ignore=0; next; } { if (!ignore) print }' bom.xml >bom.nextcloud.xml
+
+        # TODO use for loop where needed for apps
 
       # Pass merged BOM to next Job
       # https://github.com/actions/upload-artifact
