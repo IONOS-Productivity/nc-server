@@ -28,7 +28,7 @@ jobs:
 
       # SBOM for composer (generate)
 
-      - name: Generate SBOM (composer)
+      - name: Generate SBOM (Nextcloud - composer)
         # Output filename can not be configured, is bom.xml
         # https://github.com/CycloneDX/gh-php-composer-generate-sbom
         uses: CycloneDX/gh-php-composer-generate-sbom@v1
@@ -50,7 +50,7 @@ jobs:
         run: |
           npm ci
 
-      - name: Generate SBOM (npm)
+      - name: Generate SBOM (Nextcloud - npm)
         # Switch --ignore-npm-errors is used to not fail on inconsistencies
         # found by npm ls, which complains about (mostly) "extraneous" packages
         # found in node_modules, which are apparently related to us using npm
