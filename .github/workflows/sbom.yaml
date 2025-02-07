@@ -49,7 +49,7 @@ jobs:
         with:
           node-version-file: "package.json"
 
-      - name: "Nextcloud: install npm dependencies"
+      - name: "Install dependencies (Nextcloud - npm)"
         env:
           FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
         run: |
@@ -113,10 +113,12 @@ jobs:
         # elements or values that prevent upload to Dependency Track.
         run: |
           echo "Merge BOMs for: Nextcloud"
-          cyclonedx merge --input-files bom.nextcloud.composer.xml bom.nextcloud.npm.xml --output-file bom.xml --output-version v1_3
-          awk '/^  <metadata>/ { ignore=1 } /^  <\/metadata>/ { ignore=0; next; } { if (!ignore) print }' bom.xml >bom.nextcloud.xml
+          function merge_bom() {
+            cyclonedx merge --input-files bom.${1}.composer.xml bom.${1}.npm.xml --output-file bom.xml --output-version v1_3 ;
+            awk '/^  <metadata>/ { ignore=1 } /^  <\/metadata>/ { ignore=0; next; } { if (!ignore) print }' bom.xml >bom.${1}.xml ;
+          }
 
-        # TODO use for loop where needed for apps
+          merge_bom "nextcloud"
 
       - name: Show BOMs
         run: |
