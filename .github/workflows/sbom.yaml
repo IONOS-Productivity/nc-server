@@ -116,6 +116,10 @@ jobs:
 
         # TODO use for loop where needed for apps
 
+      - name: Show BOMs
+        run: |
+          ls -l bom.*.xml
+
       # Pass merged BOM to next Job
       # https://github.com/actions/upload-artifact
       - name: Store merged BOM
