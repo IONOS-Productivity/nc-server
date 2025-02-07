@@ -51,8 +51,14 @@ jobs:
           npm ci
 
       - name: Generate SBOM (npm)
+        # Switch --ignore-npm-errors is used to not fail on inconsistencies
+        # found by npm ls, which complains about (mostly) "extraneous" packages
+        # found in node_modules, which are apparently related to us using npm
+        # overrides in package.json and presumably npm ls not being capable
+        # of analyzing this correctly.
+        #
         run: |
-          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file './bom.npm.xml'
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file './bom.npm.xml'
 
       # Pass BOMs to next Job
       # https://github.com/actions/upload-artifact
