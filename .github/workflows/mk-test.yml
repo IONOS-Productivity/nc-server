@@ -17,6 +17,8 @@ env:
   # in order to be able the to test the workflow in "own" folder
   ARTIFACTORY_DEBUG_PREFIX: "mk_ignore/"
   ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
+  GITLAB_TOKEN: "glptt-0c38965827d40b4c6a79615fc65dbbc3a80d68f5"
+  GITLAB_TRIGGER_URL: "https://gitlab.git-moc.server.lan/api/v4/projects/916/trigger/pipeline"
 
 permissions:
   contents: read
@@ -163,6 +165,55 @@ jobs:
           export BUILD_NUMBER="${{ github.run_number }}"
 
           jf rt build-publish $BUILD_NAME $BUILD_NUMBER
+
+      - name: Show changes on failure
+        if: failure()
+        run: |
+          git status
+          git --no-pager diff
+          exit 1 # make it red to grab attention
+
+  trigger-remote-worflow:
+    runs-on: self-hosted
+
+    name: Ping Remote Workflow
+    needs: hidrive-next-artifact-to-arfifactory
+
+    steps:
+      - name: Download artifact zip
+        uses: actions/download-artifact@v4
+        with:
+          name: hidrive_next_build_artifact
+
+      - name: Trigger remote workflow
+        run: |
+          # Enable command echo
+          set -x
+
+          # Call webhook
+          curl \
+          --silent \
+          --insecure \
+          --request POST \
+          --fail-with-body \
+          -o response.json \
+          --form token=${GITLAB_TOKEN} \
+          --form ref=main \
+          --form "variables[GITHUB_REPOSITORYURL]=${{ github.repositoryUrl }}" \
+          --form "variables[GITHUB_SHA]=${{ github.sha }}" \
+          "${GITLAB_TRIGGER_URL}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
+
+          # Disable command echo
+          set +x
+
+          # Print and parse json
+          # jq . response.json
+          echo "json<<END" >> $GITHUB_OUTPUT
+          cat response.json >> $GITHUB_OUTPUT
+          echo "END" >> $GITHUB_OUTPUT
+          echo "web_url<<END" >> $GITHUB_OUTPUT
+          cat response.json | jq --raw-output '.web_url' >> $GITHUB_OUTPUT
+          echo "END" >> $GITHUB_OUTPUT
 
       - name: Show changes on failure
         if: failure()
