@@ -93,6 +93,9 @@ jobs:
     name: Push artifact to artifactory
     needs: hidrive-next-build
 
+    outputs:
+        ARTIFACTORY_LAST_BUILD_PATH: ${{ steps.artifactory_upload.outputs.ARTIFACTORY_LAST_BUILD_PATH }}
+
     steps:
       - name: Download artifact zip
         uses: actions/download-artifact@v4
@@ -117,6 +120,7 @@ jobs:
           #jf rt bp
 
       - name: Upload Build to Artifactory
+        id: artifactory_upload
         run: |
           export BUILD_NAME="hidrive_next-snapshot"
           export BUILD_NUMBER="${{ github.run_number }}"
@@ -150,6 +154,8 @@ jobs:
           --build-name $BUILD_NAME \
           --build-number $BUILD_NUMBER \
           $PATH_TO_DIRECTORY
+
+          echo "ARTIFACTORY_LAST_BUILD_PATH=$ARTIFACTORY_LAST_BUILD_PATH" >> $GITHUB_OUTPUT
 
       - name: Collect Build Info
         run: |
@@ -201,6 +207,7 @@ jobs:
           --form ref=main \
           --form "variables[GITHUB_REPOSITORYURL]=${{ github.repositoryUrl }}" \
           --form "variables[GITHUB_SHA]=${{ github.sha }}" \
+          --form "variables[ARTIFACTORY_LAST_BUILD_PATH]=${{ needs.hidrive-next-artifact-to-arfifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
           "${GITLAB_TRIGGER_URL}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
 
           # Disable command echo
