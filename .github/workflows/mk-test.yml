@@ -31,6 +31,9 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      NC_VERSION: ${{ steps.get_nc_version.outputs.NC_VERSION }}
+
     name: hidrive-next-build
     steps:
       - name: Checkout server
@@ -59,6 +62,12 @@ jobs:
 
       - name: Build Hidrive Next
         run: echo "Build Hidrive Next"
+
+      - name: Get NC version
+        id: get_nc_version
+        run: |
+          NC_VERSION=$(jq -r '.ncVersion' version.json)
+          echo "NC_VERSION=$NC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Compress dependencies to ${{ env.TARGET_PACKAGE_NAME }}
         run: |
@@ -95,7 +104,6 @@ jobs:
 
     outputs:
         ARTIFACTORY_LAST_BUILD_PATH: ${{ steps.artifactory_upload.outputs.ARTIFACTORY_LAST_BUILD_PATH }}
-        NC_VERSION: ${{ steps.artifactory_upload.outputs.NC_VERSION }}
 
     steps:
       - name: Download artifact zip
@@ -156,10 +164,7 @@ jobs:
           --build-number $BUILD_NUMBER \
           $PATH_TO_DIRECTORY
 
-          # Get ncVersion form version.json
-          NC_VERSION=$(jq -r '.ncVersion' version.json)
           echo "ARTIFACTORY_LAST_BUILD_PATH=$ARTIFACTORY_LAST_BUILD_PATH" >> $GITHUB_OUTPUT
-          echo "NC_VERSION=$NC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Collect Build Info
         run: |
@@ -187,7 +192,7 @@ jobs:
     runs-on: self-hosted
 
     name: Ping remote dev workflow
-    needs: upload-to-artifactory
+    needs: [ hidrive-next-build, upload-to-artifactory ]
 
     steps:
       - name: Download artifact zip
@@ -211,7 +216,7 @@ jobs:
           --form ref=dev \
           --form "variables[GITHUB_SHA]=${{ github.sha }}" \
           --form "variables[ARTIFACTORY_LAST_BUILD_PATH]=${{ needs.upload-to-artifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
-          --form "variables[NC_VERSION]=${{ needs.upload-to-artifactory.outputs.NC_VERSION }}" \
+          --form "variables[NC_VERSION]=${{ needs.hidrive-next-build.outputs.NC_VERSION }}" \
           "${GITLAB_TRIGGER_URL}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
 
           # Disable command echo
