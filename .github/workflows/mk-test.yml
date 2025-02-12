@@ -151,6 +151,7 @@ jobs:
 
           export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${PACKAGE_BUILD_NAME}/"
           export PATH_TO_DIRECTORY_BUILD="${PATH_TO_DIRECTORY}/build-${BUILD_NUMBER}/"
+          export PATH_TO_DIRECTORY_W_VERSION="$PATH_TO_DIRECTORY/hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.tar.gz"
 
           # Upload the build to Artifactory as build
           jf rt upload "hidrive-next.tar.gz" \
@@ -162,9 +163,9 @@ jobs:
           jf rt upload "hidrive-next.tar.gz" \
           --build-name $BUILD_NAME \
           --build-number $BUILD_NUMBER \
-          $PATH_TO_DIRECTORY
+          $PATH_TO_DIRECTORY_W_VERSION
 
-          echo "ARTIFACTORY_LAST_BUILD_PATH=$ARTIFACTORY_LAST_BUILD_PATH" >> $GITHUB_OUTPUT
+          echo "ARTIFACTORY_LAST_BUILD_PATH=${PATH_TO_DIRECTORY_W_VERSION}" >> $GITHUB_OUTPUT
 
       - name: Collect Build Info
         run: |
