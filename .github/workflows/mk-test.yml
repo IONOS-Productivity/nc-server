@@ -15,7 +15,7 @@ env:
   TARGET_PACKAGE_NAME: hidrive-next.tar.gz
   # set this to folder name in the repository e.g. <my_test_folder/>
   # in order to be able the to test the workflow in "own" folder
-  ARTIFACTORY_DEBUG_PREFIX: "mk_ignore/"
+  ARTIFACTORY_DEBUG_PREFIX: "mk_ignore"
   ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
   GITLAB_TOKEN: "glptt-0c38965827d40b4c6a79615fc65dbbc3a80d68f5"
   GITLAB_TRIGGER_URL: "https://gitlab.git-moc.server.lan/api/v4/projects/916/trigger/pipeline"
@@ -149,9 +149,9 @@ jobs:
 
           export PACKAGE_BUILD_NAME="${{ env.ARTIFACTORY_DEBUG_PREFIX }}/${BUILD_SOURCE}"
 
-          export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${PACKAGE_BUILD_NAME}/"
+          export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${PACKAGE_BUILD_NAME}"
           export PATH_TO_DIRECTORY_BUILD="${PATH_TO_DIRECTORY}/build-${BUILD_NUMBER}/"
-          export PATH_TO_DIRECTORY_W_VERSION="$PATH_TO_DIRECTORY/hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.tar.gz"
+          export PATH_TO_DIRECTORY_W_VERSION="${PATH_TO_DIRECTORY}/hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.tar.gz"
 
           # Upload the build to Artifactory as build
           jf rt upload "hidrive-next.tar.gz" \
@@ -218,6 +218,7 @@ jobs:
           --form "variables[GITHUB_SHA]=${{ github.sha }}" \
           --form "variables[ARTIFACTORY_LAST_BUILD_PATH]=${{ needs.upload-to-artifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
           --form "variables[NC_VERSION]=${{ needs.hidrive-next-build.outputs.NC_VERSION }}" \
+          --form "variables[BUILD_ID]=${{ github.run_id }}" \
           "${GITLAB_TRIGGER_URL}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
 
           # Disable command echo
