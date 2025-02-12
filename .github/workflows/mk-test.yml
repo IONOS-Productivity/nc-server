@@ -44,7 +44,7 @@ jobs:
 #          node-version-file: "package.json"
 
       - name: Install Dependencies
-        run: sudo apt-get update && sudo apt-get install -y make zip unzip tar && tar --version && whereis tar
+        run: sudo apt-get update && sudo apt-get install -y make zip unzip tar jq
 
 #      - name: Setup PHP with PECL extension
 #        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
@@ -182,7 +182,7 @@ jobs:
   trigger-remote-worflow:
     runs-on: self-hosted
 
-    name: Ping Remote Workflow
+    name: Ping remote dev workflow
     needs: hidrive-next-artifact-to-arfifactory
 
     steps:
@@ -204,9 +204,9 @@ jobs:
           --fail-with-body \
           -o response.json \
           --form token=${GITLAB_TOKEN} \
-          --form ref=main \
-          --form "variables[GITHUB_REPOSITORYURL]=${{ github.repositoryUrl }}" \
+          --form ref=dev \
           --form "variables[GITHUB_SHA]=${{ github.sha }}" \
+          --form "variables[VERSION]=${{ needs.hidrive-next-artifact-to-arfifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
           --form "variables[ARTIFACTORY_LAST_BUILD_PATH]=${{ needs.hidrive-next-artifact-to-arfifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
           "${GITLAB_TRIGGER_URL}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
 
