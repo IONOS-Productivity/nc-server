@@ -29,6 +29,7 @@ on:
   push:
     branches:
       - ionos-dev
+      - mk/emulate/ionos-dev
 
 env:
   TARGET_PACKAGE_NAME: hidrive-next.zip
@@ -150,7 +151,7 @@ jobs:
   upload-to-artifactory:
     runs-on: self-hosted
     # Upload the artifact to the Artifactory repository on PR *OR* on "ionos-dev" branch push defined in the on:push:branches
-    if: github.event_name == 'pull_request' || github.ref_name == 'ionos-dev'
+    if: github.event_name == 'pull_request' || github.ref_name == 'mk/emulate/ionos-dev'
 
     permissions:
       contents: read
