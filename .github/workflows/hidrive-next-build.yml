@@ -28,9 +28,6 @@ on:
       - '**.vue'
   push:
     branches:
-      - main
-      - master
-      - stable*
       - ionos-dev
 
 env:
