@@ -190,20 +190,20 @@ jobs:
         id: artifactory_upload
         run: |
           export BUILD_NAME="hidrive_next-snapshot"
-          export BUILD_NUMBER="${{ github.run_number }}"
+          export BUILD_SOURCE="pr-${{ github.event.pull_request.number }}"
 
           # differentiate between "ionos-dev", "pr-<number>", "branch/<branch-name>"
           export BUILD_SOURCE="branch/${{ github.ref_name }}"
 
-          # check if in pull request
-          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ]; then
-              export BUILD_SOURCE="pr-${{ github.event.pull_request.number }}"
-          else
-            # check if current branch is ionos-dev
-            if [ "${{ github.ref_name }}" == "ionos-dev" ]; then
-                export BUILD_SOURCE="dev"
-            fi
-          fi
+#          # check if in pull request
+#          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ]; then
+#              export BUILD_SOURCE="pr-${{ github.event.pull_request.number }}"
+#          else
+#            # check if current branch is ionos-dev
+#            if [ "${{ github.ref_name }}" == "ionos-dev" ]; then
+#                export BUILD_SOURCE="dev"
+#            fi
+#          fi
 
           export PACKAGE_BUILD_NAME="${{ env.ARTIFACTORY_DEBUG_PREFIX }}/${BUILD_SOURCE}"
 
