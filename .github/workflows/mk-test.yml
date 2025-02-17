@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - mk/poc/github_actions_playground
+      - mk/poc/ionos-dev-dummy
 
 env:
   TARGET_PACKAGE_NAME: hidrive-next.tar.gz
@@ -97,7 +98,7 @@ jobs:
 
   upload-to-artifactory:
     runs-on: self-hosted
-    if: github.event_name == 'pull_request' || github.ref_name == 'mk/emulate/ionos-dev'
+    if: github.event_name == 'pull_request' || github.ref_name == 'mk/poc/ionos-dev-dummy'
 
     permissions:
       contents: read
@@ -138,7 +139,6 @@ jobs:
 
       - name: Upload Build to Artifactory
         id: artifactory_upload
-#        if: github.event.pull_request.number || github.ref_name == 'mk/emulate/ionos-dev'
         run: |
           # PR builds are stored in a separate directory as "dev/pr/hidrive-next-pr-<number>.zip"
           # Push to "ionos-dev" branch is stored as "dev/hidrive-next-<ncVersion>.zip"
