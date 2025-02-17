@@ -16,7 +16,7 @@ env:
   TARGET_PACKAGE_NAME: hidrive-next.tar.gz
   ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
   # stage prefix for the artifact path in artifactory "dev|stable"
-  ARTIFACTORY_STAGE_PREFIX: dev/mk_ignore
+  ARTIFACTORY_STAGE_PREFIX: dev/mk_ignore/foo
   GITLAB_TOKEN: "glptt-0c38965827d40b4c6a79615fc65dbbc3a80d68f5"
   GITLAB_TRIGGER_URL: "https://gitlab.git-moc.server.lan/api/v4/projects/916/trigger/pipeline"
 
