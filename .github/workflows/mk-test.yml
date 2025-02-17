@@ -46,7 +46,9 @@ jobs:
 #        with:
 #          node-version-file: "package.json"
       - name: Output github env
-        run: echo '${{ toJSON(github) }}'
+        run: |
+          echo 'event_name: ${{ toJSON(github.event_name) }}'
+          echo 'github: ${{ toJSON(github) }}'
 
       - name: Install Dependencies
         run: sudo apt-get update && sudo apt-get install -y make zip unzip tar jq
@@ -96,6 +98,7 @@ jobs:
 
   upload-to-artifactory:
     runs-on: self-hosted
+    if: github.event_name == 'pull_request' || github.ref_name == 'mk/emulate/ionos-dev'
 
     permissions:
       contents: read
@@ -133,7 +136,7 @@ jobs:
 
       - name: Upload Build to Artifactory
         id: artifactory_upload
-        if: github.event.pull_request.number || github.ref_name == 'mk/emulate/ionos-dev'
+#        if: github.event.pull_request.number || github.ref_name == 'mk/emulate/ionos-dev'
         run: |
           export BUILD_NAME="hidrive_next-snapshot"
           export BUILD_NUMBER="${{ github.run_number }}"
