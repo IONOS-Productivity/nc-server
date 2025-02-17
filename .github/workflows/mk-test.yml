@@ -99,7 +99,7 @@ jobs:
       contents: read
       packages: write
 
-    name: Push artifact to artifactory
+    name: Push artifact to artifactory as dev build
     needs: hidrive-next-build
 
     outputs:
@@ -118,7 +118,8 @@ jobs:
           JF_USER: ${{ secrets.JF_ARTIFACTORY_USER }}
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
 
-      - run: |
+      - name: Ping the JF server
+        run: |
           # Ping the server
           jf rt ping
           # Collect environment variables for the build
@@ -130,6 +131,7 @@ jobs:
 
       - name: Upload Build to Artifactory
         id: artifactory_upload
+        if: github.event.pull_request.number || github.ref_name == 'mk/emulate/ionos-dev'
         run: |
           export BUILD_NAME="hidrive_next-snapshot"
           export BUILD_NUMBER="${{ github.run_number }}"
