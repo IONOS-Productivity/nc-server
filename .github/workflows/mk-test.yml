@@ -13,10 +13,9 @@ on:
 
 env:
   TARGET_PACKAGE_NAME: hidrive-next.tar.gz
-  # set this to folder name in the repository e.g. <my_test_folder/>
-  # in order to be able the to test the workflow in "own" folder
-  ARTIFACTORY_DEBUG_PREFIX: "mk_ignore"
   ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
+  # stage prefix for the artifact path in artifactory "dev|stable"
+  ARTIFACTORY_STAGE_PREFIX: dev/mk_ignore
   GITLAB_TOKEN: "glptt-0c38965827d40b4c6a79615fc65dbbc3a80d68f5"
   GITLAB_TRIGGER_URL: "https://gitlab.git-moc.server.lan/api/v4/projects/916/trigger/pipeline"
 
@@ -110,6 +109,9 @@ jobs:
     outputs:
         ARTIFACTORY_LAST_BUILD_PATH: ${{ steps.artifactory_upload.outputs.ARTIFACTORY_LAST_BUILD_PATH }}
 
+    env:
+      BUILD_NAME: "hidrive_next-snapshot"
+
     steps:
       - name: Download artifact zip
         uses: actions/download-artifact@v4
@@ -138,56 +140,35 @@ jobs:
         id: artifactory_upload
 #        if: github.event.pull_request.number || github.ref_name == 'mk/emulate/ionos-dev'
         run: |
-          export BUILD_NAME="hidrive_next-snapshot"
-          export BUILD_NUMBER="${{ github.run_number }}"
+          # PR builds are stored in a separate directory as "dev/pr/hidrive-next-pr-<number>.zip"
+          # Push to "ionos-dev" branch is stored as "dev/hidrive-next-<ncVersion>.zip"
 
-          # differentiate between "ionos-dev", "pr-<number>", "branch/<branch-name>"
-          export BUILD_SOURCE="branch/${{ github.ref_name }}"
+          export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${{ env.ARTIFACTORY_STAGE_PREFIX }}"
+          PATH_TO_FILE="pr/hidrive-next-pr-${{ github.event.pull_request.number }}.zip"
 
-          # check if in pull request
-          if [ -n "${{ github.event.pull_request.head.repo.full_name }}" ]; then
-              export BUILD_SOURCE="pr-${{ github.event.pull_request.number }}"
-          else
-            # check if current branch is ionos-dev
-            if [ "${{ github.ref_name }}" == "ionos-dev" ]; then
-                export BUILD_SOURCE="dev"
-            fi
+          if [ -z "${{ github.event.pull_request.number }}" ]; then
+          PATH_TO_FILE="hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.zip"
           fi
 
-          export PACKAGE_BUILD_NAME="${{ env.ARTIFACTORY_DEBUG_PREFIX }}/${BUILD_SOURCE}"
+          export PATH_TO_LATEST_ARTIFACT="${PATH_TO_DIRECTORY}/${PATH_TO_FILE}"
 
-          export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${PACKAGE_BUILD_NAME}"
-          export PATH_TO_DIRECTORY_BUILD="${PATH_TO_DIRECTORY}/build-${BUILD_NUMBER}/"
-          export PATH_TO_DIRECTORY_W_VERSION="${PATH_TO_DIRECTORY}/hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.tar.gz"
+          # Promote current build to the "latest" dev build
+          jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" \
+          --build-name "${{ env.BUILD_NAME }}" \
+          --build-number ${{ github.run_number }} \
+          --target-props "hdnext.nc_version=${{ needs.hidrive-next-build.outputs.NC_VERSION }};vcs.branch=${{ github.ref }};vcs.revision=${{ github.sha }}" \
+          $PATH_TO_LATEST_ARTIFACT
 
-          # Upload the build to Artifactory as build
-          jf rt upload "hidrive-next.tar.gz" \
-          --build-name $BUILD_NAME \
-          --build-number $BUILD_NUMBER \
-          $PATH_TO_DIRECTORY_BUILD
-
-          # Promote current build to the "latest" build
-          jf rt upload "hidrive-next.tar.gz" \
-          --build-name $BUILD_NAME \
-          --build-number $BUILD_NUMBER \
-          $PATH_TO_DIRECTORY_W_VERSION
-
-          echo "ARTIFACTORY_LAST_BUILD_PATH=${PATH_TO_DIRECTORY_W_VERSION}" >> $GITHUB_OUTPUT
+          echo "ARTIFACTORY_LAST_BUILD_PATH=${PATH_TO_LATEST_ARTIFACT}" >> $GITHUB_OUTPUT
 
       - name: Collect Build Info
         run: |
-          export BUILD_NAME="hidrive_next-snapshot"
-          export BUILD_NUMBER="${{ github.run_number }}"
-
-          jf rt build-collect-env $BUILD_NAME $BUILD_NUMBER
+          jf rt build-collect-env "${{ env.BUILD_NAME }}" ${{ github.run_number }}
 
       - name: Publish Build Info
         if: false
         run: |
-          export BUILD_NAME="hidrive_next-snapshot"
-          export BUILD_NUMBER="${{ github.run_number }}"
-
-          jf rt build-publish $BUILD_NAME $BUILD_NUMBER
+          jf rt build-publish "${{ env.BUILD_NAME }}" ${{ github.run_number }}
 
       - name: Show changes on failure
         if: failure()
