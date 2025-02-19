@@ -120,7 +120,6 @@ jobs:
 
       - name: Get NC version
         id: get_nc_version
-        continue-on-error: false
         run: |
           NC_VERSION=$(jq -r '.ncVersion' version.json)
           echo "NC_VERSION: $NC_VERSION"
