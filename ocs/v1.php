@@ -70,6 +70,8 @@ try {
 	http_response_code(405);
 } catch (LoginException $e) {
 	ApiHelper::respond(OCSController::RESPOND_UNAUTHORISED, 'Unauthorised');
+} catch (\OC\Authentication\Exceptions\UserAgentForbidden $ex) {
+	ApiHelper::respond(Http::STATUS_FORBIDDEN, $ex->getMessage());
 } catch (\Exception $e) {
 	Server::get(LoggerInterface::class)->error($e->getMessage(), ['exception' => $e]);
 
