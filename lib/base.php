@@ -363,7 +363,7 @@ class OC {
 
 		$redirectUpgradePage = $systemConfig->getValue('redirect_upgradepage_to_location', null);
 		if ($redirectUpgradePage !== null) {
-			http_response_code(307);
+			http_response_code(302);
 			header('X-Nextcloud-needsDbUpgrade: 1');
 			header("Location: ${redirectUpgradePage}#" . time());
 			die();
