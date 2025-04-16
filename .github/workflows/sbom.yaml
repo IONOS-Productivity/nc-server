@@ -1,0 +1,148 @@
+name: SBOM generation
+
+# SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2024 STRATO AG
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+on:
+  push:
+    branches:
+      # Enable once approved
+      # - ionos-dev
+      - tl/sbom-generation
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    name: generate-sbom
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          submodules: true
+
+      - name: Install CycloneDX
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer global config --no-plugins allow-plugins.cyclonedx/cyclonedx-php-composer true
+          composer global require cyclonedx/cyclonedx-php-composer
+
+      #
+      # Nextcloud
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (Nextcloud - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer CycloneDX:make-sbom --output-file=bom.nextcloud.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "package.json"
+
+      - name: "Nextcloud: install npm dependencies"
+        env:
+          FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+        run: |
+          npm ci
+
+      - name: Generate SBOM (Nextcloud - npm)
+        # Switch --ignore-npm-errors is used to not fail on inconsistencies
+        # found by npm ls, which complains about (mostly) "extraneous" packages
+        # found in node_modules, which are apparently related to us using npm
+        # overrides in package.json and presumably npm ls not being capable
+        # of analyzing this correctly.
+        #
+        run: |
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file './bom.nextcloud.npm.xml'
+
+
+
+      #
+      # Custom App: googleanalytics
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (Custom App googleanalytics - composer)
+        working-directory: ./apps-custom/googleanalytics
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          composer CycloneDX:make-sbom --output-file=../../bom.app-googleanalytics.xml
+
+
+
+      # Pass BOMs to next Job
+      # https://github.com/actions/upload-artifact
+      - name: Store partial BOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: bom-partials
+          path: |
+            bom.nextcloud.*.xml
+            bom.app-googleanalytics.xml
+
+  merge-sboms:
+    needs: generate-sbom
+    runs-on: ubuntu-latest
+
+    # https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs/running-jobs-in-a-container
+    container:
+      image: cyclonedx/cyclonedx-cli:0.27.1
+
+    steps:
+      - name: Download partial BOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: bom-partials
+
+      - name: Merge SBOMs
+        # https://github.com/CycloneDX/cyclonedx-cli#merge-command
+        # Using v1_3 because with the default (1.6) the upload failed at the DT web interface
+        #
+        # The generated SBOM is fixed with awk to remove XML schema violating
+        # elements or values that prevent upload to Dependency Track.
+        run: |
+          echo "Merge BOMs for: Nextcloud"
+          cyclonedx merge --input-files bom.nextcloud.composer.xml bom.nextcloud.npm.xml --output-file bom.xml --output-version v1_3
+          awk '/^  <metadata>/ { ignore=1 } /^  <\/metadata>/ { ignore=0; next; } { if (!ignore) print }' bom.xml >bom.nextcloud.xml
+
+        # TODO use for loop where needed for apps
+
+      - name: Show BOMs
+        run: |
+          ls -l bom.*.xml
+
+      # Pass merged BOM to next Job
+      # https://github.com/actions/upload-artifact
+      - name: Store merged BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-boms
+          path: |
+            bom.nextcloud.xml
+            bom.app-googleanalytics.xml
+
+  upload-sboms:
+    needs: merge-sboms
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download partial BOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: final-boms
+
+      - name: Dump merged SBOMs
+        run: |
+          cat bom.*.xml
+
+      # TODO: upload BOMs
