@@ -536,22 +536,15 @@ class Session implements IUserSession, Emitter {
 	 * @param IRequest $request
 	 * @param IThrottler $throttler
 	 * @return boolean if the login was successful
+	 * @throws UserAgentForbidden|LoginException
 	 */
 	public function tryBasicAuthLogin(IRequest $request,
 		IThrottler $throttler) {
 		if (!empty($request->server['PHP_AUTH_USER']) && !empty($request->server['PHP_AUTH_PW'])) {
 			try {
-				// Check if the client is using an allowed user agent
-				$allowedAgents = $this->config->getSystemValue('core.login_flow_v2.allowed_user_agents', []);
-				if (!empty($allowedAgents)) {
-					$clientUserAgent = $request->server['HTTP_USER_AGENT'];
+				$userAgent = $request->server['HTTP_USER_AGENT'] ?? '';
+				$this->validateUserAgent($userAgent);
 
-					foreach ($allowedAgents as $allowedAgent) {
-						if (preg_match($allowedAgent, $clientUserAgent) !== 1) {
-							throw new UserAgentForbidden('Client not allowed');
-						}
-					}
-				}
 				if ($this->logClientIn($request->server['PHP_AUTH_USER'], $request->server['PHP_AUTH_PW'], $request, $throttler)) {
 					/**
 					 * Add DAV authenticated. This should in an ideal world not be
@@ -576,6 +569,28 @@ class Session implements IUserSession, Emitter {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Validate the user agent and check if it is allowed to use the login flow.
+	 * Throws an exception if the user agent is not allowed.
+	 *
+	 * @param string $clientUserAgent
+	 * @throws UserAgentForbidden
+	 */
+	private function validateUserAgent(string $clientUserAgent): void {
+		$allowedAgents = $this->config->getSystemValue('core.login_flow_v2.allowed_user_agents', []);
+		if (empty($allowedAgents)) {
+			return;
+		}
+
+		foreach ($allowedAgents as $allowedAgent) {
+			if (preg_match($allowedAgent, $clientUserAgent) === 1) {
+				return;
+			}
+		}
+
+		throw new UserAgentForbidden('Client not allowed');
 	}
 
 	/**

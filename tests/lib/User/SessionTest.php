@@ -1147,7 +1147,8 @@ class SessionTest extends \Test\TestCase {
 
 	public function testTryBasicAuthLoginValidClient() {
 		$allowedClients = [
-			'/Custom Allowed Client/i'
+			'/Rogue Client/i',
+			'/Custom Allowed Client/i',
 		];
 
 		$this->config->expects($this->exactly(1))
