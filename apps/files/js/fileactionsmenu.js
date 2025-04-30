@@ -78,7 +78,11 @@
 			var defaultAction = fileActions.getCurrentDefaultFileAction();
 
 			var items = _.filter(actions, function(actionSpec) {
-				return !defaultAction || actionSpec.name !== defaultAction.name;
+				const isDirectory = defaultAction?.mime === 'dir';
+				const isViewAction = actionSpec.name === 'view';
+				const isDefaultAction = actionSpec.name === defaultAction?.name;
+
+				return !(isDirectory && (isViewAction || isDefaultAction));
 			});
 			items = _.map(items, function(item) {
 				if (_.isFunction(item.displayName)) {
