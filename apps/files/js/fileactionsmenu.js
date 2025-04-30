@@ -80,6 +80,14 @@
 			var items = _.filter(actions, function(actionSpec) {
 				return !defaultAction || actionSpec.name !== defaultAction.name;
 			});
+
+			// don't show view action for folders
+			items = _.filter(items, function(actionSpec) {
+				const isDirectory = self._context.$file.attr('data-type') === 'dir';
+				const isViewAction = actionSpec.name === 'view';
+				return !(isDirectory && isViewAction);
+			});
+
 			items = _.map(items, function(item) {
 				if (_.isFunction(item.displayName)) {
 					item = _.extend({}, item);
