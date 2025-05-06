@@ -78,7 +78,7 @@
 			var defaultAction = fileActions.getCurrentDefaultFileAction();
 
 			var items = _.filter(actions, function(actionSpec) {
-				return !defaultAction || actionSpec.name !== defaultAction.name;
+				return !(defaultAction?.mime === 'dir' && (actionSpec.name === 'view' || actionSpec.name === defaultAction.name));
 			});
 			items = _.map(items, function(item) {
 				if (_.isFunction(item.displayName)) {
@@ -94,6 +94,9 @@
 					var fileName = self._context.$file.attr('data-file');
 					item = _.extend({}, item);
 					item.icon = item.icon(fileName, self._context);
+					if (item.icon.startsWith('<svg')) {
+						item.icon = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(item.icon)}`;
+					}
 				}
 				item.inline = item.type === OCA.Files.FileActions.TYPE_INLINE
 				return item;
