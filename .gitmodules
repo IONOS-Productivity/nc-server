@@ -48,4 +48,4 @@
 	url = git@github.com:nextcloud/groupquota.git
 [submodule "apps-external/richdocuments"]
 	path = apps-external/richdocuments
-	url = git@github.com:nextcloud/richdocuments.git
+	url = git@github.com:IONOS-Productivity/nc-richdocuments.git
