@@ -14,6 +14,7 @@ import FileUploadSvg from '@mdi/svg/svg/file-upload.svg?raw'
 import LinkSvg from '@mdi/svg/svg/link.svg?raw'
 
 import { getContents, isFileRequest } from '../services/SharingService'
+import { loadState } from '@nextcloud/initial-state'
 
 export const sharesViewId = 'shareoverview'
 export const sharedWithYouViewId = 'sharingin'
@@ -22,6 +23,15 @@ export const sharingByLinksViewId = 'sharinglinks'
 export const deletedSharesViewId = 'deletedshares'
 export const pendingSharesViewId = 'pendingshares'
 export const fileRequestViewId = 'filerequest'
+
+/**
+ * Checks if share accept feature is enabled.
+ *
+ * @returns {boolean} True if share accept is enabled, otherwise false.
+ */
+function isShareAcceptEnabled(): boolean {
+	return loadState('files_sharing', 'accept_default', false)
+}
 
 export default () => {
 	const Navigation = getNavigation()
@@ -131,6 +141,10 @@ export default () => {
 
 		getContents: () => getContents(false, false, false, true),
 	}))
+
+	if (isShareAcceptEnabled()) {
+		return
+	}
 
 	Navigation.register(new View({
 		id: pendingSharesViewId,
