@@ -142,7 +142,7 @@ export default () => {
 		getContents: () => getContents(false, false, false, true),
 	}))
 
-	if (isShareAcceptEnabled()) {
+	if (!isShareAcceptEnabled()) {
 		return
 	}
 

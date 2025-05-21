@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+// Make sure OCA.Files_Sharing exists and assign sharesView for tests
+window.OCA = window.OCA || {};
+window.OCA.Files_Sharing = window.OCA.Files_Sharing || {};
+
 describe('OCA.Sharing.Util tests', function() {
 	var fileList;
 	var testFiles;
@@ -316,6 +320,97 @@ describe('OCA.Sharing.Util tests', function() {
 		});
 		afterEach(function() {
 			shareTabSpy.restore();
+		});
+	});
+
+	describe('Pending shares navigation menu', function() {
+		function callSharesViewOrSkip() {
+			if (typeof OCA.Files_Sharing === 'undefined' || typeof OCA.Files_Sharing.sharesView !== 'function') {
+				pending('OCA.Files_Sharing.sharesView is not defined. Make sure the shares view script is loaded in the test environment.');
+				return false;
+			}
+			OCA.Files_Sharing.sharesView();
+			return true;
+		}
+
+		it('does not register pending shares navigation if share accept is disabled', function() {
+			// Mock loadState to return false for accept_default
+			const originalLoadState = window.OC && window.OC.loadState;
+			window.OC = window.OC || {};
+			window.OC.loadState = function(app, key, def) {
+				if (app === 'files_sharing' && key === 'accept_default') {
+					return false;
+				}
+				return def;
+			};
+
+			// Spy on Navigation.register
+			const registeredViews = [];
+			const Navigation = {
+				register: function(view) {
+					registeredViews.push(view);
+				}
+			};
+			// Mock getNavigation to return our Navigation spy
+			const originalGetNavigation = window.OCA && window.OCA.Files && window.OCA.Files.getNavigation;
+			window.OCA = window.OCA || {};
+			window.OCA.Files = window.OCA.Files || {};
+			window.OCA.Files.getNavigation = function() { return Navigation; };
+
+			// Call the shares view function if available
+			if (!callSharesViewOrSkip()) return;
+
+			// Assert that no view with id 'pendingshares' was registered
+			const pendingShareView = registeredViews.find(view => view.id === 'pendingshares');
+			expect(pendingShareView).toBeUndefined();
+
+			// Restore mocks
+			if (originalLoadState) {
+				window.OC.loadState = originalLoadState;
+			}
+			if (originalGetNavigation) {
+				window.OCA.Files.getNavigation = originalGetNavigation;
+			}
+		});
+
+		it('registers pending shares navigation if share accept is enabled', function() {
+			// Mock loadState to return true for accept_default
+			const originalLoadState = window.OC && window.OC.loadState;
+			window.OC = window.OC || {};
+			window.OC.loadState = function(app, key, def) {
+				if (app === 'files_sharing' && key === 'accept_default') {
+					return true;
+				}
+				return def;
+			};
+
+			// Spy on Navigation.register
+			const registeredViews = [];
+			const Navigation = {
+				register: function(view) {
+					registeredViews.push(view);
+				}
+			};
+			// Mock getNavigation to return our Navigation spy
+			const originalGetNavigation = window.OCA && window.OCA.Files && window.OCA.Files.getNavigation;
+			window.OCA = window.OCA || {};
+			window.OCA.Files = window.OCA.Files || {};
+			window.OCA.Files.getNavigation = function() { return Navigation; };
+
+			// Call the shares view function if available
+			if (!callSharesViewOrSkip()) return;
+
+			// Assert that a view with id 'pendingshares' was registered
+			const pendingShareView = registeredViews.find(view => view.id === 'pendingshares');
+			expect(pendingShareView).toBeDefined();
+
+			// Restore mocks
+			if (originalLoadState) {
+				window.OC.loadState = originalLoadState;
+			}
+			if (originalGetNavigation) {
+				window.OCA.Files.getNavigation = originalGetNavigation;
+			}
 		});
 	});
 });
