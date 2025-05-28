@@ -1,0 +1,147 @@
+<?php
+
+/**
+ * SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+declare(strict_types=1);
+
+namespace OCA\Files_Sharing\Tests\Listener;
+
+use OC\InitialStateService;
+use OCA\Files\Event\LoadAdditionalScriptsEvent;
+use OCA\Files_Sharing\Listener\LoadAdditionalListener;
+use OCP\EventDispatcher\Event;
+use OCP\IConfig;
+use OCP\L10N\IFactory;
+use OCP\Share\IManager;
+use Psr\Log\LoggerInterface;
+use Test\TestCase;
+
+class LoadAdditionalListenerTest extends TestCase {
+	/** @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject */
+	protected $logger;
+	/** @var LoadAdditionalScriptsEvent|\PHPUnit\Framework\MockObject\MockObject */
+	protected $event;
+	/** @var IManager|\PHPUnit\Framework\MockObject\MockObject */
+	protected $shareManager;
+	/** @var IFactory|\PHPUnit\Framework\MockObject\MockObject */
+	protected $factory;
+	/** @var InitialStateService|\PHPUnit\Framework\MockObject\MockObject */
+	protected $initialStateService;
+	/** @var IConfig|\PHPUnit\Framework\MockObject\MockObject */
+	protected $config;
+
+	protected function setUp(): void {
+		parent::setUp();
+
+		$this->logger = $this->getMockBuilder(LoggerInterface::class)
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->event = $this->createMock(LoadAdditionalScriptsEvent::class);
+		$this->shareManager = $this->createMock(IManager::class);
+		$this->factory = $this->createMock(IFactory::class);
+		$this->initialStateService = $this->createMock(InitialStateService::class);
+		$this->config = $this->createMock(IConfig::class);
+	}
+
+	public function testHandleIgnoresNonMatchingEvent(): void {
+		$listener = new LoadAdditionalListener();
+		$event = $this->createMock(Event::class);
+
+		// Should not throw or call anything
+		$listener->handle($event);
+
+		$this->assertTrue(true); // No exception means pass
+	}
+
+	public function testHandleWithLoadAdditionalScriptsEvent(): void {
+		$listener = new LoadAdditionalListener();
+
+		$this->shareManager->method('shareApiEnabled')->willReturn(false);
+		$this->factory->method('findLanguage')->willReturn('language_mock');
+		$this->config->method('getSystemValueBool')->willReturn(true);
+
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(IFactory::class, $this->factory);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IConfig::class, $this->config);
+
+		$scriptsBefore = \OCP\Util::getScripts();
+		$this->assertNotContains('files_sharing/l10n/language_mock', $scriptsBefore);
+		$this->assertNotContains('files_sharing/js/additionalScripts', $scriptsBefore);
+		$this->assertNotContains('files_sharing/js/init', $scriptsBefore);
+		$this->assertNotContains('files_sharing/css/icons', \OC_Util::$styles);
+
+		// Util static methods can't be easily mocked, so just ensure no exceptions
+		$listener->handle($this->event);
+
+		// assert array $scripts contains the expected scripts
+		$scriptsAfter = \OCP\Util::getScripts();
+		$this->assertContains('files_sharing/l10n/language_mock', $scriptsAfter);
+		$this->assertContains('files_sharing/js/additionalScripts', $scriptsAfter);
+		$this->assertNotContains('files_sharing/js/init', $scriptsAfter);
+
+		$this->assertContains('files_sharing/css/icons', \OC_Util::$styles);
+
+		$this->assertTrue(true);
+	}
+
+	public function testHandleWithLoadAdditionalScriptsEventWithShareApiEnabled(): void {
+		$listener = new LoadAdditionalListener();
+
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+		$this->config->method('getSystemValueBool')->willReturn(true);
+
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IConfig::class, $this->config);
+		$this->overwriteService(IFactory::class, $this->factory);
+
+		$scriptsBefore = \OCP\Util::getScripts();
+		$this->assertNotContains('files_sharing/js/init', $scriptsBefore);
+
+		// Util static methods can't be easily mocked, so just ensure no exceptions
+		$listener->handle($this->event);
+
+		$scriptsAfter = \OCP\Util::getScripts();
+
+		// assert array $scripts contains the expected scripts
+		$this->assertContains('files_sharing/js/init', $scriptsAfter);
+
+		$this->assertTrue(true);
+	}
+
+	public function testProvideInitialStates(): void {
+		$listener = new LoadAdditionalListener();
+
+		// Expect config to be queried for 'sharing.enable_share_accept'
+		$this->config->expects($this->once())
+			->method('getSystemValueBool')
+			->with('sharing.enable_share_accept')
+			->willReturn(true);
+
+		// Expect initial state to be provided with correct values
+		$this->initialStateService->expects($this->once())
+			->method('provideInitialState')
+			->with(
+				'files_sharing',
+				'accept_default',
+				true
+			);
+
+		// Other dependencies required by the listener
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+
+		// Mock the server container to return the correct dependencies
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IConfig::class, $this->config);
+		$this->overwriteService(IFactory::class, $this->factory);
+
+		$listener->handle($this->event);
+
+		$this->assertTrue(true);
+	}
+}
