@@ -130,12 +130,14 @@ jobs:
         run: |
           wc --total=never -l bom.*.xml
 
+          echo "Upload to: ${DEPENDENCY_TRACK_BASE_URL}/api/v1/bom"
+
           upload_bom() {
           	echo "Upload Nextcloud SBOM ${1} for object ${2} ..."
 
             curl \
               -D- \
-              -X POST ${DEPENDENCY_TRACK_BASE_URL}/api/v1/bom \
+              -X POST "${DEPENDENCY_TRACK_BASE_URL}/api/v1/bom" \
               -H "Content-Type: multipart/form-data" \
               -H "X-API-Key: ${DEPENDENCY_TRACK_API_KEY}" \
               -F "project=${2}" \
