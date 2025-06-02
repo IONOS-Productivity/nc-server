@@ -130,4 +130,16 @@ jobs:
         run: |
           cat bom.*.xml
 
-      # TODO: upload BOMs
+          upload_bom() {
+          	echo "Upload Nextcloud SBOM ${1} for object ${2} ..."
+
+            curl \
+              -D- \
+              -X POST ${DEPENDENCY_TRACK_BASE_URL}/api/v1/bom \
+              -H "Content-Type: multipart/form-data" \
+              -H "X-API-Key: ${DEPENDENCY_TRACK_API_KEY}" \
+              -F "project=${2}" \
+              -F "bom=@${1}"
+          }
+
+          upload_bom "bom.nextcloud.xml" "${DT_OBJECT_NEXTCLOUD}"
