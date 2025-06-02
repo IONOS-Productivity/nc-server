@@ -66,21 +66,6 @@ jobs:
           npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file './bom.nextcloud.npm.xml'
 
 
-
-      #
-      # Custom App: googleanalytics
-      #
-
-      # SBOM for composer (generate)
-
-      - name: Generate SBOM (Custom App googleanalytics - composer)
-        working-directory: ./apps-custom/googleanalytics
-        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
-        run: |
-          composer CycloneDX:make-sbom --output-file=../../bom.app-googleanalytics.xml
-
-
-
       # Pass BOMs to next Job
       # https://github.com/actions/upload-artifact
       - name: Store partial BOMs
@@ -89,7 +74,6 @@ jobs:
           name: bom-partials
           path: |
             bom.nextcloud.*.xml
-            bom.app-googleanalytics.xml
 
   merge-sboms:
     needs: generate-sbom
@@ -113,7 +97,7 @@ jobs:
         # elements or values that prevent upload to Dependency Track.
         run: |
           echo "Merge BOMs for: Nextcloud"
-          function merge_bom() {
+          merge_bom() {
             cyclonedx merge --input-files bom.${1}.composer.xml bom.${1}.npm.xml --output-file bom.xml --output-version v1_3 ;
             awk '/^  <metadata>/ { ignore=1 } /^  <\/metadata>/ { ignore=0; next; } { if (!ignore) print }' bom.xml >bom.${1}.xml ;
           }
@@ -132,7 +116,6 @@ jobs:
           name: final-boms
           path: |
             bom.nextcloud.xml
-            bom.app-googleanalytics.xml
 
   upload-sboms:
     needs: merge-sboms
