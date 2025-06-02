@@ -126,9 +126,9 @@ jobs:
         with:
           name: final-boms
 
-      - name: Dump merged SBOMs
+      - name: Upload SBOMs
         run: |
-          cat bom.*.xml
+          wc --total=never -l bom.*.xml
 
           upload_bom() {
           	echo "Upload Nextcloud SBOM ${1} for object ${2} ..."
