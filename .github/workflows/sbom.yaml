@@ -10,6 +10,7 @@ on:
       # Enable once approved
       # - ionos-dev
       - tl/sbom-generation
+      - mk/tl/sbom-generation
 
 jobs:
   generate-sbom:
@@ -119,7 +120,7 @@ jobs:
 
   upload-sboms:
     needs: merge-sboms
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Download partial BOMs
         uses: actions/download-artifact@v4
@@ -128,7 +129,7 @@ jobs:
 
       - name: Upload SBOMs
         run: |
-          wc --total=never -l bom.*.xml
+          wc -l bom.*.xml
 
           echo "Upload to: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}/api/v1/bom"
 
