@@ -10,6 +10,7 @@ on:
       # Enable once approved
       # - ionos-dev
       - tl/sbom-generation
+      - mk/tl/sbom-generation
 
 jobs:
   generate-sbom:
