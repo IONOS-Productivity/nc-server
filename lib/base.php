@@ -257,6 +257,8 @@ class OC {
 	private static function printUpgradePage(\OC\SystemConfig $systemConfig): void {
 		$cliUpgradeLink = $systemConfig->getValue('upgrade.cli-upgrade-link', '');
 		$disableWebUpdater = $systemConfig->getValue('upgrade.disable-web', false);
+		$redirectUpgradePage = $systemConfig->getValue('upgrade.redirect_upgradepage_to_location', null);
+
 		$tooBig = false;
 		if (!$disableWebUpdater) {
 			$apps = Server::get(\OCP\App\IAppManager::class);
@@ -291,6 +293,13 @@ class OC {
 		}
 		$ignoreTooBigWarning = isset($_GET['IKnowThatThisIsABigInstanceAndTheUpdateRequestCouldRunIntoATimeoutAndHowToRestoreABackup']) &&
 			$_GET['IKnowThatThisIsABigInstanceAndTheUpdateRequestCouldRunIntoATimeoutAndHowToRestoreABackup'] === 'IAmSuperSureToDoThis';
+
+		if ($redirectUpgradePage !== null) {
+			http_response_code(302);
+			header('X-Nextcloud-needsDbUpgrade: 1');
+			header("Location: ${redirectUpgradePage}#" . time());
+			die();
+		}
 
 		if ($disableWebUpdater || ($tooBig && !$ignoreTooBigWarning)) {
 			// send http status 503
