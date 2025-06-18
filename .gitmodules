@@ -49,3 +49,6 @@
 [submodule "apps-external/richdocuments"]
 	path = apps-external/richdocuments
 	url = git@github.com:IONOS-Productivity/nc-richdocuments.git
+[submodule "apps-external/files_downloadlimit"]
+	path = apps-external/files_downloadlimit
+	url = git@github.com:nextcloud/files_downloadlimit.git
