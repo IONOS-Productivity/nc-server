@@ -58,6 +58,7 @@
 !/apps-external/user_oidc
 !/apps-external/serverinfo
 !/apps-external/groupquota
+!/apps-external/files_downloadlimit
 !/apps-custom/*
 
 # apps modules
