@@ -49,3 +49,6 @@
 [submodule "apps-custom/nc-ionos-processes"]
 	path = apps-custom/nc-ionos-processes
 	url = git@github.com:IONOS-Productivity/nc-ionos-processes.git
+[submodule "apps-external/files_downloadlimit"]
+	path = apps-external/files_downloadlimit
+	url = git@github.com:nextcloud/files_downloadlimit.git
