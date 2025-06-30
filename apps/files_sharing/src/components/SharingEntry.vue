@@ -81,6 +81,11 @@ export default {
 			} else if (this.share.type === ShareType.Guest) {
 				title += ` (${t('files_sharing', 'guest')})`
 			}
+			if (!this.isShareOwner && this.share.ownerDisplayName) {
+				title += ' ' + t('files_sharing', 'by {initiator}', {
+					initiator: this.share.ownerDisplayName,
+				})
+			}
 			return title
 		},
 		tooltip() {
@@ -132,7 +137,7 @@ export default {
 	height: 44px;
 	&__summary {
 		padding: 8px;
-		padding-left: 10px;
+		padding-inline-start: 10px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;

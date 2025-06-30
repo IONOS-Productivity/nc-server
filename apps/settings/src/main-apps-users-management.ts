@@ -22,16 +22,14 @@ __webpack_nonce__ = getCSPNonce()
 // bind to window
 Vue.prototype.t = t
 Vue.prototype.n = n
-
-// Setup Vue plugins
 Vue.use(PiniaVuePlugin)
 Vue.use(VTooltipPlugin, { defaultHtml: false })
 Vue.use(Vuex)
 
-// Setup stores
-const pinia = createPinia()
 const store = useStore()
 sync(store, router)
+
+const pinia = createPinia()
 
 export default new Vue({
 	router,

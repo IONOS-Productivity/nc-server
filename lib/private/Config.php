@@ -35,7 +35,7 @@ class Config {
 	 */
 	public function __construct($configDir, $fileName = 'config.php') {
 		$this->configDir = $configDir;
-		$this->configFilePath = $this->configDir.$fileName;
+		$this->configFilePath = $this->configDir . $fileName;
 		$this->configFileName = $fileName;
 		$this->readData();
 		$this->isReadOnly = $this->getValue('config_is_read_only', false);
@@ -171,7 +171,7 @@ class Config {
 		$configFiles = [$this->configFilePath];
 
 		// Add all files in the config dir ending with the same file name
-		$extra = glob($this->configDir.'*.'.$this->configFileName);
+		$extra = glob($this->configDir . '*.' . $this->configFileName);
 		if (is_array($extra)) {
 			natsort($extra);
 			$configFiles = array_merge($configFiles, $extra);
@@ -249,7 +249,7 @@ class Config {
 	private function writeData() {
 		$this->checkReadOnly();
 
-		if (!is_file(\OC::$configDir.'/CAN_INSTALL') && !isset($this->cache['version'])) {
+		if (!is_file(\OC::$configDir . '/CAN_INSTALL') && !isset($this->cache['version'])) {
 			throw new HintException(sprintf('Configuration was not read or initialized correctly, not overwriting %s', $this->configFilePath));
 		}
 
@@ -277,7 +277,7 @@ class Config {
 			$df = disk_free_space($this->configDir);
 			$size = strlen($content) + 10240;
 			if ($df !== false && $df < (float)$size) {
-				throw new \Exception($this->configDir . " does not have enough space for writing the config file! Not writing it back!");
+				throw new \Exception($this->configDir . ' does not have enough space for writing the config file! Not writing it back!');
 			}
 		}
 

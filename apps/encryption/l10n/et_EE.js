@@ -8,9 +8,9 @@ OC.L10N.register(
     "Could not enable recovery key. Please check your recovery key password!" : "Ei suutnud lubada taastevõtit. Palun kontrolli oma taastevõtme parooli!",
     "Recovery key successfully disabled" : "Taastevõtme keelamine õnnestus",
     "Could not disable recovery key. Please check your recovery key password!" : "Ei suuda keelata taastevõtit. Palun kontrolli oma taastevõtme parooli!",
-    "Missing parameters" : "Paramttrid puuduvad",
-    "Please provide the old recovery password" : "Palun sisesta vana taastevõtme parool",
-    "Please provide a new recovery password" : "Palun sisesta uus taastevõtme parool",
+    "Missing parameters" : "Parameetrid puuduvad",
+    "Please provide the old recovery password" : "Palun sisesta vana taastevõtme salasõna",
+    "Please provide a new recovery password" : "Palun sisesta uus taastevõtme salasõna",
     "Please repeat the new recovery password" : "Palun korda uut taastevõtme parooli",
     "Password successfully changed." : "Parool edukalt vahetatud.",
     "Could not change the password. Maybe the old password was not correct." : "Ei suutnud vahetada parooli. Võib-olla on vana parool valesti sisestatud.",
@@ -22,6 +22,9 @@ OC.L10N.register(
     "Private key password successfully updated." : "Privaatse võtme parool edukalt uuendatud.",
     "Bad Signature" : "Vigane allkiri",
     "Missing Signature" : "Allkiri puudub",
+    "Encryption password" : "Krüptimise salasõna",
+    "The administration enabled server-side-encryption. Your files were encrypted using the password <strong>%s</strong>." : "Serveri peakasutaja lülitas sisse serveripoolse krüptimise. Sinu failid on krüptitud salasõnaga <strong>%s</strong>.",
+    "The administration enabled server-side-encryption. Your files were encrypted using the password \"%s\"." : "Serveri peakasutaja lülitas sisse serveripoolse krüptimise. Sinu failid on krüptitud salasõnaga „%s“.",
     "Enable recovery key" : "Luba taastevõtme kasutamine",
     "Disable recovery key" : "Keela taastevõtme kasutamine",
     "Recovery key password" : "Taastevõtme parool",
@@ -39,6 +42,6 @@ OC.L10N.register(
     "Enable password recovery:" : "Luba parooli taaste:",
     "Enabling this option will allow you to reobtain access to your encrypted files in case of password loss" : "Valiku lubamine võimaldab taastada ligipääsu krüpteeritud failidele kui parooli kaotuse puhul",
     "Enabled" : "Sisse lülitatud",
-    "Disabled" : "Väljalülitatud"
+    "Disabled" : "Välja lülitatud"
 },
 "nplurals=2; plural=(n != 1);");

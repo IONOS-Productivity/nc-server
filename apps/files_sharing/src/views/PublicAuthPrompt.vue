@@ -4,67 +4,64 @@
 -->
 
 <template>
-	<NcDialog class="public-auth-prompt"
+	<NcDialog :buttons="dialogButtons"
+		class="public-auth-prompt"
 		data-cy-public-auth-prompt-dialog
-		dialog-classes="public-auth-prompt__dialog"
+		is-form
 		:can-close="false"
-		:name="dialogName">
-		<h3 v-if="owner" class="public-auth-prompt__subtitle">
+		:name="dialogName"
+		@submit="$emit('close', name)">
+		<p v-if="owner" class="public-auth-prompt__subtitle">
 			{{ t('files_sharing', '{ownerDisplayName} shared a folder with you.', { ownerDisplayName }) }}
-		</h3>
+		</p>
 
 		<!-- Header -->
-		<NcNoteCard type="info" class="public-auth-prompt__header">
-			<p id="public-auth-prompt-dialog-description" class="public-auth-prompt__description">
-				{{ t('files_sharing', 'To upload files, you need to provide your name first.') }}
-			</p>
-		</NcNoteCard>
+		<NcNoteCard class="public-auth-prompt__header"
+			:text="t('files_sharing', 'To upload files, you need to provide your name first.')"
+			type="info" />
 
 		<!-- Form -->
-		<form ref="form"
-			aria-describedby="public-auth-prompt-dialog-description"
-			class="public-auth-prompt__form"
-			@submit.prevent.stop="">
-			<NcTextField ref="input"
-				class="public-auth-prompt__input"
-				data-cy-public-auth-prompt-dialog-name
-				:label="t('files_sharing', 'Enter your name')"
-				:minlength="2"
-				:required="true"
-				:value.sync="name"
-				name="name" />
-		</form>
-
-		<!-- Submit -->
-		<template #actions>
-			<NcButton ref="submit"
-				data-cy-public-auth-prompt-dialog-submit
-				:disabled="name.trim() === ''"
-				@click="onSubmit">
-				{{ t('files_sharing', 'Submit name') }}
-			</NcButton>
-		</template>
+		<NcTextField ref="input"
+			class="public-auth-prompt__input"
+			data-cy-public-auth-prompt-dialog-name
+			:label="t('files_sharing', 'Name')"
+			:placeholder="t('files_sharing', 'Enter your name')"
+			minlength="2"
+			name="name"
+			required
+			:value.sync="name" />
 	</NcDialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { loadState } from '@nextcloud/initial-state'
 import { t } from '@nextcloud/l10n'
 
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
-import { loadState } from '@nextcloud/initial-state'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
+
+import { getGuestNameValidity } from '../services/GuestNameValidity'
 
 export default defineComponent({
 	name: 'PublicAuthPrompt',
 
 	components: {
-		NcButton,
 		NcDialog,
 		NcNoteCard,
 		NcTextField,
+	},
+
+	props: {
+		/**
+		 * Preselected nickname
+		 * @default '' No name preselected by default
+		 */
+		nickname: {
+			type: String,
+			default: '',
+		},
 	},
 
 	setup() {
@@ -89,51 +86,53 @@ export default defineComponent({
 		dialogName() {
 			return this.t('files_sharing', 'Upload files to {folder}', { folder: this.label || this.filename })
 		},
+		dialogButtons() {
+			return [{
+				label: t('files_sharing', 'Submit name'),
+				type: 'primary',
+				nativeType: 'submit',
+			}]
+		},
 	},
 
-	beforeMount() {
-		// Pre-load the name from local storage if already set by another app
-		// like Talk, Colabora or Text...
-		const talkNick = localStorage.getItem('nick')
-		if (talkNick) {
-			this.name = talkNick
-		}
-	},
+	watch: {
+		/** Reset name to pre-selected nickname (e.g. Talk / Collabora ) */
+		nickname: {
+			handler() {
+				this.name = this.nickname
+			},
+			immediate: true,
+		},
 
-	methods: {
-		onSubmit() {
-			const form = this.$refs.form as HTMLFormElement
-			if (!form.checkValidity()) {
-				form.reportValidity()
+		name() {
+			// Check validity of the new name
+			const newName = this.name.trim?.() || ''
+			const input = (this.$refs.input as Vue|undefined)?.$el.querySelector('input')
+			if (!input) {
 				return
 			}
 
-			if (this.name.trim() === '') {
-				return
-			}
-
-			localStorage.setItem('nick', this.name)
-			this.$emit('close')
+			const validity = getGuestNameValidity(newName)
+			input.setCustomValidity(validity)
+			input.reportValidity()
 		},
 	},
 })
 </script>
-<style lang="scss">
+<style scoped lang="scss">
 .public-auth-prompt {
 	&__subtitle {
 		// Smaller than dialog title
-		font-size: 16px;
-		margin-block: 12px;
+		font-size: 1.25em;
+		margin-block: 0 calc(3 * var(--default-grid-baseline));
 	}
 
 	&__header {
-		// Fix extra margin generating an unwanted gap
-		margin-block: 12px;
+		margin-block: 0 calc(3 * var(--default-grid-baseline));
 	}
 
-	&__form {
-		// Double the margin of the header
-		margin-block: 24px;
+	&__input {
+		margin-block: calc(4 * var(--default-grid-baseline)) calc(2 * var(--default-grid-baseline));
 	}
 }
 </style>

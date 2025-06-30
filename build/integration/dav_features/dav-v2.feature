@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
+
 Feature: dav-v2
 	Background:
 		Given using api version "1"
@@ -55,6 +56,20 @@ Feature: dav-v2
 		Then Downloaded content should start with "Welcome to your Nextcloud account!"
 		Then the HTTP status code should be "200"
 
+	Scenario: Download a folder
+		Given using new dav path
+		And As an "admin"
+		And user "user0" exists
+		And user "user0" created a folder "/testFolder"
+		When User "user0" uploads file "data/textfile.txt" to "/testFolder/text.txt"
+		When User "user0" uploads file "data/green-square-256.png" to "/testFolder/image.png"
+		And As an "user0"
+		When Downloading folder "/testFolder"
+		Then the downloaded file is a zip file
+		Then the downloaded zip file contains a folder named "testFolder/"
+		And the downloaded zip file contains a file named "testFolder/text.txt" with the contents of "/testFolder/text.txt" from "user0" data
+		And the downloaded zip file contains a file named "testFolder/image.png" with the contents of "/testFolder/image.png" from "user0" data
+
 	Scenario: Doing a PROPFIND with a web login should not work without CSRF token on the new backend
 		Given Logging in using web as "admin"
 		When Sending a "PROPFIND" to "/remote.php/dav/files/admin/welcome.txt" without requesttoken
@@ -93,6 +108,24 @@ Feature: dav-v2
 		When User "user0" uploads file "data/textfile.txt" to "/testquota/asdf.txt"
 		Then the HTTP status code should be "201"
 
+	Scenario: Uploading a file with very long filename
+		Given using new dav path
+		And As an "admin"
+		And user "user0" exists
+		And user "user0" has a quota of "10 MB"
+		And As an "user0"
+		When User "user0" uploads file "data/textfile.txt" to "/long-filename-with-250-characters-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt"
+		Then the HTTP status code should be "201"
+
+	Scenario: Uploading a file with a too long filename
+		Given using new dav path
+		And As an "admin"
+		And user "user0" exists
+		And user "user0" has a quota of "10 MB"
+		And As an "user0"
+		When User "user0" uploads file "data/textfile.txt" to "/long-filename-with-251-characters-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt"
+		Then the HTTP status code should be "400"
+
 	Scenario: Create a search query on image
 		Given using new dav path
 		And As an "admin"
@@ -117,3 +150,14 @@ Feature: dav-v2
     Then Favorite search should work
     And the single response should contain a property "{http://owncloud.org/ns}favorite" with value "1"
 
+	Scenario: Create a search query on favorite
+		Given using new dav path
+		And As an "admin"
+		And user "user0" exists
+		And As an "user0"
+		When User "user0" uploads file "data/green-square-256.png" to "/fav_image.png"
+		Then Favorite search should work
+		And the response should be empty
+		When user "user0" favorites element "/fav_image.png"
+		Then Favorite search should work
+		And the single response should contain a property "{http://owncloud.org/ns}favorite" with value "1"

@@ -248,6 +248,9 @@
     "Completed on %s" : "Completada el %s",
     "Due on %s by %s" : "Venç el %s a les %s",
     "Due on %s" : "Venç el %s",
+    "System Address Book" : "Llibreta d'adreces del sistema",
+    "The system address book contains contact information for all users in your instance." : "La llibreta d'adreces del sistema conté informació de contacte de tots els usuaris de la vostra instància.",
+    "Enable System Address Book" : "Habilita la llibreta d'adreces del sistema",
     "DAV system address book" : "Llibreta d'adreces del sistema DAV",
     "No outstanding DAV system address book sync." : "No hi ha cap sincronització pendent de la llibreta d'adreces del sistema DAV.",
     "The DAV system address book sync has not run yet as your instance has more than 1000 users or because an error occurred. Please run it manually by calling \"occ dav:sync-system-addressbook\"." : "La sincronització de la llibreta d'adreces del sistema DAV encara no s'ha executat perquè la instància té més de 1000 usuaris o a causa d'un error. Executeu-la manualment amb «occ dav:sync-system-addressbook».",
@@ -301,14 +304,13 @@
     "Send reminder notifications to calendar sharees as well" : "Envia també notificacions de recordatori als usuaris amb qui s'ha compartit el calendari",
     "Reminders are always sent to organizers and attendees." : "Sempre s'envien recordatoris als organitzadors i als assistents.",
     "Enable notifications for events via push" : "Habilita les notificacions automàtiques per als esdeveniments",
+    "Cancel" : "Cancel·la",
+    "Import" : "Importa",
+    "Error while saving settings" : "S'ha produït un error en desar els paràmetres",
     "There was an error updating your attendance status." : "S'ha produït un error en actualitzar l'estat d'assistència.",
     "Please contact the organizer directly." : "Contacteu amb l'organització directament.",
     "Are you accepting the invitation?" : "Accepteu la invitació?",
     "Tentative" : "Provisional",
-    "Your attendance was updated successfully." : "S'ha actualitzat correctament l'assistència.",
-    "Time:" : "Hora:",
-    "Could not open file" : "No s'ha pogut obrir el fitxer",
-    "Invalid chunk name" : "El nom del fragment no és vàlid",
-    "Could not rename part file assembled from chunks" : "No s'ha pogut canviar el nom del fitxer de part muntat a partir de fragments"
+    "Your attendance was updated successfully." : "S'ha actualitzat correctament l'assistència."
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

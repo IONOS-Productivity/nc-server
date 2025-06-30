@@ -207,6 +207,7 @@ p {
 	margin-top: 12px;
 	margin-bottom: 12px;
 }
+
 .new-owner {
 	display: flex;
 	flex-direction: column;
@@ -218,13 +219,14 @@ p {
 		margin-bottom: calc(var(--default-grid-baseline) * 2);
 
 		span {
-			margin-right: 8px;
+			margin-inline-end: 8px;
 		}
 	}
 }
+
 .transfer-select-row {
 	span {
-		margin-right: 8px;
+		margin-inline-end: 8px;
 	}
 
 	&__choose_button {

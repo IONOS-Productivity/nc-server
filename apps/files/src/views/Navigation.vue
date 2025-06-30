@@ -7,7 +7,7 @@
 		class="files-navigation"
 		:aria-label="t('files', 'Files')">
 		<template #search>
-			<NcAppNavigationSearch v-model="searchQuery" :label="t('files', 'Filter filenames…')" />
+			<NcAppNavigationSearch v-model="searchQuery" :label="t('files', 'Filter file names …')" />
 		</template>
 		<template #default>
 			<NcAppNavigationList class="files-navigation__list"
@@ -16,7 +16,7 @@
 			</NcAppNavigationList>
 
 			<!-- Settings modal-->
-			<SettingsModal :open="settingsOpened"
+			<SettingsModal :open.sync="settingsOpened"
 				data-cy-files-navigation-settings
 				@close="onSettingsClose" />
 		</template>
@@ -159,14 +159,12 @@ export default defineComponent({
 
 	methods: {
 		async loadExpandedViews() {
-			const viewConfigs = this.viewConfigStore.getConfigs()
-			const viewsToLoad: View[] = (Object.entries(viewConfigs) as Array<[string, ViewConfig]>)
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				.filter(([viewId, config]) => config.expanded === true)
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				.map(([viewId, config]) => this.views.find(view => view.id === viewId))
-				.filter(Boolean) // Only registered views
-				.filter(view => view.loadChildViews && !view.loaded)
+			const viewsToLoad: View[] = (Object.entries(this.viewConfigStore.viewConfigs) as Array<[string, ViewConfig]>)
+				.filter(([, config]) => config.expanded === true)
+				.map(([viewId]) => this.views.find(view => view.id === viewId))
+				// eslint-disable-next-line no-use-before-define
+				.filter(Boolean as unknown as ((u: unknown) => u is View))
+				.filter((view) => view.loadChildViews && !view.loaded)
 			for (const view of viewsToLoad) {
 				await view.loadChildViews(view)
 			}
@@ -201,19 +199,15 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-// TODO: remove when https://github.com/nextcloud/nextcloud-vue/pull/3539 is in
-.app-navigation::v-deep .app-navigation-entry-icon {
-	background-repeat: no-repeat;
-	background-position: center;
-}
+.app-navigation {
+	:deep(.app-navigation-entry.active .button-vue.icon-collapse:not(:hover)) {
+		color: var(--color-primary-element-text);
+	}
 
-.app-navigation::v-deep .app-navigation-entry.active .button-vue.icon-collapse:not(:hover) {
-	color: var(--color-primary-element-text);
-}
-
-.app-navigation > ul.app-navigation__list {
-	// Use flex gap value for more elegant spacing
-	padding-bottom: var(--default-grid-baseline, 4px);
+	> ul.app-navigation__list {
+		// Use flex gap value for more elegant spacing
+		padding-bottom: var(--default-grid-baseline, 4px);
+	}
 }
 
 .app-navigation-entry__settings {

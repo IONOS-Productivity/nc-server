@@ -19,11 +19,6 @@ use OCP\Migration\IRepairStep;
  * @package OC\Repair
  */
 class CleanTags implements IRepairStep {
-	/** @var IDBConnection */
-	protected $connection;
-
-	/** @var IUserManager */
-	protected $userManager;
 
 	protected $deletedTags = 0;
 
@@ -31,9 +26,10 @@ class CleanTags implements IRepairStep {
 	 * @param IDBConnection $connection
 	 * @param IUserManager $userManager
 	 */
-	public function __construct(IDBConnection $connection, IUserManager $userManager) {
-		$this->connection = $connection;
-		$this->userManager = $userManager;
+	public function __construct(
+		protected IDBConnection $connection,
+		protected IUserManager $userManager,
+	) {
 	}
 
 	/**
@@ -73,7 +69,7 @@ class CleanTags implements IRepairStep {
 			->orderBy('uid')
 			->setMaxResults(50)
 			->setFirstResult($offset);
-		$result = $query->execute();
+		$result = $query->executeQuery();
 
 		$users = [];
 		$hadResults = false;
@@ -94,7 +90,7 @@ class CleanTags implements IRepairStep {
 			$query = $this->connection->getQueryBuilder();
 			$query->delete('vcategory')
 				->where($query->expr()->in('uid', $query->createNamedParameter($users, IQueryBuilder::PARAM_STR_ARRAY)));
-			$this->deletedTags += $query->execute();
+			$this->deletedTags += $query->executeStatement();
 		}
 		return true;
 	}
@@ -147,8 +143,8 @@ class CleanTags implements IRepairStep {
 	 * @param string $deleteId
 	 * @param string $sourceTable
 	 * @param string $sourceId
-	 * @param string $sourceNullColumn	If this column is null in the source table,
-	 * 								the entry is deleted in the $deleteTable
+	 * @param string $sourceNullColumn If this column is null in the source table,
+	 *                                 the entry is deleted in the $deleteTable
 	 */
 	protected function deleteOrphanEntries(IOutput $output, $repairInfo, $deleteTable, $deleteId, $sourceTable, $sourceId, $sourceNullColumn) {
 		$qb = $this->connection->getQueryBuilder();
@@ -162,11 +158,11 @@ class CleanTags implements IRepairStep {
 			->andWhere(
 				$qb->expr()->isNull('s.' . $sourceNullColumn)
 			);
-		$result = $qb->execute();
+		$result = $qb->executeQuery();
 
 		$orphanItems = [];
 		while ($row = $result->fetch()) {
-			$orphanItems[] = (int) $row[$deleteId];
+			$orphanItems[] = (int)$row[$deleteId];
 		}
 
 		$deleteQuery = $this->connection->getQueryBuilder();

@@ -164,7 +164,8 @@ $spacing: 30px;
 
 	.empty-content {
 		margin: 0;
-		&::v-deep .empty-content__icon {
+
+		:deep(.empty-content__icon) {
 			opacity: 1;
 		}
 	}
@@ -178,7 +179,7 @@ $spacing: 30px;
 		margin-top: 2 * $spacing;
 		margin-bottom: $spacing;
 		li {
-			text-align: left;
+			text-align: start;
 		}
 	}
 }

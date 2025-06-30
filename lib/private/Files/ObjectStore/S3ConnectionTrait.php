@@ -29,7 +29,7 @@ trait S3ConnectionTrait {
 
 	protected function parseParams($params) {
 		if (empty($params['bucket'])) {
-			throw new \Exception("Bucket has to be configured.");
+			throw new \Exception('Bucket has to be configured.');
 		}
 
 		$this->id = 'amazon::' . $params['bucket'];
@@ -106,6 +106,10 @@ trait S3ConnectionTrait {
 				'connect_timeout' => 5
 			],
 			'use_aws_shared_config_files' => false,
+			'retries' => [
+				'mode' => 'standard',
+				'max_attempts' => 5,
+			],
 		];
 
 		if ($this->params['s3-accelerate']) {
@@ -128,12 +132,12 @@ trait S3ConnectionTrait {
 				$logger->debug('Bucket "' . $this->bucket . '" This bucket name is not dns compatible, it may contain invalid characters.',
 					['app' => 'objectstore']);
 			}
-
+	
 			if ($this->params['verify_bucket_exists'] && !$this->connection->doesBucketExist($this->bucket)) {
 				try {
 					$logger->info('Bucket "' . $this->bucket . '" does not exist - creating it.', ['app' => 'objectstore']);
 					if (!$this->connection::isBucketDnsCompatible($this->bucket)) {
-						throw new StorageNotAvailableException("The bucket will not be created because the name is not dns compatible, please correct it: " . $this->bucket);
+						throw new StorageNotAvailableException('The bucket will not be created because the name is not dns compatible, please correct it: ' . $this->bucket);
 					}
 					$this->connection->createBucket(['Bucket' => $this->bucket]);
 					$this->testTimeout();
@@ -198,7 +202,7 @@ trait S3ConnectionTrait {
 	}
 
 	protected function getCertificateBundlePath(): ?string {
-		if ((int)($this->params['use_nextcloud_bundle'] ?? "0")) {
+		if ((int)($this->params['use_nextcloud_bundle'] ?? '0')) {
 			// since we store the certificate bundles on the primary storage, we can't get the bundle while setting up the primary storage
 			if (!isset($this->params['primary_storage'])) {
 				/** @var ICertificateManager $certManager */
