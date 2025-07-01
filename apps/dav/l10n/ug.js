@@ -255,14 +255,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "كالېندار ھەمبەھىرلىرىگىمۇ ئەسكەرتىش ئۇقتۇرۇشى ئەۋەتىڭ",
     "Reminders are always sent to organizers and attendees." : "ئەسكەرتىش ھەمىشە تەشكىللىگۈچىلەر ۋە قاتناشقۇچىلارغا ئەۋەتىلىدۇ.",
     "Enable notifications for events via push" : "ئىتتىرىش ئارقىلىق ۋەقەلەرگە ئۇقتۇرۇشنى قوزغىتىڭ",
+    "Cancel" : "بىكار قىلىش",
+    "Import" : "ئەكىر",
+    "Error while saving settings" : "تەڭشەكلەرنى ساقلاش جەريانىدا خاتالىق",
     "There was an error updating your attendance status." : "قاتنىشىش ھالىتىڭىزنى يېڭىلاشتا خاتالىق كۆرۈلدى.",
     "Please contact the organizer directly." : "تەشكىللىگۈچى بىلەن بىۋاسىتە ئالاقىلىشىڭ.",
     "Are you accepting the invitation?" : "تەكلىپنى قوبۇل قىلامسىز؟",
     "Tentative" : "Tentative",
-    "Your attendance was updated successfully." : "سىزنىڭ قاتنىشىشىڭىز مۇۋەپپەقىيەتلىك يېڭىلاندى.",
-    "Time:" : "ۋاقىت:",
-    "Could not open file" : "ھۆججەت ئاچالمىدى",
-    "Invalid chunk name" : "ئىناۋەتسىز",
-    "Could not rename part file assembled from chunks" : "بۆلەكلەردىن يىغىلغان قىسمەن ھۆججەتنىڭ نامىنى ئۆزگەرتەلمىدى"
+    "Your attendance was updated successfully." : "سىزنىڭ قاتنىشىشىڭىز مۇۋەپپەقىيەتلىك يېڭىلاندى."
 },
 "nplurals=2; plural=(n != 1);");

@@ -304,14 +304,23 @@
     "Send reminder notifications to calendar sharees as well" : "也向共享日曆者傳送提醒通告",
     "Reminders are always sent to organizers and attendees." : "一律傳送提醒通知給舉辦者與參與者。",
     "Enable notifications for events via push" : "啟用推送活動通知",
+    "Cancel" : "取消",
+    "Import" : "導入",
+    "Error while saving settings" : "儲存設定時發生錯誤",
+    "Contact reset successfully" : "聯絡人重設成功",
+    "Error while resetting contact" : "重設聯絡人時發生錯誤",
+    "Contact imported successfully" : "成功導入了聯絡人",
+    "Error while importing contact" : "導入聯絡人時發生錯誤",
+    "Example Content" : "範例內容",
+    "Set example content to be created on new user first login." : "設定新用戶首次登入時所建立的範例內容。",
+    "Import contact" : "導入聯絡人",
+    "Reset to default contact" : "重設為默認聯絡人",
+    "Import contacts" : "導入聯絡人",
+    "Importing a new .vcf file will delete the existing default contact and replace it with the new one. Do you want to continue?" : "導入新的 .vcf 檔案將刪除現有的默認聯絡人並將其替換為新的聯絡人。您想繼續嗎？",
     "There was an error updating your attendance status." : "更新您的參與狀況時發生錯誤",
     "Please contact the organizer directly." : "請直接聯繫絡主辦人",
     "Are you accepting the invitation?" : "接受邀請嗎？",
     "Tentative" : "暫定",
-    "Your attendance was updated successfully." : "您的參與狀況成功更新",
-    "Time:" : "時間：",
-    "Could not open file" : "無法開啟檔案",
-    "Invalid chunk name" : "無效的區塊名稱",
-    "Could not rename part file assembled from chunks" : "無法重新命名從區塊組合成的部份檔案"
+    "Your attendance was updated successfully." : "您的參與狀況成功更新"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

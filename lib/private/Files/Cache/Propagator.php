@@ -50,7 +50,6 @@ class Propagator implements IPropagator {
 		$this->clock = Server::get(ClockInterface::class);
 	}
 
-
 	/**
 	 * @param string $internalPath
 	 * @param int $time
@@ -207,13 +206,13 @@ class Propagator implements IPropagator {
 			$query->setParameter('time', $item['time'], IQueryBuilder::PARAM_INT);
 			$query->setParameter('hash', $item['hash']);
 
-			$query->execute();
+			$query->executeStatement();
 
 			if ($item['size']) {
 				$sizeQuery->setParameter('size', $item['size'], IQueryBuilder::PARAM_INT);
 				$sizeQuery->setParameter('hash', $item['hash']);
 
-				$sizeQuery->execute();
+				$sizeQuery->executeStatement();
 			}
 		}
 

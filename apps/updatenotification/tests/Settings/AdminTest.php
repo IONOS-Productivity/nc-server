@@ -8,7 +8,6 @@ declare(strict_types=1);
  */
 namespace OCA\UpdateNotification\Tests\Settings;
 
-use OC\User\Backend;
 use OCA\UpdateNotification\Settings\Admin;
 use OCA\UpdateNotification\UpdateChecker;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -22,8 +21,6 @@ use OCP\IUserManager;
 use OCP\L10N\IFactory;
 use OCP\L10N\ILanguageIterator;
 use OCP\Support\Subscription\IRegistry;
-use OCP\User\Backend\ICountUsersBackend;
-use OCP\UserInterface;
 use OCP\Util;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
@@ -80,43 +77,11 @@ class AdminTest extends TestCase {
 		);
 	}
 
-	public function testGetFormWithUpdate() {
-		$backend1 = $this->createMock(CountUsersBackend::class);
-		$backend2 = $this->createMock(CountUsersBackend::class);
-		$backend3 = $this->createMock(CountUsersBackend::class);
-		$backend1
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(false);
-		$backend2
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(true);
-		$backend3
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(true);
-		$backend1
-			->expects($this->never())
-			->method('countUsers');
-		$backend2
-			->expects($this->once())
-			->method('countUsers')
-			->with()
-			->willReturn(false);
-		$backend3
-			->expects($this->once())
-			->method('countUsers')
-			->with()
-			->willReturn(5);
+	public function testGetFormWithUpdate(): void {
 		$this->userManager
 			->expects($this->once())
-			->method('getBackends')
-			->with()
-			->willReturn([$backend1, $backend2, $backend3]);
+			->method('countUsersTotal')
+			->willReturn(5);
 		$channels = [
 			'daily',
 			'beta',
@@ -143,6 +108,11 @@ class AdminTest extends TestCase {
 				['updater.server.url', 'https://updates.nextcloud.com/updater_server/', 'https://updates.nextcloud.com/updater_server/'],
 				['upgrade.disable-web', false, false],
 			]);
+		$this->config
+			->expects(self::any())
+			->method('getSystemValueBool')
+			->with('updatechecker', true)
+			->willReturn(true);
 		$this->dateTimeFormatter
 			->expects($this->once())
 			->method('formatDateTime')
@@ -206,43 +176,11 @@ class AdminTest extends TestCase {
 		$this->assertEquals($expected, $this->admin->getForm());
 	}
 
-	public function testGetFormWithUpdateAndChangedUpdateServer() {
-		$backend1 = $this->createMock(CountUsersBackend::class);
-		$backend2 = $this->createMock(CountUsersBackend::class);
-		$backend3 = $this->createMock(CountUsersBackend::class);
-		$backend1
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(false);
-		$backend2
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(true);
-		$backend3
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(true);
-		$backend1
-			->expects($this->never())
-			->method('countUsers');
-		$backend2
-			->expects($this->once())
-			->method('countUsers')
-			->with()
-			->willReturn(false);
-		$backend3
-			->expects($this->once())
-			->method('countUsers')
-			->with()
-			->willReturn(5);
+	public function testGetFormWithUpdateAndChangedUpdateServer(): void {
 		$this->userManager
 			->expects($this->once())
-			->method('getBackends')
-			->with()
-			->willReturn([$backend1, $backend2, $backend3]);
+			->method('countUsersTotal')
+			->willReturn(5);
 		$channels = [
 			'daily',
 			'beta',
@@ -259,6 +197,11 @@ class AdminTest extends TestCase {
 			->method('getValueInt')
 			->with('core', 'lastupdatedat', 0)
 			->willReturn(12345);
+		$this->config
+			->expects(self::any())
+			->method('getSystemValueBool')
+			->with('updatechecker', true)
+			->willReturn(true);
 		$this->config
 			->expects($this->once())
 			->method('getAppValue')
@@ -333,43 +276,11 @@ class AdminTest extends TestCase {
 		$this->assertEquals($expected, $this->admin->getForm());
 	}
 
-	public function testGetFormWithUpdateAndCustomersUpdateServer() {
-		$backend1 = $this->createMock(CountUsersBackend::class);
-		$backend2 = $this->createMock(CountUsersBackend::class);
-		$backend3 = $this->createMock(CountUsersBackend::class);
-		$backend1
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(false);
-		$backend2
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(true);
-		$backend3
-			->expects($this->once())
-			->method('implementsActions')
-			->with(Backend::COUNT_USERS)
-			->willReturn(true);
-		$backend1
-			->expects($this->never())
-			->method('countUsers');
-		$backend2
-			->expects($this->once())
-			->method('countUsers')
-			->with()
-			->willReturn(false);
-		$backend3
-			->expects($this->once())
-			->method('countUsers')
-			->with()
-			->willReturn(5);
+	public function testGetFormWithUpdateAndCustomersUpdateServer(): void {
 		$this->userManager
 			->expects($this->once())
-			->method('getBackends')
-			->with()
-			->willReturn([$backend1, $backend2, $backend3]);
+			->method('countUsersTotal')
+			->willReturn(5);
 		$channels = [
 			'daily',
 			'beta',
@@ -386,6 +297,11 @@ class AdminTest extends TestCase {
 			->method('getValueInt')
 			->with('core', 'lastupdatedat', 0)
 			->willReturn(12345);
+		$this->config
+			->expects(self::any())
+			->method('getSystemValueBool')
+			->with('updatechecker', true)
+			->willReturn(true);
 		$this->config
 			->expects($this->once())
 			->method('getAppValue')
@@ -461,11 +377,27 @@ class AdminTest extends TestCase {
 	}
 
 
-	public function testGetSection() {
+	public function testGetSection(): void {
+		$this->config
+			->expects(self::atLeastOnce())
+			->method('getSystemValueBool')
+			->with('updatechecker', true)
+			->willReturn(true);
+
 		$this->assertSame('overview', $this->admin->getSection());
 	}
 
-	public function testGetPriority() {
+	public function testGetSectionDisabled(): void {
+		$this->config
+			->expects(self::atLeastOnce())
+			->method('getSystemValueBool')
+			->with('updatechecker', true)
+			->willReturn(false);
+
+		$this->assertNull($this->admin->getSection());
+	}
+
+	public function testGetPriority(): void {
 		$this->assertSame(11, $this->admin->getPriority());
 	}
 
@@ -527,7 +459,7 @@ class AdminTest extends TestCase {
 	/**
 	 * @dataProvider changesProvider
 	 */
-	public function testFilterChanges($changes, $userLang, $expectation) {
+	public function testFilterChanges($changes, $userLang, $expectation): void {
 		$iterator = $this->createMock(ILanguageIterator::class);
 		$iterator->expects($this->any())
 			->method('current')
@@ -542,8 +474,4 @@ class AdminTest extends TestCase {
 		$result = $this->invokePrivate($this->admin, 'filterChanges', [$changes]);
 		$this->assertSame($expectation, $result);
 	}
-}
-
-abstract class CountUsersBackend implements UserInterface, ICountUsersBackend {
-
 }

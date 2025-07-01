@@ -14,8 +14,9 @@ use OCA\Encryption\Controller\RecoveryController;
 use OCA\Encryption\Controller\SettingsController;
 use OCA\Encryption\Crypto\Crypt;
 use OCA\Encryption\Crypto\Encryption;
-use OCA\Encryption\Hooks\UserHooks;
 use OCA\Encryption\KeyManager;
+use OCA\Encryption\Listeners\UserEventsListener;
+use OCA\Encryption\Services\PassphraseService;
 use OCA\Encryption\Session;
 use OCP\HintException;
 
@@ -33,6 +34,7 @@ class ExceptionSerializer {
 		'validateUserPass',
 		'loginWithToken',
 		'{closure}',
+		'{closure:*',
 		'createSessionToken',
 
 		// Provisioning
@@ -169,14 +171,16 @@ class ExceptionSerializer {
 		\OCA\Encryption\Users\Setup::class => [
 			'setupUser',
 		],
-		UserHooks::class => [
-			'login',
-			'postCreateUser',
-			'postDeleteUser',
-			'prePasswordReset',
-			'postPasswordReset',
-			'preSetPassphrase',
-			'setPassphrase',
+		UserEventsListener::class => [
+			'handle',
+			'onUserCreated',
+			'onUserLogin',
+			'onBeforePasswordUpdated',
+			'onPasswordUpdated',
+			'onPasswordReset',
+		],
+		PassphraseService::class => [
+			'setPassphraseForUser',
 		],
 	];
 
@@ -197,7 +201,9 @@ class ExceptionSerializer {
 				return $this->editTrace($sensitiveValues, $traceLine);
 			}
 			foreach (self::methodsWithSensitiveParameters as $sensitiveMethod) {
-				if (str_contains($traceLine['function'], $sensitiveMethod)) {
+				if (str_contains($traceLine['function'], $sensitiveMethod)
+					|| (str_ends_with($sensitiveMethod, '*')
+						&& str_starts_with($traceLine['function'], substr($sensitiveMethod, 0, -1)))) {
 					return $this->editTrace($sensitiveValues, $traceLine);
 				}
 			}

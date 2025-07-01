@@ -31,10 +31,12 @@ class RefreshWebcalService {
 	public const STRIP_ATTACHMENTS = '{http://calendarserver.org/ns/}subscribed-strip-attachments';
 	public const STRIP_TODOS = '{http://calendarserver.org/ns/}subscribed-strip-todos';
 
-	public function __construct(private CalDavBackend $calDavBackend,
+	public function __construct(
+		private CalDavBackend $calDavBackend,
 		private LoggerInterface $logger,
 		private Connection $connection,
-		private ITimeFactory $time) {
+		private ITimeFactory $time,
+	) {
 	}
 
 	public function refreshSubscription(string $principalUri, string $uri) {
@@ -45,12 +47,12 @@ class RefreshWebcalService {
 		}
 
 		// Check the refresh rate if there is any
-		if(!empty($subscription['{http://apple.com/ns/ical/}refreshrate'])) {
+		if (!empty($subscription['{http://apple.com/ns/ical/}refreshrate'])) {
 			// add the refresh interval to the lastmodified timestamp
 			$refreshInterval = new \DateInterval($subscription['{http://apple.com/ns/ical/}refreshrate']);
 			$updateTime = $this->time->getDateTime();
 			$updateTime->setTimestamp($subscription['lastmodified'])->add($refreshInterval);
-			if($updateTime->getTimestamp() > $this->time->getTime()) {
+			if ($updateTime->getTimestamp() > $this->time->getTime()) {
 				return;
 			}
 		}
@@ -61,7 +63,7 @@ class RefreshWebcalService {
 			return;
 		}
 
-		$localData = $this->calDavBackend->getLimitedCalendarObjects((int) $subscription['id'], CalDavBackend::CALENDAR_TYPE_SUBSCRIPTION);
+		$localData = $this->calDavBackend->getLimitedCalendarObjects((int)$subscription['id'], CalDavBackend::CALENDAR_TYPE_SUBSCRIPTION);
 
 		$stripTodos = ($subscription[self::STRIP_TODOS] ?? 1) === 1;
 		$stripAlarms = ($subscription[self::STRIP_ALARMS] ?? 1) === 1;
@@ -131,19 +133,19 @@ class RefreshWebcalService {
 				try {
 					$objectUri = $this->getRandomCalendarObjectUri();
 					$this->calDavBackend->createCalendarObject($subscription['id'], $objectUri, $vObject->serialize(), CalDavBackend::CALENDAR_TYPE_SUBSCRIPTION);
-				} catch (NoInstancesException | BadRequest $ex) {
+				} catch (NoInstancesException|BadRequest $ex) {
 					$this->logger->warning('Unable to create calendar object from subscription {subscriptionId}', ['exception' => $ex, 'subscriptionId' => $subscription['id'], 'source' => $subscription['source']]);
 				}
 			}
 
 			$ids = array_map(static function ($dataSet): int {
-				return (int) $dataSet['id'];
+				return (int)$dataSet['id'];
 			}, $localData);
 			$uris = array_map(static function ($dataSet): string {
 				return $dataSet['uri'];
 			}, $localData);
 
-			if(!empty($ids) && !empty($uris)) {
+			if (!empty($ids) && !empty($uris)) {
 				// Clean up on aisle 5
 				// The only events left over in the $localData array should be those that don't exist upstream
 				// All deleted VObjects from upstream are removed
@@ -157,7 +159,7 @@ class RefreshWebcalService {
 
 			$this->updateSubscription($subscription, $mutations);
 		} catch (ParseException $ex) {
-			$this->logger->error("Subscription {subscriptionId} could not be refreshed due to a parsing error", ['exception' => $ex, 'subscriptionId' => $subscription['id']]);
+			$this->logger->error('Subscription {subscriptionId} could not be refreshed due to a parsing error', ['exception' => $ex, 'subscriptionId' => $subscription['id']]);
 		}
 	}
 

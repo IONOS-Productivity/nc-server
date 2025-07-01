@@ -80,14 +80,15 @@ class PasswordConfirmationMiddleware extends Middleware {
 		if ($this->isPasswordConfirmationStrict($reflectionMethod)) {
 			$authHeader = $this->request->getHeader('Authorization');
 			[, $password] = explode(':', base64_decode(substr($authHeader, 6)), 2);
-			$loginResult = $this->userManager->checkPassword($user->getUid(), $password);
+			$loginName = $this->session->get('loginname');
+			$loginResult = $this->userManager->checkPassword($loginName, $password);
 			if ($loginResult === false) {
 				throw new NotConfirmedException();
 			}
 
 			$this->session->set('last-password-confirm', $this->timeFactory->getTime());
 		} else {
-			$lastConfirm = (int) $this->session->get('last-password-confirm');
+			$lastConfirm = (int)$this->session->get('last-password-confirm');
 			// TODO: confirm excludedUserBackEnds can go away and remove it
 			if (!isset($this->excludedUserBackEnds[$backendClassName]) && $lastConfirm < ($this->timeFactory->getTime() - (30 * 60 + 15))) { // allow 15 seconds delay
 				throw new NotConfirmedException();

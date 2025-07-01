@@ -26,27 +26,20 @@ class DeleteOrphanedSharesJob extends TimedJob {
 
 	private const CHUNK_SIZE = 1000;
 
-	private const INTERVAL = 24 * 60 * 60; // 1 day
-
-	private IDBConnection $db;
-
-	private LoggerInterface $logger;
+	private const INTERVAL = 24 * 60 * 60;
 
 	/**
 	 * sets the correct interval for this timed job
 	 */
 	public function __construct(
 		ITimeFactory $time,
-		IDBConnection $db,
-		LoggerInterface $logger
+		private IDBConnection $db,
+		private LoggerInterface $logger,
 	) {
 		parent::__construct($time);
 
-		$this->db = $db;
-
 		$this->setInterval(self::INTERVAL); // 1 day
 		$this->setTimeSensitivity(self::TIME_INSENSITIVE);
-		$this->logger = $logger;
 	}
 
 	/**
@@ -93,7 +86,7 @@ class DeleteOrphanedSharesJob extends TimedJob {
 				$result->closeCursor();
 				$deleteQb->setParameter('ids', $ids, IQueryBuilder::PARAM_INT_ARRAY);
 				$deleted = $deleteQb->executeStatement();
-				$this->logger->debug("{deleted} orphaned share(s) deleted", [
+				$this->logger->debug('{deleted} orphaned share(s) deleted', [
 					'app' => 'DeleteOrphanedSharesJob',
 					'deleted' => $deleted,
 				]);

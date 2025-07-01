@@ -6,7 +6,6 @@
 namespace OCA\Files\Service;
 
 use OCA\Files\AppInfo\Application;
-use OCP\AppFramework\Services\IAppConfig;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -16,6 +15,12 @@ class UserConfig {
 		[
 			// Whether to crop the files previews or not in the files list
 			'key' => 'crop_image_previews',
+			'default' => true,
+			'allowed' => [true, false],
+		],
+		[
+			// Whether to show the "confirm file extension change" warning
+			'key' => 'show_dialog_file_extension',
 			'default' => true,
 			'allowed' => [true, false],
 		],
@@ -50,12 +55,12 @@ class UserConfig {
 			'allowed' => [true, false],
 		],
 	];
-
-	protected IConfig $config;
 	protected ?IUser $user = null;
 
-	public function __construct(IConfig $config, IUserSession $userSession, protected IAppConfig $appConfig) {
-		$this->config = $config;
+	public function __construct(
+		protected IConfig $config,
+		IUserSession $userSession,
+	) {
 		$this->user = $userSession->getUser();
 	}
 
@@ -116,12 +121,7 @@ class UserConfig {
 			throw new \InvalidArgumentException('Unknown config key');
 		}
 
-		$isBoolValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-		if ($isBoolValue !== null) {
-			$value = $isBoolValue;
-		}
-
-		if (!in_array($value, $this->getAllowedConfigValues($key), true)) {
+		if (!in_array($value, $this->getAllowedConfigValues($key))) {
 			throw new \InvalidArgumentException('Invalid config value');
 		}
 
@@ -144,12 +144,8 @@ class UserConfig {
 
 		$userId = $this->user->getUID();
 		$userConfigs = array_map(function (string $key) use ($userId) {
-			$value = $this->config->getUserValue($userId, Application::APP_ID, $key, null);
-			// If the default value is expected to be a boolean, we need to cast the value
-			if ($value === null) {
-				$value = $this->appConfig->getAppValueBool($key, $this->getDefaultConfigValue($key));
-			}
-
+			$value = $this->config->getUserValue($userId, Application::APP_ID, $key, $this->getDefaultConfigValue($key));
+			// If the default is expected to be a boolean, we need to cast the value
 			if (is_bool($this->getDefaultConfigValue($key)) && is_string($value)) {
 				return $value === '1';
 			}

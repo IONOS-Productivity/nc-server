@@ -208,14 +208,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "캘린더 공유자에게도 미리 알림 보내기",
     "Reminders are always sent to organizers and attendees." : "미리 알림은 주최자와 참석자에게 항상 전송됩니다.",
     "Enable notifications for events via push" : "일정에 대한 푸시 알림 활성화",
+    "Cancel" : "취소",
+    "Import" : "가져오기",
+    "Error while saving settings" : "설정 저장 중 오류 발생",
     "There was an error updating your attendance status." : "참석 상태를 업데이트하는 중 오류가 발생했습니다.",
     "Please contact the organizer directly." : "주최자에게 직접 연락하십시오.",
     "Are you accepting the invitation?" : "초대를 수락하시겠습니까?",
     "Tentative" : "보류",
-    "Your attendance was updated successfully." : "참석 정보를 업데이트했습니다.",
-    "Time:" : "시간:",
-    "Could not open file" : "파일을 열 수 없음",
-    "Invalid chunk name" : "잘못된 청크 이름",
-    "Could not rename part file assembled from chunks" : "청크에서 조합 된 부분 파일의 이름을 바꿀 수 없음"
+    "Your attendance was updated successfully." : "참석 정보를 업데이트했습니다."
 },
 "nplurals=1; plural=0;");

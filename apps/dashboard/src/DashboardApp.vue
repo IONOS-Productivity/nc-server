@@ -3,7 +3,7 @@
  - SPDX-License-Identifier: AGPL-3.0-or-later
  -->
 <template>
-	<div id="app-dashboard">
+	<main id="app-dashboard">
 		<h2>{{ greeting.text }}</h2>
 		<ul class="statuses">
 			<li v-for="status in sortedRegisteredStatus"
@@ -24,20 +24,10 @@
 					class="panel">
 					<div class="panel--header">
 						<h2>
-							<img v-if="apiWidgets[panels[panelId].id].icon_url"
-								:alt="apiWidgets[panels[panelId].id].title + ' icon'"
-								:src="apiWidgets[panels[panelId].id].icon_url"
-								aria-hidden="true">
-							<span v-else
-								:aria-labelledby="`panel-${panels[panelId].id}--header--icon--description`"
-								aria-hidden="true"
-								:class="apiWidgets[panels[panelId].id].icon_class"
-								role="img" />
+							<img v-if="apiWidgets[panels[panelId].id].icon_url" :src="apiWidgets[panels[panelId].id].icon_url" alt="">
+							<span v-else :class="apiWidgets[panels[panelId].id].icon_class" aria-hidden="true" />
 							{{ apiWidgets[panels[panelId].id].title }}
 						</h2>
-						<span :id="`panel-${panels[panelId].id}--header--icon--description`" class="hidden-visually">
-							{{ t('dashboard', '"{title} icon"', { title: apiWidgets[panels[panelId].id].title }) }}
-						</span>
 					</div>
 					<div class="panel--content">
 						<ApiDashboardWidget :widget="apiWidgets[panels[panelId].id]"
@@ -48,13 +38,9 @@
 				<div v-else :key="panels[panelId].id" class="panel">
 					<div class="panel--header">
 						<h2>
-							<span :aria-labelledby="`panel-${panels[panelId].id}--header--icon--description`"
-								aria-hidden="true"
-								:class="panels[panelId].iconClass"
-								role="img" />
+							<span :class="panels[panelId].iconClass" aria-hidden="true" />
 							{{ panels[panelId].title }}
 						</h2>
-						<span :id="`panel-${panels[panelId].id}--header--icon--description`" class="hidden-visually"> {{ t('dashboard', '"{title} icon"', { title: panels[panelId].title }) }} </span>
 					</div>
 					<div class="panel--content" :class="{ loading: !panels[panelId].mounted }">
 						<div :ref="panels[panelId].id" :data-id="panels[panelId].id" />
@@ -102,10 +88,7 @@
 							:checked="isActive(panel)"
 							@input="updateCheckbox(panel, $event.target.checked)">
 						<label :for="'panel-checkbox-' + panel.id" :class="{ draggable: isActive(panel) }">
-							<img v-if="panel.iconUrl"
-								:alt="panel.title + ' icon'"
-								:src="panel.iconUrl"
-								aria-hidden="true">
+							<img v-if="panel.iconUrl" alt="" :src="panel.iconUrl">
 							<span v-else :class="panel.iconClass" aria-hidden="true" />
 							{{ panel.title }}
 						</label>
@@ -127,7 +110,7 @@
 				</div>
 			</div>
 		</NcModal>
-	</div>
+	</main>
 </template>
 
 <script>
@@ -147,6 +130,7 @@ import ApiDashboardWidget from './components/ApiDashboardWidget.vue'
 
 const panels = loadState('dashboard', 'panels')
 const firstRun = loadState('dashboard', 'firstRun')
+const birthdate = new Date(loadState('dashboard', 'birthdate'))
 
 const statusInfo = {
 	weather: {
@@ -194,15 +178,21 @@ export default {
 			apiWidgets: [],
 			apiWidgetItems: {},
 			loadingItems: true,
+			birthdate,
 		}
 	},
 	computed: {
 		greeting() {
 			const time = this.timer.getHours()
+			const isBirthday = this.birthdate instanceof Date
+				&& this.birthdate.getMonth() === this.timer.getMonth()
+				&& this.birthdate.getDate() === this.timer.getDate()
 
 			// Determine part of the day
 			let partOfDay
-			if (time >= 22 || time < 5) {
+			if (isBirthday) {
+				partOfDay = 'birthday'
+			} else if (time >= 22 || time < 5) {
 				partOfDay = 'night'
 			} else if (time >= 18) {
 				partOfDay = 'evening'
@@ -230,6 +220,10 @@ export default {
 					// Don't use "Good night" as it's not a greeting
 					generic: t('dashboard', 'Hello'),
 					withName: t('dashboard', 'Hello, {name}', { name: this.displayName }, undefined, { escape: false }),
+				},
+				birthday: {
+					generic: t('dashboard', 'Happy birthday 🥳🤩🎂🎉'),
+					withName: t('dashboard', 'Happy birthday, {name} 🥳🤩🎂🎉', { name: this.displayName }, undefined, { escape: false }),
 				},
 			}
 
@@ -450,8 +444,8 @@ export default {
 			}
 		},
 		async fetchApiWidgets() {
-			const response = await axios.get(generateOcsUrl('/apps/dashboard/api/v1/widgets'))
-			this.apiWidgets = response.data.ocs.data
+			const { data } = await axios.get(generateOcsUrl('/apps/dashboard/api/v1/widgets'))
+			this.apiWidgets = data.ocs.data
 		},
 		async fetchApiWidgetItems(widgetIds, merge = false) {
 			try {
@@ -513,7 +507,6 @@ export default {
 .panel, .panels > div {
 	// Ensure the maxcontrast color is set for the background
 	--color-text-maxcontrast: var(--color-text-maxcontrast-background-blur, var(--color-main-text));
-
 	width: 320px;
 	max-width: 100%;
 	margin: 16px;
@@ -538,7 +531,8 @@ export default {
 		padding: 16px;
 		cursor: grab;
 
-		&, ::v-deep * {
+		&,
+		:deep(*) {
 			-webkit-touch-callout: none;
 			-webkit-user-select: none;
 			-khtml-user-select: none;
@@ -575,11 +569,10 @@ export default {
 				background-size: 32px;
 				width: 32px;
 				height: 32px;
-				margin-right: 16px;
 				background-position: center;
 				float: left;
 				margin-top: -6px;
-				margin-left: 6px;
+				margin-inline: 6px 16px;
 			}
 
 			img {
@@ -615,7 +608,7 @@ export default {
 	margin:auto;
 	background-position: 16px center;
 	padding: 12px 16px;
-	padding-left: 36px;
+	padding-inline-start: 36px;
 	border-radius: var(--border-radius-pill);
 	max-width: 200px;
 	opacity: 1;
@@ -625,11 +618,10 @@ export default {
 .button,
 .button-vue,
 .edit-panels,
-.statuses ::v-deep .action-item .action-item__menutoggle,
-.statuses ::v-deep .action-item.action-item--open .action-item__menutoggle {
+.statuses :deep(.action-item .action-item__menutoggle),
+.statuses :deep(.action-item.action-item--open .action-item__menutoggle) {
 	// Ensure the maxcontrast color is set for the background
 	--color-text-maxcontrast: var(--color-text-maxcontrast-background-blur, var(--color-main-text));
-
 	background-color: var(--color-main-background-blur);
 	-webkit-backdrop-filter: var(--filter-background-blur);
 	backdrop-filter: var(--filter-background-blur);
@@ -667,7 +659,7 @@ export default {
 			background-color: var(--color-background-hover);
 			border: 2px solid var(--color-main-background);
 			border-radius: var(--border-radius-large);
-			text-align: left;
+			text-align: start;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -697,7 +689,7 @@ export default {
 
 		input[type='checkbox'].checkbox + label:before {
 			position: absolute;
-			right: 12px;
+			inset-inline-end: 12px;
 			top: 16px;
 		}
 

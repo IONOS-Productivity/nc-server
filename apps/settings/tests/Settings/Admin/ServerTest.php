@@ -84,8 +84,11 @@ class ServerTest extends TestCase {
 		$this->appConfig
 			->expects($this->any())
 			->method('getValueString')
-			->with('core', 'backgroundjobs_mode', 'ajax')
-			->willReturn('ajax');
+			->willReturnCallback(fn ($a, $b, $default) => $default);
+		$this->appConfig
+			->expects($this->any())
+			->method('getValueBool')
+			->willReturnCallback(fn ($a, $b, $default) => $default);
 		$this->profileManager
 			->expects($this->exactly(2))
 			->method('isProfileEnabled')

@@ -10,10 +10,12 @@ namespace OCA\DAV\Connector\Sabre;
 use OC\AppFramework\Http\Request;
 use OC\FilesMetadata\Model\FilesMetadata;
 use OCA\DAV\Connector\Sabre\Exception\InvalidPath;
+use OCP\Accounts\IAccountManager;
 use OCP\Constants;
 use OCP\Files\ForbiddenException;
 use OCP\Files\IFilenameValidator;
 use OCP\Files\InvalidPathException;
+use OCP\Files\Storage\ISharedStorage;
 use OCP\Files\StorageNotAvailableException;
 use OCP\FilesMetadata\Exceptions\FilesMetadataException;
 use OCP\FilesMetadata\Exceptions\FilesMetadataNotFoundException;
@@ -63,6 +65,7 @@ class FilesPlugin extends ServerPlugin {
 	public const UPLOAD_TIME_PROPERTYNAME = '{http://nextcloud.org/ns}upload_time';
 	public const CREATION_TIME_PROPERTYNAME = '{http://nextcloud.org/ns}creation_time';
 	public const SHARE_NOTE = '{http://nextcloud.org/ns}note';
+	public const SHARE_HIDE_DOWNLOAD_PROPERTYNAME = '{http://nextcloud.org/ns}hide-download';
 	public const SUBFOLDER_COUNT_PROPERTYNAME = '{http://nextcloud.org/ns}contained-folder-count';
 	public const SUBFILE_COUNT_PROPERTYNAME = '{http://nextcloud.org/ns}contained-file-count';
 	public const FILE_METADATA_PREFIX = '{http://nextcloud.org/ns}metadata-';
@@ -88,6 +91,7 @@ class FilesPlugin extends ServerPlugin {
 		private IPreview $previewManager,
 		private IUserSession $userSession,
 		private IFilenameValidator $validator,
+		private IAccountManager $accountManager,
 		private bool $isPublic = false,
 		private bool $downloadAttachment = true,
 	) {
@@ -134,7 +138,7 @@ class FilesPlugin extends ServerPlugin {
 		$this->server->on('afterWriteContent', [$this, 'sendFileIdHeader']);
 		$this->server->on('afterMethod:GET', [$this,'httpGet']);
 		$this->server->on('afterMethod:GET', [$this, 'handleDownloadToken']);
-		$this->server->on('afterResponse', function ($request, ResponseInterface $response) {
+		$this->server->on('afterResponse', function ($request, ResponseInterface $response): void {
 			$body = $response->getBody();
 			if (is_resource($body)) {
 				fclose($body);
@@ -197,6 +201,7 @@ class FilesPlugin extends ServerPlugin {
 
 		// First check copyable (move only needs additional delete permission)
 		$this->checkCopy($source, $target);
+
 		// The source needs to be deletable for moving
 		$sourceNodeFileInfo = $sourceNode->getFileInfo();
 		if (!$sourceNodeFileInfo->isDeletable()) {
@@ -266,7 +271,7 @@ class FilesPlugin extends ServerPlugin {
 			}
 		}
 
-		if ($node instanceof \OCA\DAV\Connector\Sabre\File) {
+		if ($node instanceof File) {
 			//Add OC-Checksum header
 			$checksum = $node->getChecksum();
 			if ($checksum !== null && $checksum !== '') {
@@ -286,7 +291,7 @@ class FilesPlugin extends ServerPlugin {
 	public function handleGetProperties(PropFind $propFind, \Sabre\DAV\INode $node) {
 		$httpRequest = $this->server->httpRequest;
 
-		if ($node instanceof \OCA\DAV\Connector\Sabre\Node) {
+		if ($node instanceof Node) {
 			/**
 			 * This was disabled, because it made dir listing throw an exception,
 			 * so users were unable to navigate into folders where one subitem
@@ -357,9 +362,26 @@ class FilesPlugin extends ServerPlugin {
 				$owner = $node->getOwner();
 				if (!$owner) {
 					return null;
-				} else {
+				}
+
+				// Get current user to see if we're in a public share or not
+				$user = $this->userSession->getUser();
+
+				// If the user is logged in, we can return the display name
+				if ($user !== null) {
 					return $owner->getDisplayName();
 				}
+
+				// Check if the user published their display name
+				$ownerAccount = $this->accountManager->getAccount($owner);
+				$ownerNameProperty = $ownerAccount->getProperty(IAccountManager::PROPERTY_DISPLAYNAME);
+
+				// Since we are not logged in, we need to have at least the published scope
+				if ($ownerNameProperty->getScope() === IAccountManager::SCOPE_PUBLISHED) {
+					return $owner->getDisplayName();
+				}
+
+				return null;
 			});
 
 			$propFind->handle(self::HAS_PREVIEW_PROPERTYNAME, function () use ($node) {
@@ -387,6 +409,19 @@ class FilesPlugin extends ServerPlugin {
 				return $node->getNoteFromShare(
 					$user?->getUID()
 				);
+			});
+
+			$propFind->handle(self::SHARE_HIDE_DOWNLOAD_PROPERTYNAME, function () use ($node) {
+				$storage = $node->getNode()->getStorage();
+				if ($storage->instanceOfStorage(ISharedStorage::class)) {
+					/** @var ISharedStorage $storage */
+					return match($storage->getShare()->getHideDownload()) {
+						true => 'true',
+						false => 'false',
+					};
+				} else {
+					return null;
+				}
 			});
 
 			$propFind->handle(self::DATA_FINGERPRINT_PROPERTYNAME, function () {
@@ -427,7 +462,7 @@ class FilesPlugin extends ServerPlugin {
 			});
 		}
 
-		if ($node instanceof \OCA\DAV\Connector\Sabre\File) {
+		if ($node instanceof File) {
 			$propFind->handle(self::DOWNLOADURL_PROPERTYNAME, function () use ($node) {
 				try {
 					$directDownloadUrl = $node->getDirectDownload();
@@ -516,7 +551,7 @@ class FilesPlugin extends ServerPlugin {
 	 */
 	public function handleUpdateProperties($path, PropPatch $propPatch) {
 		$node = $this->tree->getNodeForPath($path);
-		if (!($node instanceof \OCA\DAV\Connector\Sabre\Node)) {
+		if (!($node instanceof Node)) {
 			return;
 		}
 
@@ -545,7 +580,7 @@ class FilesPlugin extends ServerPlugin {
 			if (empty($time)) {
 				return false;
 			}
-			$node->setCreationTime((int) $time);
+			$node->setCreationTime((int)$time);
 			return true;
 		});
 
@@ -676,8 +711,6 @@ class FilesPlugin extends ServerPlugin {
 		return IMetadataValueWrapper::EDIT_REQ_READ_PERMISSION;
 	}
 
-
-
 	/**
 	 * @param string $filePath
 	 * @param ?\Sabre\DAV\INode $node
@@ -690,7 +723,7 @@ class FilesPlugin extends ServerPlugin {
 			return;
 		}
 		$node = $this->server->tree->getNodeForPath($filePath);
-		if ($node instanceof \OCA\DAV\Connector\Sabre\Node) {
+		if ($node instanceof Node) {
 			$fileId = $node->getFileId();
 			if (!is_null($fileId)) {
 				$this->server->httpResponse->setHeader('OC-FileId', $fileId);

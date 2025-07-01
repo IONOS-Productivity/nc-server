@@ -90,6 +90,7 @@ OC.L10N.register(
     "Version" : "Version",
     "Actions" : "Accions",
     "_%n app has an update available_::_%n apps have an update available_" : ["%n aplicacion an una mesa a jorn de disponibla","%n aplicacions an una mesa a jorn de disponibla"],
+    "Group name" : "Nom del grop",
     "Loading" : "Cargament",
     "Type" : "Tipe",
     "Confirm" : "Confirmar",
@@ -130,7 +131,6 @@ OC.L10N.register(
     "Enable encryption" : "Activar lo chiframent",
     "Submit" : "Transmetre",
     "Rename group" : "Renomenar lo grop",
-    "Remove group" : "Suprimir lo grop",
     "Current password" : "Senhal actual",
     "New password" : "Senhal novèl",
     "Change password" : "Cambiar de senhal",
@@ -180,7 +180,6 @@ OC.L10N.register(
     "No devices configured." : "Cap de periferic pas configurat.",
     "Your browser does not support WebAuthn." : "Vòstre navigador es pas compatible amb WebAuthn.",
     "Admins" : "Admins",
-    "Group name" : "Nom del grop",
     "Sending…" : "Mandadís…",
     "Email sent" : "Corrièl mandat",
     "Location" : "Emplaçament",
@@ -223,12 +222,6 @@ OC.L10N.register(
     "Check out our blog" : "Donar un còp d’uèlh a nòstre blòg",
     "Subscribe to our newsletter" : "S’abonar a l’infoletra",
     "Set default expiration date for shares" : "Definir una data d’expiracion per defaut pels partatges",
-    "Your biography" : "Vòstra biografia",
-    "New user" : "Utilizaire novèl",
-    "_{userCount} user_::_{userCount} users_" : ["{userCount} utilizaire","{userCount} utilizaires"],
-    "Username" : "Nom d'utilizaire",
-    "Add user to group" : "Apondre utilizaire al grop",
-    "Name your device" : "Nommatz vòstre periferic",
-    "Follow us on Twitter" : "Nos seguir sus Twitter"
+    "Your biography" : "Vòstra biografia"
 },
 "nplurals=2; plural=(n > 1);");

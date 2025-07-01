@@ -94,6 +94,7 @@ export default {
 			max-width: 550px;
 		}
 	}
+
 	.isComplex {
 		img {
 			vertical-align: text-top;
@@ -105,7 +106,7 @@ export default {
 	}
 
 	.option__title {
-		margin-left: 5px;
+		margin-inline-start: 5px;
 		color: var(--color-main-text);
 	}
 

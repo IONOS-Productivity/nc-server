@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { emit } from '@nextcloud/event-bus'
-import { describe, expect, test } from '@jest/globals'
-import { File, Folder } from '@nextcloud/files'
+import { describe, beforeEach, test, expect } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { usePathsStore } from './paths.ts'
+import { emit } from '@nextcloud/event-bus'
+import { File, Folder } from '@nextcloud/files'
 import { useFilesStore } from './files.ts'
 
 describe('Path store', () => {

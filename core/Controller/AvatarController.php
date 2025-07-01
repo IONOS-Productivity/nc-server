@@ -13,6 +13,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\FrontpageRoute;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\FileDisplayResponse;
@@ -57,7 +58,7 @@ class AvatarController extends Controller {
 	 * @param string $userId ID of the user
 	 * @param 64|512 $size Size of the avatar
 	 * @param bool $guestFallback Fallback to guest avatar if not found
-	 * @return FileDisplayResponse<Http::STATUS_OK|Http::STATUS_CREATED, array{Content-Type: string, X-NC-IsCustomAvatar: int}>|JSONResponse<Http::STATUS_NOT_FOUND, array<empty>, array{}>|Response<Http::STATUS_INTERNAL_SERVER_ERROR, array{}>
+	 * @return FileDisplayResponse<Http::STATUS_OK|Http::STATUS_CREATED, array{Content-Type: string, X-NC-IsCustomAvatar: int}>|JSONResponse<Http::STATUS_NOT_FOUND, list<empty>, array{}>|Response<Http::STATUS_INTERNAL_SERVER_ERROR, array{}>
 	 *
 	 * 200: Avatar returned
 	 * 201: Avatar returned
@@ -66,6 +67,7 @@ class AvatarController extends Controller {
 	#[NoCSRFRequired]
 	#[PublicPage]
 	#[FrontpageRoute(verb: 'GET', url: '/avatar/{userId}/{size}/dark')]
+	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 	public function getAvatarDark(string $userId, int $size, bool $guestFallback = false) {
 		if ($size <= 64) {
 			if ($size !== 64) {
@@ -108,7 +110,7 @@ class AvatarController extends Controller {
 	 * @param string $userId ID of the user
 	 * @param 64|512 $size Size of the avatar
 	 * @param bool $guestFallback Fallback to guest avatar if not found
-	 * @return FileDisplayResponse<Http::STATUS_OK|Http::STATUS_CREATED, array{Content-Type: string, X-NC-IsCustomAvatar: int}>|JSONResponse<Http::STATUS_NOT_FOUND, array<empty>, array{}>|Response<Http::STATUS_INTERNAL_SERVER_ERROR, array{}>
+	 * @return FileDisplayResponse<Http::STATUS_OK|Http::STATUS_CREATED, array{Content-Type: string, X-NC-IsCustomAvatar: int}>|JSONResponse<Http::STATUS_NOT_FOUND, list<empty>, array{}>|Response<Http::STATUS_INTERNAL_SERVER_ERROR, array{}>
 	 *
 	 * 200: Avatar returned
 	 * 201: Avatar returned
@@ -117,6 +119,7 @@ class AvatarController extends Controller {
 	#[NoCSRFRequired]
 	#[PublicPage]
 	#[FrontpageRoute(verb: 'GET', url: '/avatar/{userId}/{size}')]
+	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 	public function getAvatar(string $userId, int $size, bool $guestFallback = false) {
 		if ($size <= 64) {
 			if ($size !== 64) {
@@ -292,7 +295,7 @@ class AvatarController extends Controller {
 		$tmpAvatar = $this->cache->get('tmpAvatar');
 		if (is_null($tmpAvatar)) {
 			return new JSONResponse(['data' => [
-				'message' => $this->l10n->t("No temporary profile picture available, try again")
+				'message' => $this->l10n->t('No temporary profile picture available, try again')
 			]],
 				Http::STATUS_NOT_FOUND);
 		}
@@ -315,19 +318,19 @@ class AvatarController extends Controller {
 	#[FrontpageRoute(verb: 'POST', url: '/avatar/cropped')]
 	public function postCroppedAvatar(?array $crop = null): JSONResponse {
 		if (is_null($crop)) {
-			return new JSONResponse(['data' => ['message' => $this->l10n->t("No crop data provided")]],
+			return new JSONResponse(['data' => ['message' => $this->l10n->t('No crop data provided')]],
 				Http::STATUS_BAD_REQUEST);
 		}
 
 		if (!isset($crop['x'], $crop['y'], $crop['w'], $crop['h'])) {
-			return new JSONResponse(['data' => ['message' => $this->l10n->t("No valid crop data provided")]],
+			return new JSONResponse(['data' => ['message' => $this->l10n->t('No valid crop data provided')]],
 				Http::STATUS_BAD_REQUEST);
 		}
 
 		$tmpAvatar = $this->cache->get('tmpAvatar');
 		if (is_null($tmpAvatar)) {
 			return new JSONResponse(['data' => [
-				'message' => $this->l10n->t("No temporary profile picture available, try again")
+				'message' => $this->l10n->t('No temporary profile picture available, try again')
 			]],
 				Http::STATUS_BAD_REQUEST);
 		}

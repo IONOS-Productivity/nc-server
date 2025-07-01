@@ -294,8 +294,9 @@ async function openFilePickerForAction(
 	return promise
 }
 
+export const ACTION_COPY_MOVE = 'move-copy'
 export const action = new FileAction({
-	id: 'move-copy',
+	id: ACTION_COPY_MOVE,
 	displayName(nodes: Node[]) {
 		switch (getActionForNodes(nodes)) {
 		case MoveCopyAction.MOVE:
@@ -307,7 +308,11 @@ export const action = new FileAction({
 		}
 	},
 	iconSvgInline: () => FolderMoveSvg,
-	enabled(nodes: Node[]) {
+	enabled(nodes: Node[], view: View) {
+		// We can not copy or move in single file shares
+		if (view.id === 'public-file-share') {
+			return false
+		}
 		// We only support moving/copying files within the user folder
 		if (!nodes.every(node => node.root?.startsWith('/files/'))) {
 			return false

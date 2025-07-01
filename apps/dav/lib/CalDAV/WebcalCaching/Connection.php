@@ -17,9 +17,11 @@ use Psr\Log\LoggerInterface;
 use Sabre\VObject\Reader;
 
 class Connection {
-	public function __construct(private IClientService $clientService,
+	public function __construct(
+		private IClientService $clientService,
 		private IAppConfig $config,
-		private LoggerInterface $logger) {
+		private LoggerInterface $logger,
+	) {
 	}
 
 	/**
