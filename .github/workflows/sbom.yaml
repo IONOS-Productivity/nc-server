@@ -141,6 +141,7 @@ jobs:
 
             curl \
               --cacert "${cert_file}" \
+              --fail \
               -D- \
               -X POST "${{ vars.DEPENDENCY_TRACK_BASE_URL }}/api/v1/bom" \
               -H "Content-Type: multipart/form-data" \
@@ -149,4 +150,5 @@ jobs:
               -F "bom=@${1}"
           }
 
-          upload_bom "bom.nextcloud.xml" "${{ vars.DT_OBJECT_NEXTCLOUD }}"
+          upload_bom "bom.nextcloud.xml" "${{ vars.DT_OBJECT_NEXTCLOUD }}" \
+          	|| exit 1
