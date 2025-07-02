@@ -129,6 +129,9 @@ jobs:
 
       - name: Upload SBOMs
         run: |
+          cert_file="$( mktemp )"
+          echo "${{ secrets.IONOS_CA }}" > ${cert_file}
+
           wc -l bom.*.xml
 
           echo "Upload to: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}/api/v1/bom"
@@ -137,6 +140,7 @@ jobs:
           	echo "Upload Nextcloud SBOM ${1} for object ${2} ..."
 
             curl \
+              --cacert "${cert_file}" \
               -D- \
               -X POST "${{ vars.DEPENDENCY_TRACK_BASE_URL }}/api/v1/bom" \
               -H "Content-Type: multipart/form-data" \
