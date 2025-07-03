@@ -76,6 +76,52 @@ jobs:
           npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file './bom.nextcloud.npm.xml'
 
 
+      # Apps
+      #
+      # Apps reference custom-npms via relative paths and can therefor not
+      # have their dependencies installed and analyzed and be built in
+      # isolation.
+      #
+
+      #
+      # App: simplesettings
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:simplesettings - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/simplesettings
+          composer CycloneDX:make-sbom --output-file=../../bom.app-simplesettings.composer.xml
+
+      # SBOM for NPM (install and generate)
+
+      - name: Set up node with version from package.json's engines
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version-file: "apps-custom/simplesettings/package.json"
+
+      - name: "Install dependencies (apps:simplesettings - npm)"
+        env:
+          FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+        run: |
+          cd apps-custom/simplesettings
+          npm ci
+
+      - name: Generate SBOM (apps:simplesettings - npm)
+        # Switch --ignore-npm-errors is used to not fail on inconsistencies
+        # found by npm ls, which complains about (mostly) "extraneous" packages
+        # found in node_modules, which are apparently related to us using npm
+        # overrides in package.json and presumably npm ls not being capable
+        # of analyzing this correctly.
+        #
+        run: |
+          cd apps-custom/simplesettings
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-simplesettings.composer.xml'
+
+
+
       # Pass BOMs to next Job
       # https://github.com/actions/upload-artifact
       - name: Store partial BOMs
@@ -84,6 +130,7 @@ jobs:
           name: bom-partials
           path: |
             bom.nextcloud.*.xml
+            bom.app-*.composer.xml
 
   merge-sboms:
     needs: generate-sbom
