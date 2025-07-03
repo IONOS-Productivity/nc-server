@@ -182,7 +182,7 @@ jobs:
           path: data.tar
 
   summary:
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
     needs: [init, cypress]
 
     if: always()

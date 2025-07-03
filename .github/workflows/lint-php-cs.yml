@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
 
     outputs:
       src: ${{ steps.changes.outputs.src}}
@@ -71,7 +71,7 @@ jobs:
   summary:
     permissions:
       contents: none
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
     needs: [changes, lint]
 
     if: always()

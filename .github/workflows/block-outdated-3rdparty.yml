@@ -17,7 +17,7 @@ jobs:
   block-outdated-3rdparty:
     name: Block merging with outdated 3rdparty/
 
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check requirement
