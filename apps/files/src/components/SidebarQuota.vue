@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 <template>
-	<NcAppNavigationItem :aria-label="t('files', 'Storage informations')"
+	<NcAppNavigationItem :aria-label="t('files', 'Storage information')"
 		:class="{ 'app-navigation-entry__settings-quota--not-unlimited': storageStats.quota >= 0}"
 		:loading="loadingStorageStats"
 		:name="storageStatsTitle"
