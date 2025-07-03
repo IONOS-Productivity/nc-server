@@ -26,6 +26,9 @@ jobs:
         with:
           submodules: true
 
+      - name: Install build tools
+        run: apt-get update && apt-get install -y php8.3 php8.3-common composer
+
       - name: Install CycloneDX
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
         run: |
