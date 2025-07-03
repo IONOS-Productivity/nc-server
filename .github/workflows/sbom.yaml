@@ -118,7 +118,7 @@ jobs:
         #
         run: |
           cd apps-custom/simplesettings
-          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-simplesettings.composer.xml'
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-simplesettings.npm.xml'
 
 
 
