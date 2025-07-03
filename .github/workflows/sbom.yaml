@@ -110,11 +110,8 @@ jobs:
           npm ci
 
       - name: Generate SBOM (apps:simplesettings - npm)
-        # Switch --ignore-npm-errors is used to not fail on inconsistencies
-        # found by npm ls, which complains about (mostly) "extraneous" packages
-        # found in node_modules, which are apparently related to us using npm
-        # overrides in package.json and presumably npm ls not being capable
-        # of analyzing this correctly.
+        #
+        # See previous step's comment on these options
         #
         run: |
           cd apps-custom/simplesettings
@@ -130,7 +127,7 @@ jobs:
           name: bom-partials
           path: |
             bom.nextcloud.*.xml
-            bom.app-*.composer.xml
+            bom.app-*.xml
 
   merge-sboms:
     needs: generate-sbom
