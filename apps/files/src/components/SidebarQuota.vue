@@ -142,7 +142,7 @@ export default {
 	progress {
 		position: absolute;
 		bottom: 46px;
-		margin-left: 14px;
+		margin-inline-start: 14px;
 		width: calc(100% - 44px);
 		box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15) inset;
 	}
@@ -150,7 +150,7 @@ export default {
 	.quota-text {
 		position: absolute;
 		bottom: 16px;
-		margin-left: 14px;
+		margin-inline-start: 14px;
 
 		.quota-text-bold {
 			font-weight: 500;
