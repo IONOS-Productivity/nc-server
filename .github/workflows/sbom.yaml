@@ -26,8 +26,14 @@ jobs:
         with:
           submodules: true
 
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y php8.3 php8.3-common composer
+      # Same installation step as in hidrive-next-build.yaml
+      - name: Setup PHP with PECL extension
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
+        with:
+          tools: composer:v2
+          extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
+        env:
+          runner: self-hosted
 
       - name: Install CycloneDX
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
