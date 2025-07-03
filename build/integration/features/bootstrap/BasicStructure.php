@@ -8,6 +8,7 @@ use Behat\Gherkin\Node\TableNode;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
 
@@ -174,6 +175,8 @@ trait BasicStructure {
 			$this->response = $client->request($verb, $fullUrl, $options);
 		} catch (ClientException $ex) {
 			$this->response = $ex->getResponse();
+		} catch (ServerException $ex) {
+			$this->response = $ex->getResponse();
 		}
 	}
 
@@ -189,8 +192,8 @@ trait BasicStructure {
 		$options = [];
 		if ($this->currentUser === 'admin') {
 			$options['auth'] = ['admin', 'admin'];
-		} elseif (strpos($this->currentUser, 'guest') !== 0) {
-			$options['auth'] = [$this->currentUser, self::TEST_PASSWORD];
+		} elseif (strpos($this->currentUser, 'anonymous') !== 0) {
+			$options['auth'] = [$this->currentUser, $this->regularUser];
 		}
 		if ($body instanceof TableNode) {
 			$fd = $body->getRowsHash();
@@ -283,7 +286,8 @@ trait BasicStructure {
 	 * @param string $user
 	 */
 	public function loggingInUsingWebAs($user) {
-		$loginUrl = substr($this->baseUrl, 0, -5) . '/index.php/login';
+		$baseUrl = substr($this->baseUrl, 0, -5);
+		$loginUrl = $baseUrl . '/index.php/login';
 		// Request a new session and extract CSRF token
 		$client = new Client();
 		$response = $client->get(
@@ -306,6 +310,9 @@ trait BasicStructure {
 					'requesttoken' => $this->requestToken,
 				],
 				'cookies' => $this->cookieJar,
+				'headers' => [
+					'Origin' => $baseUrl,
+				],
 			]
 		);
 		$this->extracRequestTokenFromResponse($response);
@@ -419,14 +426,14 @@ trait BasicStructure {
 	}
 
 	public function createFileSpecificSize($name, $size) {
-		$file = fopen("work/" . "$name", 'w');
+		$file = fopen('work/' . "$name", 'w');
 		fseek($file, $size - 1, SEEK_CUR);
 		fwrite($file, 'a'); // write a dummy char at SIZE position
 		fclose($file);
 	}
 
 	public function createFileWithText($name, $text) {
-		$file = fopen("work/" . "$name", 'w');
+		$file = fopen('work/' . "$name", 'w');
 		fwrite($file, $text);
 		fclose($file);
 	}
@@ -462,19 +469,19 @@ trait BasicStructure {
 	 */
 	public static function addFilesToSkeleton() {
 		for ($i = 0; $i < 5; $i++) {
-			file_put_contents("../../core/skeleton/" . "textfile" . "$i" . ".txt", "Nextcloud test text file\n");
+			file_put_contents('../../core/skeleton/' . 'textfile' . "$i" . '.txt', "Nextcloud test text file\n");
 		}
-		if (!file_exists("../../core/skeleton/FOLDER")) {
-			mkdir("../../core/skeleton/FOLDER", 0777, true);
+		if (!file_exists('../../core/skeleton/FOLDER')) {
+			mkdir('../../core/skeleton/FOLDER', 0777, true);
 		}
-		if (!file_exists("../../core/skeleton/PARENT")) {
-			mkdir("../../core/skeleton/PARENT", 0777, true);
+		if (!file_exists('../../core/skeleton/PARENT')) {
+			mkdir('../../core/skeleton/PARENT', 0777, true);
 		}
-		file_put_contents("../../core/skeleton/PARENT/" . "parent.txt", "Nextcloud test text file\n");
-		if (!file_exists("../../core/skeleton/PARENT/CHILD")) {
-			mkdir("../../core/skeleton/PARENT/CHILD", 0777, true);
+		file_put_contents('../../core/skeleton/PARENT/' . 'parent.txt', "Nextcloud test text file\n");
+		if (!file_exists('../../core/skeleton/PARENT/CHILD')) {
+			mkdir('../../core/skeleton/PARENT/CHILD', 0777, true);
 		}
-		file_put_contents("../../core/skeleton/PARENT/CHILD/" . "child.txt", "Nextcloud test text file\n");
+		file_put_contents('../../core/skeleton/PARENT/CHILD/' . 'child.txt', "Nextcloud test text file\n");
 	}
 
 	/**
@@ -482,18 +489,18 @@ trait BasicStructure {
 	 */
 	public static function removeFilesFromSkeleton() {
 		for ($i = 0; $i < 5; $i++) {
-			self::removeFile("../../core/skeleton/", "textfile" . "$i" . ".txt");
+			self::removeFile('../../core/skeleton/', 'textfile' . "$i" . '.txt');
 		}
-		if (is_dir("../../core/skeleton/FOLDER")) {
-			rmdir("../../core/skeleton/FOLDER");
+		if (is_dir('../../core/skeleton/FOLDER')) {
+			rmdir('../../core/skeleton/FOLDER');
 		}
-		self::removeFile("../../core/skeleton/PARENT/CHILD/", "child.txt");
-		if (is_dir("../../core/skeleton/PARENT/CHILD")) {
-			rmdir("../../core/skeleton/PARENT/CHILD");
+		self::removeFile('../../core/skeleton/PARENT/CHILD/', 'child.txt');
+		if (is_dir('../../core/skeleton/PARENT/CHILD')) {
+			rmdir('../../core/skeleton/PARENT/CHILD');
 		}
-		self::removeFile("../../core/skeleton/PARENT/", "parent.txt");
-		if (is_dir("../../core/skeleton/PARENT")) {
-			rmdir("../../core/skeleton/PARENT");
+		self::removeFile('../../core/skeleton/PARENT/', 'parent.txt');
+		if (is_dir('../../core/skeleton/PARENT')) {
+			rmdir('../../core/skeleton/PARENT');
 		}
 	}
 
@@ -501,7 +508,7 @@ trait BasicStructure {
 	 * @BeforeScenario @local_storage
 	 */
 	public static function removeFilesFromLocalStorageBefore() {
-		$dir = "./work/local_storage/";
+		$dir = './work/local_storage/';
 		$di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
 		$ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
 		foreach ($ri as $file) {
@@ -513,7 +520,7 @@ trait BasicStructure {
 	 * @AfterScenario @local_storage
 	 */
 	public static function removeFilesFromLocalStorageAfter() {
-		$dir = "./work/local_storage/";
+		$dir = './work/local_storage/';
 		$di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
 		$ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
 		foreach ($ri as $file) {

@@ -10,6 +10,7 @@ namespace OCA\DAV\Tests\unit\CardDAV;
 use OCA\DAV\CardDAV\AddressBook;
 use OCA\DAV\CardDAV\AddressBookImpl;
 use OCA\DAV\CardDAV\CardDavBackend;
+use OCA\DAV\Db\PropertyMapper;
 use OCP\IURLGenerator;
 use Sabre\VObject\Component\VCard;
 use Sabre\VObject\Property\Text;
@@ -17,22 +18,25 @@ use Sabre\VObject\Property\Text;
 use Test\TestCase;
 
 class AddressBookImplTest extends TestCase {
-	/** @var AddressBookImpl  */
+	/** @var AddressBookImpl */
 	private $addressBookImpl;
 
-	/** @var  array */
+	/** @var array */
 	private $addressBookInfo;
 
-	/** @var  AddressBook | \PHPUnit\Framework\MockObject\MockObject */
+	/** @var AddressBook | \PHPUnit\Framework\MockObject\MockObject */
 	private $addressBook;
 
 	/** @var IURLGenerator | \PHPUnit\Framework\MockObject\MockObject */
 	private $urlGenerator;
 
-	/** @var  CardDavBackend | \PHPUnit\Framework\MockObject\MockObject */
+	/** @var CardDavBackend | \PHPUnit\Framework\MockObject\MockObject */
 	private $backend;
 
-	/** @var  VCard | \PHPUnit\Framework\MockObject\MockObject */
+	/** @var PropertyMapper | \PHPUnit\Framework\MockObject\MockObject */
+	private $propertyMapper;
+
+	/** @var VCard | \PHPUnit\Framework\MockObject\MockObject */
 	private $vCard;
 
 	protected function setUp(): void {
@@ -50,12 +54,15 @@ class AddressBookImplTest extends TestCase {
 			->disableOriginalConstructor()->getMock();
 		$this->vCard = $this->createMock(VCard::class);
 		$this->urlGenerator = $this->createMock(IURLGenerator::class);
+		$this->propertyMapper = $this->createMock(PropertyMapper::class);
 
 		$this->addressBookImpl = new AddressBookImpl(
 			$this->addressBook,
 			$this->addressBookInfo,
 			$this->backend,
-			$this->urlGenerator
+			$this->urlGenerator,
+			$this->propertyMapper,
+			null
 		);
 	}
 
@@ -78,6 +85,8 @@ class AddressBookImplTest extends TestCase {
 					$this->addressBookInfo,
 					$this->backend,
 					$this->urlGenerator,
+					$this->propertyMapper,
+					null
 				]
 			)
 			->setMethods(['vCard2Array', 'readCard'])
@@ -124,6 +133,8 @@ class AddressBookImplTest extends TestCase {
 					$this->addressBookInfo,
 					$this->backend,
 					$this->urlGenerator,
+					$this->propertyMapper,
+					null
 				]
 			)
 			->setMethods(['vCard2Array', 'createUid', 'createEmptyVCard'])
@@ -174,6 +185,8 @@ class AddressBookImplTest extends TestCase {
 					$this->addressBookInfo,
 					$this->backend,
 					$this->urlGenerator,
+					$this->propertyMapper,
+					null
 				]
 			)
 			->setMethods(['vCard2Array', 'createUid', 'createEmptyVCard', 'readCard'])
@@ -211,6 +224,8 @@ class AddressBookImplTest extends TestCase {
 					$this->addressBookInfo,
 					$this->backend,
 					$this->urlGenerator,
+					$this->propertyMapper,
+					null
 				]
 			)
 			->setMethods(['vCard2Array', 'createUid', 'createEmptyVCard', 'readCard'])
@@ -292,6 +307,8 @@ class AddressBookImplTest extends TestCase {
 					$this->addressBookInfo,
 					$this->backend,
 					$this->urlGenerator,
+					$this->propertyMapper,
+					null
 				]
 			)
 			->setMethods(['getUid'])
@@ -488,7 +505,9 @@ class AddressBookImplTest extends TestCase {
 			$this->addressBook,
 			$addressBookInfo,
 			$this->backend,
-			$this->urlGenerator
+			$this->urlGenerator,
+			$this->propertyMapper,
+			null
 		);
 
 		$this->assertTrue($addressBookImpl->isSystemAddressBook());
@@ -507,7 +526,9 @@ class AddressBookImplTest extends TestCase {
 			$this->addressBook,
 			$addressBookInfo,
 			$this->backend,
-			$this->urlGenerator
+			$this->urlGenerator,
+			$this->propertyMapper,
+			'user2'
 		);
 
 		$this->assertFalse($addressBookImpl->isSystemAddressBook());
@@ -527,7 +548,9 @@ class AddressBookImplTest extends TestCase {
 			$this->addressBook,
 			$addressBookInfo,
 			$this->backend,
-			$this->urlGenerator
+			$this->urlGenerator,
+			$this->propertyMapper,
+			'user2'
 		);
 
 		$this->assertFalse($addressBookImpl->isSystemAddressBook());

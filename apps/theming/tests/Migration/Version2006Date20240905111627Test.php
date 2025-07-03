@@ -9,11 +9,10 @@ declare(strict_types=1);
 
 namespace OCA\Theming\Tests\Migration;
 
+use NCU\Config\IUserConfig;
 use OCA\Theming\Migration\Version2006Date20240905111627;
 use OCP\BackgroundJob\IJobList;
-use OCP\Cache\CappedMemoryCache;
 use OCP\IAppConfig;
-use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use OCP\Migration\IOutput;
@@ -66,7 +65,6 @@ class Version2006Date20240905111627Test extends TestCase {
 				return true;
 			});
 
-		/** @var IOutput&MockObject */
 		$output = $this->createMock(IOutput::class);
 		$this->migration->changeSchema($output, fn () => null, []);
 
@@ -93,15 +91,11 @@ class Version2006Date20240905111627Test extends TestCase {
 		$manager = \OCP\Server::get(IUserManager::class);
 		$user = $manager->createUser('theming_legacy', 'theming_legacy');
 		self::assertNotFalse($user);
-		/**
-		 * Set the users theming value to legacy key
-		 * @var IConfig
-		 */
-		$config = \OCP\Server::get(IConfig::class);
-		$config->setUserValue($user->getUID(), 'theming', 'background_color', 'ffab00');
+		// Set the users theming value to legacy key
+		$config = \OCP\Server::get(IUserConfig::class);
+		$config->setValueString('theming_legacy', 'theming', 'background_color', 'ffab00');
 
 		// expect some output
-		/** @var IOutput&MockObject */
 		$output = $this->createMock(IOutput::class);
 		$output->expects(self::exactly(3))
 			->method('info')
@@ -120,10 +114,9 @@ class Version2006Date20240905111627Test extends TestCase {
 		// Run the migration
 		$migration->changeSchema($output, fn () => null, []);
 
-		// Clear cache
-		self::invokePrivate($config, 'userCache', [new CappedMemoryCache()]);
 		// See new value
-		$newValue = $config->getUserValue($user->getUID(), 'theming', 'primary_color');
+		$config->clearCache('theming_legacy');
+		$newValue = $config->getValueString('theming_legacy', 'theming', 'primary_color');
 		self::assertEquals('ffab00', $newValue);
 
 		// cleanup
@@ -150,17 +143,13 @@ class Version2006Date20240905111627Test extends TestCase {
 		self::assertNotFalse($legacyUser);
 		$user = $manager->createUser('theming_no_legacy', 'theming_no_legacy');
 		self::assertNotFalse($user);
-		/**
-		 * Set the users theming value to legacy key
-		 * @var IConfig
-		 */
-		$config = \OCP\Server::get(IConfig::class);
-		$config->setUserValue($user->getUID(), 'theming', 'primary_color', '999999');
-		$config->setUserValue($user->getUID(), 'theming', 'background_color', '111111');
-		$config->setUserValue($legacyUser->getUID(), 'theming', 'background_color', 'ffab00');
+		// Set the users theming value to legacy key
+		$config = \OCP\Server::get(IUserConfig::class);
+		$config->setValueString($user->getUID(), 'theming', 'primary_color', '999999');
+		$config->setValueString($user->getUID(), 'theming', 'background_color', '111111');
+		$config->setValueString($legacyUser->getUID(), 'theming', 'background_color', 'ffab00');
 
 		// expect some output
-		/** @var IOutput&MockObject */
 		$output = $this->createMock(IOutput::class);
 		$output->expects(self::exactly(3))
 			->method('info')
@@ -179,12 +168,11 @@ class Version2006Date20240905111627Test extends TestCase {
 		// Run the migration
 		$migration->changeSchema($output, fn () => null, []);
 
-		// Clear cache
-		self::invokePrivate($config, 'userCache', [new CappedMemoryCache()]);
 		// See new value of only the legacy user
-		self::assertEquals('111111', $config->getUserValue($user->getUID(), 'theming', 'background_color'));
-		self::assertEquals('999999', $config->getUserValue($user->getUID(), 'theming', 'primary_color'));
-		self::assertEquals('ffab00', $config->getUserValue($legacyUser->getUID(), 'theming', 'primary_color'));
+		$config->clearCacheAll();
+		self::assertEquals('111111', $config->getValueString($user->getUID(), 'theming', 'background_color'));
+		self::assertEquals('999999', $config->getValueString($user->getUID(), 'theming', 'primary_color'));
+		self::assertEquals('ffab00', $config->getValueString($legacyUser->getUID(), 'theming', 'primary_color'));
 
 		// cleanup
 		$legacyUser->delete();

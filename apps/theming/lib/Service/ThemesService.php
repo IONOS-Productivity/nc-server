@@ -31,7 +31,8 @@ class ThemesService {
 		private DarkTheme $darkTheme,
 		HighContrastTheme $highContrastTheme,
 		DarkHighContrastTheme $darkHighContrastTheme,
-		DyslexiaFont $dyslexiaFont) {
+		DyslexiaFont $dyslexiaFont,
+	) {
 
 		// Register themes
 		$this->themesProviders = [
@@ -147,8 +148,7 @@ class ThemesService {
 	}
 
 	/**
-	 * Get the list of all enabled themes IDs
-	 * for the logged-in user
+	 * Get the list of all enabled themes IDs for the current user.
 	 *
 	 * @return string[]
 	 */

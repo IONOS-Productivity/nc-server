@@ -5,9 +5,11 @@
 
 import camelCase from 'camelcase'
 
-import type { Node } from '@nextcloud/files'
 import type { DAVResultResponseProps } from 'webdav'
+
 import type { BaseTag, ServerTag, Tag, TagWithId } from './types.js'
+import type { Node } from '@nextcloud/files'
+import Vue from 'vue'
 
 export const defaultBaseTag: BaseTag = {
 	userVisible: true,
@@ -73,4 +75,10 @@ export const getNodeSystemTags = function(node: Node): string[] {
 				// its a prop object with attributes, the tag name is in the 'text' attribute
 				: tag.text
 		))
+}
+
+export const setNodeSystemTags = function(node: Node, tags: string[]): void {
+	Vue.set(node.attributes, 'system-tags', {
+		'system-tag': tags,
+	})
 }

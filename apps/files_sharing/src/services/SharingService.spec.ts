@@ -3,29 +3,33 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 import type { OCSResponse } from '@nextcloud/typings/ocs'
-import { expect } from '@jest/globals'
+
 import { File, Folder } from '@nextcloud/files'
 import { ShareType } from '@nextcloud/sharing'
-import * as auth from '@nextcloud/auth'
-import axios from '@nextcloud/axios'
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { getContents } from './SharingService'
+import * as auth from '@nextcloud/auth'
 import logger from './logger'
 
-window.OC = {
-	...window.OC,
-	TAG_FAVORITE: '_$!<Favorite>!$_',
-}
+const TAG_FAVORITE = '_$!<Favorite>!$_'
 
-// Mock webroot variable
+const axios = vi.hoisted(() => ({ get: vi.fn() }))
+vi.mock('@nextcloud/auth')
+vi.mock('@nextcloud/axios', () => ({ default: axios }))
+
+// Mock TAG
 beforeAll(() => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(window as any)._oc_webroot = ''
+	window.OC = {
+		...window.OC,
+		TAG_FAVORITE,
+	}
 })
 
 describe('SharingService methods definitions', () => {
-	beforeAll(() => {
-		jest.spyOn(axios, 'get').mockImplementation(async (): Promise<any> => {
+	beforeEach(() => {
+		vi.resetAllMocks()
+		axios.get.mockImplementation(async (): Promise<unknown> => {
 			return {
 				data: {
 					ocs: {
@@ -36,20 +40,16 @@ describe('SharingService methods definitions', () => {
 						},
 						data: [],
 					},
-				} as OCSResponse<any>,
+				} as OCSResponse,
 			}
 		})
-	})
-
-	afterAll(() => {
-		jest.restoreAllMocks()
 	})
 
 	test('Shared with you', async () => {
 		await getContents(true, false, false, false, [])
 
 		expect(axios.get).toHaveBeenCalledTimes(2)
-		expect(axios.get).toHaveBeenNthCalledWith(1, 'http://localhost/ocs/v2.php/apps/files_sharing/api/v1/shares', {
+		expect(axios.get).toHaveBeenNthCalledWith(1, 'http://nextcloud.local/ocs/v2.php/apps/files_sharing/api/v1/shares', {
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -58,7 +58,7 @@ describe('SharingService methods definitions', () => {
 				include_tags: true,
 			},
 		})
-		expect(axios.get).toHaveBeenNthCalledWith(2, 'http://localhost/ocs/v2.php/apps/files_sharing/api/v1/remote_shares', {
+		expect(axios.get).toHaveBeenNthCalledWith(2, 'http://nextcloud.local/ocs/v2.php/apps/files_sharing/api/v1/remote_shares', {
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -72,7 +72,7 @@ describe('SharingService methods definitions', () => {
 		await getContents(false, true, false, false, [])
 
 		expect(axios.get).toHaveBeenCalledTimes(1)
-		expect(axios.get).toHaveBeenCalledWith('http://localhost/ocs/v2.php/apps/files_sharing/api/v1/shares', {
+		expect(axios.get).toHaveBeenCalledWith('http://nextcloud.local/ocs/v2.php/apps/files_sharing/api/v1/shares', {
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -87,7 +87,7 @@ describe('SharingService methods definitions', () => {
 		await getContents(false, false, true, false, [])
 
 		expect(axios.get).toHaveBeenCalledTimes(2)
-		expect(axios.get).toHaveBeenNthCalledWith(1, 'http://localhost/ocs/v2.php/apps/files_sharing/api/v1/shares/pending', {
+		expect(axios.get).toHaveBeenNthCalledWith(1, 'http://nextcloud.local/ocs/v2.php/apps/files_sharing/api/v1/shares/pending', {
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -95,7 +95,7 @@ describe('SharingService methods definitions', () => {
 				include_tags: true,
 			},
 		})
-		expect(axios.get).toHaveBeenNthCalledWith(2, 'http://localhost/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending', {
+		expect(axios.get).toHaveBeenNthCalledWith(2, 'http://nextcloud.local/ocs/v2.php/apps/files_sharing/api/v1/remote_shares/pending', {
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -109,7 +109,7 @@ describe('SharingService methods definitions', () => {
 		await getContents(false, true, false, false, [])
 
 		expect(axios.get).toHaveBeenCalledTimes(1)
-		expect(axios.get).toHaveBeenCalledWith('http://localhost/ocs/v2.php/apps/files_sharing/api/v1/shares', {
+		expect(axios.get).toHaveBeenCalledWith('http://nextcloud.local/ocs/v2.php/apps/files_sharing/api/v1/shares', {
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -121,7 +121,7 @@ describe('SharingService methods definitions', () => {
 	})
 
 	test('Unknown owner', async () => {
-		jest.spyOn(auth, 'getCurrentUser').mockReturnValue(null)
+		vi.spyOn(auth, 'getCurrentUser').mockReturnValue(null)
 		const results = await getContents(false, true, false, false, [])
 
 		expect(results.folder.owner).toEqual(null)
@@ -129,8 +129,9 @@ describe('SharingService methods definitions', () => {
 })
 
 describe('SharingService filtering', () => {
-	beforeAll(() => {
-		jest.spyOn(axios, 'get').mockImplementation(async (): Promise<any> => {
+	beforeEach(() => {
+		vi.resetAllMocks()
+		axios.get.mockImplementation(async (): Promise<unknown> => {
 			return {
 				data: {
 					ocs: {
@@ -166,10 +167,6 @@ describe('SharingService filtering', () => {
 				},
 			}
 		})
-	})
-
-	afterAll(() => {
-		jest.restoreAllMocks()
 	})
 
 	test('Shared with others filtering', async () => {
@@ -275,7 +272,7 @@ describe('SharingService share to Node mapping', () => {
 		mail_send: 0,
 		hide_download: 0,
 		attributes: null,
-		tags: [window.OC.TAG_FAVORITE],
+		tags: [TAG_FAVORITE],
 	}
 
 	const remoteFileAccepted = {
@@ -316,8 +313,24 @@ describe('SharingService share to Node mapping', () => {
 		accepted: false,
 	}
 
+	const tempExternalFile = {
+		id: 65,
+		share_type: 0,
+		parent: -1,
+		remote: 'http://nextcloud1.local/',
+		remote_id: '71',
+		share_token: '9GpiAmTIjayclrE',
+		name: '/test.md',
+		owner: 'owner-uid',
+		user: 'sharee-uid',
+		mountpoint: '{{TemporaryMountPointName#/test.md}}',
+		accepted: 0,
+	}
+
+	beforeEach(() => { vi.resetAllMocks() })
+
 	test('File', async () => {
-		jest.spyOn(axios, 'get').mockReturnValueOnce(Promise.resolve({
+		axios.get.mockReturnValueOnce(Promise.resolve({
 			data: {
 				ocs: {
 					data: [shareFile],
@@ -333,7 +346,7 @@ describe('SharingService share to Node mapping', () => {
 		const file = shares.contents[0] as File
 		expect(file).toBeInstanceOf(File)
 		expect(file.fileid).toBe(530936)
-		expect(file.source).toBe('http://localhost/remote.php/dav/files/test/document.md')
+		expect(file.source).toBe('http://nextcloud.local/remote.php/dav/files/test/document.md')
 		expect(file.owner).toBe('test')
 		expect(file.mime).toBe('text/markdown')
 		expect(file.mtime).toBeInstanceOf(Date)
@@ -353,7 +366,7 @@ describe('SharingService share to Node mapping', () => {
 	})
 
 	test('Folder', async () => {
-		jest.spyOn(axios, 'get').mockReturnValueOnce(Promise.resolve({
+		axios.get.mockReturnValueOnce(Promise.resolve({
 			data: {
 				ocs: {
 					data: [shareFolder],
@@ -369,7 +382,7 @@ describe('SharingService share to Node mapping', () => {
 		const folder = shares.contents[0] as Folder
 		expect(folder).toBeInstanceOf(Folder)
 		expect(folder.fileid).toBe(531080)
-		expect(folder.source).toBe('http://localhost/remote.php/dav/files/test/Folder')
+		expect(folder.source).toBe('http://nextcloud.local/remote.php/dav/files/test/Folder')
 		expect(folder.owner).toBe('test')
 		expect(folder.mime).toBe('httpd/unix-directory')
 		expect(folder.mtime).toBeInstanceOf(Date)
@@ -384,7 +397,7 @@ describe('SharingService share to Node mapping', () => {
 
 	describe('Remote file', () => {
 		test('Accepted', async () => {
-			jest.spyOn(axios, 'get').mockReturnValueOnce(Promise.resolve({
+			axios.get.mockReturnValueOnce(Promise.resolve({
 				data: {
 					ocs: {
 						data: [remoteFileAccepted],
@@ -400,7 +413,7 @@ describe('SharingService share to Node mapping', () => {
 			const file = shares.contents[0] as File
 			expect(file).toBeInstanceOf(File)
 			expect(file.fileid).toBe(1234)
-			expect(file.source).toBe('http://localhost/remote.php/dav/files/test/shares/test.md')
+			expect(file.source).toBe('http://nextcloud.local/remote.php/dav/files/test/shares/test.md')
 			expect(file.owner).toBe('owner-uid')
 			expect(file.mime).toBe('text/markdown')
 			expect(file.mtime?.getTime()).toBe(remoteFileAccepted.mtime * 1000)
@@ -413,7 +426,7 @@ describe('SharingService share to Node mapping', () => {
 		})
 
 		test('Pending', async () => {
-			jest.spyOn(axios, 'get').mockReturnValueOnce(Promise.resolve({
+			axios.get.mockReturnValueOnce(Promise.resolve({
 				data: {
 					ocs: {
 						data: [remoteFilePending],
@@ -429,7 +442,7 @@ describe('SharingService share to Node mapping', () => {
 			const file = shares.contents[0] as File
 			expect(file).toBeInstanceOf(File)
 			expect(file.fileid).toBe(1234)
-			expect(file.source).toBe('http://localhost/remote.php/dav/files/test/shares/test.md')
+			expect(file.source).toBe('http://nextcloud.local/remote.php/dav/files/test/shares/test.md')
 			expect(file.owner).toBe('owner-uid')
 			expect(file.mime).toBe('text/markdown')
 			expect(file.mtime?.getTime()).toBe(remoteFilePending.mtime * 1000)
@@ -442,9 +455,38 @@ describe('SharingService share to Node mapping', () => {
 		})
 	})
 
+	test('External temp file', async () => {
+		axios.get.mockReturnValueOnce(Promise.resolve({
+			data: {
+				ocs: {
+					data: [tempExternalFile],
+				},
+			},
+		}))
+
+		const shares = await getContents(false, true, false, false)
+
+		expect(axios.get).toHaveBeenCalledTimes(1)
+		expect(shares.contents).toHaveLength(1)
+
+		const file = shares.contents[0] as File
+		expect(file).toBeInstanceOf(File)
+		expect(file.fileid).toBe(65)
+		expect(file.source).toBe('http://nextcloud.local/remote.php/dav/files/test/test.md')
+		expect(file.owner).toBe('owner-uid')
+		expect(file.mime).toBe('text/markdown')
+		expect(file.mtime?.getTime()).toBe(undefined)
+		// not available for remote shares
+		expect(file.size).toBe(undefined)
+		expect(file.permissions).toBe(0)
+		expect(file.root).toBe('/files/test')
+		expect(file.attributes).toBeInstanceOf(Object)
+		expect(file.attributes.favorite).toBe(0)
+	})
+
 	test('Empty', async () => {
-		jest.spyOn(logger, 'error').mockImplementationOnce(() => {})
-		jest.spyOn(axios, 'get').mockReturnValueOnce(Promise.resolve({
+		vi.spyOn(logger, 'error').mockImplementationOnce(() => {})
+		axios.get.mockReturnValueOnce(Promise.resolve({
 			data: {
 				ocs: {
 					data: [],
@@ -458,8 +500,8 @@ describe('SharingService share to Node mapping', () => {
 	})
 
 	test('Error', async () => {
-		jest.spyOn(logger, 'error').mockImplementationOnce(() => {})
-		jest.spyOn(axios, 'get').mockReturnValueOnce(Promise.resolve({
+		vi.spyOn(logger, 'error').mockImplementationOnce(() => {})
+		axios.get.mockReturnValueOnce(Promise.resolve({
 			data: {
 				ocs: {
 					data: [null],

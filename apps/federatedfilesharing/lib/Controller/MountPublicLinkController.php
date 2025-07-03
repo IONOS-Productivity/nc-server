@@ -36,7 +36,6 @@ use Psr\Log\LoggerInterface;
  *
  * @package OCA\FederatedFileSharing\Controller
  */
-#[OpenAPI(scope: OpenAPI::SCOPE_FEDERATION)]
 class MountPublicLinkController extends Controller {
 	/**
 	 * MountPublicLinkController constructor.
@@ -64,12 +63,14 @@ class MountPublicLinkController extends Controller {
 	 * @param string $token Token of the share
 	 * @param string $password Password of the share
 	 * @return JSONResponse<Http::STATUS_OK, array{remoteUrl: string}, array{}>|JSONResponse<Http::STATUS_BAD_REQUEST, array{message: string}, array{}>
+	 *
 	 * 200: Remote URL returned
 	 * 400: Creating share is not possible
 	 */
 	#[NoCSRFRequired]
 	#[PublicPage]
 	#[BruteForceProtection(action: 'publicLink2FederatedShare')]
+	#[OpenAPI(scope: OpenAPI::SCOPE_FEDERATION)]
 	public function createFederatedShare($shareWith, $token, $password = '') {
 		if (!$this->federatedShareProvider->isOutgoingServer2serverShareEnabled()) {
 			return new JSONResponse(

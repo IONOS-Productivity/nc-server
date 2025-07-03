@@ -8,7 +8,6 @@ namespace OCA\Files_Sharing\Tests\Controller;
 
 use OCA\Files_Sharing\Controller\ShareesAPIController;
 use OCA\Files_Sharing\Tests\TestCase;
-use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCS\OCSBadRequestException;
 use OCP\Collaboration\Collaborators\ISearch;
@@ -40,7 +39,7 @@ class ShareesAPIControllerTest extends TestCase {
 	/** @var IManager|MockObject */
 	protected $shareManager;
 
-	/** @var  ISearch|MockObject */
+	/** @var ISearch|MockObject */
 	protected $collaboratorSearch;
 
 	/** @var IConfig|MockObject */
@@ -224,7 +223,7 @@ class ShareesAPIControllerTest extends TestCase {
 		bool $shareWithGroupOnly,
 		bool $shareeEnumeration,
 		bool $allowGroupSharing,
-	) {
+	): void {
 		$search = $getData['search'] ?? '';
 		$itemType = $getData['itemType'] ?? 'irrelevant';
 		$page = $getData['page'] ?? 1;
@@ -299,7 +298,7 @@ class ShareesAPIControllerTest extends TestCase {
 				}
 			});
 
-		$this->assertInstanceOf(Http\DataResponse::class, $sharees->search($search, $itemType, $page, $perPage, $shareType));
+		$this->assertInstanceOf(DataResponse::class, $sharees->search($search, $itemType, $page, $perPage, $shareType));
 	}
 
 	public function dataSearchInvalid(): array {
@@ -334,7 +333,7 @@ class ShareesAPIControllerTest extends TestCase {
 	 * @param array $getData
 	 * @param string $message
 	 */
-	public function testSearchInvalid($getData, $message) {
+	public function testSearchInvalid($getData, $message): void {
 		$page = $getData['page'] ?? 1;
 		$perPage = $getData['perPage'] ?? 200;
 
@@ -392,11 +391,11 @@ class ShareesAPIControllerTest extends TestCase {
 	 * @param string $itemType
 	 * @param bool $expected
 	 */
-	public function testIsRemoteSharingAllowed($itemType, $expected) {
+	public function testIsRemoteSharingAllowed($itemType, $expected): void {
 		$this->assertSame($expected, $this->invokePrivate($this->sharees, 'isRemoteSharingAllowed', [$itemType]));
 	}
 
-	public function testSearchSharingDisabled() {
+	public function testSearchSharingDisabled(): void {
 		$this->shareManager->expects($this->once())
 			->method('sharingDisabledForUser')
 			->with($this->uid)
@@ -413,8 +412,8 @@ class ShareesAPIControllerTest extends TestCase {
 		$this->assertInstanceOf(DataResponse::class, $this->sharees->search('', null, 1, 10, [], false));
 	}
 
-	public function testSearchNoItemType() {
-		$this->expectException(\OCP\AppFramework\OCS\OCSBadRequestException::class);
+	public function testSearchNoItemType(): void {
+		$this->expectException(OCSBadRequestException::class);
 		$this->expectExceptionMessage('Missing itemType');
 
 		$this->sharees->search('', null, 1, 10, [], false);
@@ -435,7 +434,7 @@ class ShareesAPIControllerTest extends TestCase {
 	 * @param array $params
 	 * @param array $expected
 	 */
-	public function testGetPaginationLink($page, $scriptName, $params, $expected) {
+	public function testGetPaginationLink($page, $scriptName, $params, $expected): void {
 		$this->request->expects($this->once())
 			->method('getScriptName')
 			->willReturn($scriptName);
@@ -456,7 +455,7 @@ class ShareesAPIControllerTest extends TestCase {
 	 * @param string $scriptName
 	 * @param bool $expected
 	 */
-	public function testIsV2($scriptName, $expected) {
+	public function testIsV2($scriptName, $expected): void {
 		$this->request->expects($this->once())
 			->method('getScriptName')
 			->willReturn($scriptName);

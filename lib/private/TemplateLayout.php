@@ -25,6 +25,7 @@ use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
 use OCP\L10N\IFactory;
+use OCP\ServerVersion;
 use OCP\Support\Subscription\IRegistry;
 use OCP\Util;
 
@@ -80,23 +81,15 @@ class TemplateLayout extends \OC_Template {
 			} else {
 				Util::addScript('core', 'unified-search', 'core');
 			}
-			// Set body data-theme
-			$this->assign('enabledThemes', []);
-			if ($this->appManager->isEnabledForUser('theming') && class_exists('\OCA\Theming\Service\ThemesService')) {
-				/** @var \OCA\Theming\Service\ThemesService */
-				$themesService = \OC::$server->get(\OCA\Theming\Service\ThemesService::class);
-				$this->assign('enabledThemes', $themesService->getEnabledThemes());
-			}
 
 			// Set logo link target
 			$logoUrl = $this->config->getSystemValueString('logo_url', '');
 			$this->assign('logoUrl', $logoUrl);
 
-			// Set default app name
-			$defaultApp = $this->appManager->getDefaultAppForUser();
-			$defaultAppInfo = $this->appManager->getAppInfo($defaultApp);
-			$l10n = \OC::$server->get(IFactory::class)->get($defaultApp);
-			$this->assign('defaultAppName', $l10n->t($defaultAppInfo['name']));
+			// Set default entry name
+			$defaultEntryId = $this->navigationManager->getDefaultEntryIdForUser();
+			$defaultEntry = $this->navigationManager->get($defaultEntryId);
+			$this->assign('defaultAppName', $defaultEntry['name']);
 
 			// Add navigation entry
 			$this->assign('application', '');
@@ -158,14 +151,6 @@ class TemplateLayout extends \OC_Template {
 			$this->assign('appid', $appId);
 			$this->assign('bodyid', 'body-public');
 
-			// Set body data-theme
-			$this->assign('enabledThemes', []);
-			if ($this->appManager->isEnabledForUser('theming') && class_exists('\OCA\Theming\Service\ThemesService')) {
-				/** @var \OCA\Theming\Service\ThemesService $themesService */
-				$themesService = \OC::$server->get(\OCA\Theming\Service\ThemesService::class);
-				$this->assign('enabledThemes', $themesService->getEnabledThemes());
-			}
-
 			// Set logo link target
 			$logoUrl = $this->config->getSystemValueString('logo_url', '');
 			$this->assign('logoUrl', $logoUrl);
@@ -193,13 +178,24 @@ class TemplateLayout extends \OC_Template {
 		} else {
 			parent::__construct('core', 'layout.base');
 		}
-		// Send the language and the locale to our layouts
+
+		// Set body data-theme
+		try {
+			$themesService = \OCP\Server::get(\OCA\Theming\Service\ThemesService::class);
+		} catch (\OCP\AppFramework\QueryException) {
+			$themesService = null;
+		}
+		$this->assign('enabledThemes', $themesService?->getEnabledThemes() ?? []);
+
+		// Send the language, locale, and direction to our layouts
 		$lang = \OC::$server->get(IFactory::class)->findLanguage();
 		$locale = \OC::$server->get(IFactory::class)->findLocale($lang);
+		$direction = \OC::$server->get(IFactory::class)->getLanguageDirection($lang);
 
 		$lang = str_replace('_', '-', $lang);
 		$this->assign('language', $lang);
 		$this->assign('locale', $locale);
+		$this->assign('direction', $direction);
 
 		if ($this->config->getSystemValueBool('installed', false)) {
 			if (empty(self::$versionHash)) {
@@ -219,6 +215,7 @@ class TemplateLayout extends \OC_Template {
 			// this is on purpose outside of the if statement below so that the initial state is prefilled (done in the getConfig() call)
 			// see https://github.com/nextcloud/server/pull/22636 for details
 			$jsConfigHelper = new JSConfigHelper(
+				\OCP\Server::get(ServerVersion::class),
 				\OCP\Util::getL10N('lib'),
 				\OCP\Server::get(Defaults::class),
 				$this->appManager,
@@ -243,7 +240,7 @@ class TemplateLayout extends \OC_Template {
 		foreach ($jsFiles as $info) {
 			$web = $info[1];
 			$file = $info[2];
-			$this->append('jsfiles', $web.'/'.$file . $this->getVersionHashSuffix());
+			$this->append('jsfiles', $web . '/' . $file . $this->getVersionHashSuffix());
 		}
 
 		try {
@@ -257,7 +254,6 @@ class TemplateLayout extends \OC_Template {
 		if (\OC::$server->getSystemConfig()->getValue('installed', false)
 			&& !\OCP\Util::needUpgrade()
 			&& $pathInfo !== ''
-			&& $pathInfo !== false
 			&& !preg_match('/^\/login/', $pathInfo)
 			&& $renderAs !== TemplateResponse::RENDER_AS_ERROR
 		) {
@@ -266,7 +262,7 @@ class TemplateLayout extends \OC_Template {
 			// If we ignore the scss compiler,
 			// we need to load the guest css fallback
 			\OC_Util::addStyle('guest');
-			$cssFiles = self::findStylesheetFiles(\OC_Util::$styles);
+			$cssFiles = self::findStylesheetFiles(\OC_Util::$styles, false);
 		}
 
 		$this->assign('cssfiles', []);
@@ -277,14 +273,14 @@ class TemplateLayout extends \OC_Template {
 			$file = $info[2];
 
 			if (str_ends_with($file, 'print.css')) {
-				$this->append('printcssfiles', $web.'/'.$file . $this->getVersionHashSuffix());
+				$this->append('printcssfiles', $web . '/' . $file . $this->getVersionHashSuffix());
 			} else {
 				$suffix = $this->getVersionHashSuffix($web, $file);
 
 				if (!str_contains($file, '?v=')) {
-					$this->append('cssfiles', $web.'/'.$file . $suffix);
+					$this->append('cssfiles', $web . '/' . $file . $suffix);
 				} else {
-					$this->append('cssfiles', $web.'/'.$file . '-' . substr($suffix, 3));
+					$this->append('cssfiles', $web . '/' . $file . '-' . substr($suffix, 3));
 				}
 			}
 		}
@@ -305,7 +301,7 @@ class TemplateLayout extends \OC_Template {
 	protected function getVersionHashSuffix(string $path = '', string $file = ''): string {
 		if ($this->config->getSystemValueBool('debug', false)) {
 			// allows chrome workspace mapping in debug mode
-			return "";
+			return '';
 		}
 
 		if ($this->config->getSystemValueBool('installed', false) === false) {
@@ -337,7 +333,7 @@ class TemplateLayout extends \OC_Template {
 		if (array_key_exists($path, self::$cacheBusterCache) === false) {
 			// Not yet cached, so lets find the cache buster string
 			$appId = $this->getAppNamefromPath($path);
-			if ($appId === false) {
+			if ($appId === false || $appId === null) {
 				// No app Id could be guessed
 				return false;
 			}
@@ -364,7 +360,7 @@ class TemplateLayout extends \OC_Template {
 	 * @param array $styles
 	 * @return array
 	 */
-	public static function findStylesheetFiles($styles) {
+	public static function findStylesheetFiles($styles, $compileScss = true) {
 		if (!self::$cssLocator) {
 			self::$cssLocator = \OCP\Server::get(CSSResourceLocator::class);
 		}
@@ -373,10 +369,11 @@ class TemplateLayout extends \OC_Template {
 	}
 
 	/**
+	 * @param string $path
 	 * @return string|false
 	 */
-	public function getAppNamefromPath(string $path) {
-		if ($path !== '') {
+	public function getAppNamefromPath($path) {
+		if ($path !== '' && is_string($path)) {
 			$pathParts = explode('/', $path);
 			if ($pathParts[0] === 'css') {
 				// This is a scss request

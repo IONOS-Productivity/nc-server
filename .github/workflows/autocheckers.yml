@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
 
     outputs:
       src: ${{ steps.changes.outputs.src }}
@@ -57,7 +57,7 @@ jobs:
           submodules: true
 
       - name: Set up php ${{ matrix.php-versions }}
-        uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 #v2.32.0
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib, sqlite, pdo_sqlite
@@ -73,7 +73,7 @@ jobs:
         run: bash ./build/autoloaderchecker.sh
 
   autocheckers:
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -113,7 +113,7 @@ jobs:
   summary:
     permissions:
       contents: none
-    runs-on: ubuntu-latest-low
+    runs-on: ubuntu-latest
     needs: [changes, autoloader, autocheckers]
 
     if: always()

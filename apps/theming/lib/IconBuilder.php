@@ -10,13 +10,6 @@ use ImagickPixel;
 use OCP\Files\SimpleFS\ISimpleFile;
 
 class IconBuilder {
-	/** @var ThemingDefaults */
-	private $themingDefaults;
-	/** @var Util */
-	private $util;
-	/** @var ImageManager */
-	private $imageManager;
-
 	/**
 	 * IconBuilder constructor.
 	 *
@@ -25,13 +18,10 @@ class IconBuilder {
 	 * @param ImageManager $imageManager
 	 */
 	public function __construct(
-		ThemingDefaults $themingDefaults,
-		Util $util,
-		ImageManager $imageManager
+		private ThemingDefaults $themingDefaults,
+		private Util $util,
+		private ImageManager $imageManager,
 	) {
-		$this->themingDefaults = $themingDefaults;
-		$this->util = $util;
-		$this->imageManager = $imageManager;
 	}
 
 	/**
@@ -44,12 +34,12 @@ class IconBuilder {
 		}
 		try {
 			$favicon = new Imagick();
-			$favicon->setFormat("ico");
+			$favicon->setFormat('ico');
 			$icon = $this->renderAppIcon($app, 128);
 			if ($icon === false) {
 				return false;
 			}
-			$icon->setImageFormat("png32");
+			$icon->setImageFormat('png32');
 
 			$clone = clone $icon;
 			$clone->scaleImage(16, 0);
@@ -87,7 +77,7 @@ class IconBuilder {
 			if ($icon === false) {
 				return false;
 			}
-			$icon->setImageFormat("png32");
+			$icon->setImageFormat('png32');
 			$data = $icon->getImageBlob();
 			$icon->destroy();
 			return $data;
@@ -100,24 +90,23 @@ class IconBuilder {
 	 * Render app icon on themed background color
 	 * fallback to logo
 	 *
-	 * @param $app string app name
-	 * @param $size int size of the icon in px
+	 * @param string $app app name
+	 * @param int $size size of the icon in px
 	 * @return Imagick|false
 	 */
 	public function renderAppIcon($app, $size) {
 		$appIcon = $this->util->getAppIcon($app);
-		if ($appIcon === false) {
-			return false;
-		}
 		if ($appIcon instanceof ISimpleFile) {
 			$appIconContent = $appIcon->getContent();
 			$mime = $appIcon->getMimeType();
+		} elseif (!file_exists($appIcon)) {
+			return false;
 		} else {
 			$appIconContent = file_get_contents($appIcon);
 			$mime = mime_content_type($appIcon);
 		}
 
-		if ($appIconContent === false || $appIconContent === "") {
+		if ($appIconContent === false || $appIconContent === '') {
 			return false;
 		}
 
@@ -127,12 +116,12 @@ class IconBuilder {
 		$cornerRadius = 0.2 * $size;
 		$background = '<?xml version="1.0" encoding="UTF-8"?>' .
 			'<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" width="' . $size . '" height="' . $size . '" xmlns:xlink="http://www.w3.org/1999/xlink">' .
-			'<rect x="0" y="0" rx="' . $cornerRadius . '" ry="' . $cornerRadius . '" width="' . $size. '" height="' . $size . '" style="fill:' . $color . ';" />' .
+			'<rect x="0" y="0" rx="' . $cornerRadius . '" ry="' . $cornerRadius . '" width="' . $size . '" height="' . $size . '" style="fill:' . $color . ';" />' .
 			'</svg>';
 		// resize svg magic as this seems broken in Imagemagick
-		if ($mime === "image/svg+xml" || substr($appIconContent, 0, 4) === "<svg") {
-			if (substr($appIconContent, 0, 5) !== "<?xml") {
-				$svg = "<?xml version=\"1.0\"?>".$appIconContent;
+		if ($mime === 'image/svg+xml' || substr($appIconContent, 0, 4) === '<svg') {
+			if (substr($appIconContent, 0, 5) !== '<?xml') {
+				$svg = '<?xml version="1.0"?>' . $appIconContent;
 			} else {
 				$svg = $appIconContent;
 			}
@@ -158,7 +147,7 @@ class IconBuilder {
 			 */
 			if ($this->util->isBrightColor($color)
 				&& !$appIcon instanceof ISimpleFile
-				&& $app !== "core"
+				&& $app !== 'core'
 			) {
 				$appIconFile->negateImage(false);
 			}
@@ -182,10 +171,10 @@ class IconBuilder {
 		$finalIconFile->setBackgroundColor(new ImagickPixel('transparent'));
 		$finalIconFile->readImageBlob($background);
 		$finalIconFile->setImageVirtualPixelMethod(Imagick::VIRTUALPIXELMETHOD_TRANSPARENT);
-		$finalIconFile->setImageArtifact('compose:args', "1,0,-0.5,0.5");
+		$finalIconFile->setImageArtifact('compose:args', '1,0,-0.5,0.5');
 		$finalIconFile->compositeImage($appIconFile, Imagick::COMPOSITE_ATOP, $offset_w, $offset_h);
 		$finalIconFile->setImageFormat('png24');
-		if (defined("Imagick::INTERPOLATE_BICUBIC") === true) {
+		if (defined('Imagick::INTERPOLATE_BICUBIC') === true) {
 			$filter = Imagick::INTERPOLATE_BICUBIC;
 		} else {
 			$filter = Imagick::FILTER_LANCZOS;
@@ -197,17 +186,17 @@ class IconBuilder {
 	}
 
 	/**
-	 * @param $app string app name
-	 * @param $image string relative path to svg file in app directory
+	 * @param string $app app name
+	 * @param string $image relative path to svg file in app directory
 	 * @return string|false content of a colorized svg file
 	 */
 	public function colorSvg($app, $image) {
 		$imageFile = $this->util->getAppImage($app, $image);
-		if ($imageFile === false || $imageFile === "") {
+		if ($imageFile === false || $imageFile === '' || !file_exists($imageFile)) {
 			return false;
 		}
 		$svg = file_get_contents($imageFile);
-		if ($svg !== false && $svg !== "") {
+		if ($svg !== false && $svg !== '') {
 			$color = $this->util->elementColor($this->themingDefaults->getColorPrimary());
 			$svg = $this->util->colorizeSvg($svg, $color);
 			return $svg;

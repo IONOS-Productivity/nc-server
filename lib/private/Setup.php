@@ -14,6 +14,7 @@ use Exception;
 use InvalidArgumentException;
 use OC\Authentication\Token\PublicKeyTokenProvider;
 use OC\Authentication\Token\TokenCleanupJob;
+use OC\Core\BackgroundJobs\GenerateMetadataJob;
 use OC\Log\Rotate;
 use OC\Preview\BackgroundCleanupJob;
 use OC\TextProcessing\RemoveOldTasksBackgroundJob;
@@ -33,6 +34,7 @@ use OCP\L10N\IFactory as IL10NFactory;
 use OCP\Migration\IOutput;
 use OCP\Security\ISecureRandom;
 use OCP\Server;
+use OCP\ServerVersion;
 use Psr\Log\LoggerInterface;
 
 class Setup {
@@ -45,7 +47,7 @@ class Setup {
 		protected Defaults $defaults,
 		protected LoggerInterface $logger,
 		protected ISecureRandom $random,
-		protected Installer $installer
+		protected Installer $installer,
 	) {
 		$this->l10n = $l10nFactory->get('lib');
 	}
@@ -148,7 +150,7 @@ class Setup {
 	 * a few system checks.
 	 *
 	 * @return array of system info, including an "errors" value
-	 * in case of errors/warnings
+	 *               in case of errors/warnings
 	 */
 	public function getSystemInfo(bool $allowAllDatabases = false): array {
 		$databases = $this->getSupportedDatabases($allowAllDatabases);
@@ -231,7 +233,7 @@ class Setup {
 			$error[] = $l->t('Set an admin password.');
 		}
 		if (empty($options['directory'])) {
-			$options['directory'] = \OC::$SERVERROOT . "/data";
+			$options['directory'] = \OC::$SERVERROOT . '/data';
 		}
 
 		if (!isset(self::$dbSetupClasses[$dbType])) {
@@ -249,7 +251,7 @@ class Setup {
 
 		// validate the data directory
 		if ((!is_dir($dataDir) && !mkdir($dataDir)) || !is_writable($dataDir)) {
-			$error[] = $l->t("Cannot create or write into the data directory %s", [$dataDir]);
+			$error[] = $l->t('Cannot create or write into the data directory %s', [$dataDir]);
 		}
 
 		if (!empty($error)) {
@@ -378,10 +380,10 @@ class Setup {
 		//and we are done
 		$config->setSystemValue('installed', true);
 		if (self::shouldRemoveCanInstallFile()) {
-			unlink(\OC::$configDir.'/CAN_INSTALL');
+			unlink(\OC::$configDir . '/CAN_INSTALL');
 		}
 
-		$bootstrapCoordinator = \OCP\Server::get(\OC\AppFramework\Bootstrap\Coordinator::class);
+		$bootstrapCoordinator = Server::get(\OC\AppFramework\Bootstrap\Coordinator::class);
 		$bootstrapCoordinator->runInitialRegistration();
 
 		// Create a session token for the newly created user
@@ -393,7 +395,7 @@ class Setup {
 		$userSession->login($username, $password);
 		$user = $userSession->getUser();
 		if (!$user) {
-			$error[] = "No account found in session.";
+			$error[] = 'No account found in session.';
 			return $error;
 		}
 		$userSession->createSessionToken($request, $user->getUID(), $username, $password);
@@ -416,6 +418,7 @@ class Setup {
 		$jobList->add(BackgroundCleanupJob::class);
 		$jobList->add(RemoveOldTasksBackgroundJob::class);
 		$jobList->add(CleanupDeletedUsers::class);
+		$jobList->add(GenerateMetadataJob::class);
 	}
 
 	/**
@@ -511,7 +514,7 @@ class Setup {
 			$df = disk_free_space(\OC::$SERVERROOT);
 			$size = strlen($content) + 10240;
 			if ($df !== false && $df < (float)$size) {
-				throw new \Exception(\OC::$SERVERROOT . " does not have enough space for writing the htaccess file! Not writing it back!");
+				throw new \Exception(\OC::$SERVERROOT . ' does not have enough space for writing the htaccess file! Not writing it back!');
 			}
 		}
 		//suppress errors in case we don't have permissions for it
@@ -544,7 +547,7 @@ class Setup {
 		$content .= "# Section for Apache 2.2 to 2.6\n";
 		$content .= "<IfModule mod_autoindex.c>\n";
 		$content .= "  IndexIgnore *\n";
-		$content .= "</IfModule>";
+		$content .= '</IfModule>';
 
 		$baseDir = Server::get(IConfig::class)->getSystemValueString('datadirectory', \OC::$SERVERROOT . '/data');
 		file_put_contents($baseDir . '/.htaccess', $content);
@@ -563,11 +566,11 @@ class Setup {
 	}
 
 	public function shouldRemoveCanInstallFile(): bool {
-		return \OC_Util::getChannel() !== 'git' && is_file(\OC::$configDir.'/CAN_INSTALL');
+		return Server::get(ServerVersion::class)->getChannel() !== 'git' && is_file(\OC::$configDir . '/CAN_INSTALL');
 	}
 
 	public function canInstallFileExists(): bool {
-		return is_file(\OC::$configDir.'/CAN_INSTALL');
+		return is_file(\OC::$configDir . '/CAN_INSTALL');
 	}
 
 	protected function outputDebug(?IOutput $output, string $message): void {

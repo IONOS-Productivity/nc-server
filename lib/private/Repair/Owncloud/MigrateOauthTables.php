@@ -15,6 +15,7 @@ use OCA\OAuth2\Db\AccessTokenMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Authentication\Token\IToken;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IConfig;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
 use OCP\Security\ICrypto;
@@ -29,6 +30,7 @@ class MigrateOauthTables implements IRepairStep {
 		private ISecureRandom $random,
 		private ITimeFactory $timeFactory,
 		private ICrypto $crypto,
+		private IConfig $config,
 	) {
 	}
 
@@ -42,7 +44,7 @@ class MigrateOauthTables implements IRepairStep {
 	public function run(IOutput $output) {
 		$schema = new SchemaWrapper($this->db);
 		if (!$schema->hasTable('oauth2_clients')) {
-			$output->info("oauth2_clients table does not exist.");
+			$output->info('oauth2_clients table does not exist.');
 			return;
 		}
 
@@ -152,7 +154,7 @@ class MigrateOauthTables implements IRepairStep {
 			$result->closeCursor();
 
 			// 2. Insert them into the client_identifier column.
-			foreach ($identifiers as ["id" => $id, "identifier" => $clientIdentifier]) {
+			foreach ($identifiers as ['id' => $id, 'identifier' => $clientIdentifier]) {
 				$insertQuery = $this->db->getQueryBuilder();
 				$insertQuery->update('oauth2_clients')
 					->set('client_identifier', $insertQuery->createNamedParameter($clientIdentifier, IQueryBuilder::PARAM_STR))
@@ -169,7 +171,12 @@ class MigrateOauthTables implements IRepairStep {
 			$schema = new SchemaWrapper($this->db);
 		}
 
-		$output->info('Delete clients (and their related access tokens) with the redirect_uri starting with oc:// or ending with *');
+		$enableOcClients = $this->config->getSystemValueBool('oauth2.enable_oc_clients', false);
+		if ($enableOcClients) {
+			$output->info('Delete clients (and their related access tokens) with the redirect_uri starting with oc://');
+		} else {
+			$output->info('Delete clients (and their related access tokens) with the redirect_uri starting with oc:// or ending with *');
+		}
 		// delete the access tokens
 		$qbDeleteAccessTokens = $this->db->getQueryBuilder();
 
@@ -178,10 +185,12 @@ class MigrateOauthTables implements IRepairStep {
 			->from('oauth2_clients')
 			->where(
 				$qbSelectClientId->expr()->iLike('redirect_uri', $qbDeleteAccessTokens->createNamedParameter('oc://%', IQueryBuilder::PARAM_STR))
-			)
-			->orWhere(
+			);
+		if (!$enableOcClients) {
+			$qbSelectClientId->orWhere(
 				$qbSelectClientId->expr()->iLike('redirect_uri', $qbDeleteAccessTokens->createNamedParameter('%*', IQueryBuilder::PARAM_STR))
 			);
+		}
 
 		$qbDeleteAccessTokens->delete('oauth2_access_tokens')
 			->where(
@@ -194,10 +203,12 @@ class MigrateOauthTables implements IRepairStep {
 		$qbDeleteClients->delete('oauth2_clients')
 			->where(
 				$qbDeleteClients->expr()->iLike('redirect_uri', $qbDeleteClients->createNamedParameter('oc://%', IQueryBuilder::PARAM_STR))
-			)
-			->orWhere(
+			);
+		if (!$enableOcClients) {
+			$qbDeleteClients->orWhere(
 				$qbDeleteClients->expr()->iLike('redirect_uri', $qbDeleteClients->createNamedParameter('%*', IQueryBuilder::PARAM_STR))
 			);
+		}
 		$qbDeleteClients->executeStatement();
 
 		// Migrate legacy refresh tokens from oc

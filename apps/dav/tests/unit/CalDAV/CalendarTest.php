@@ -25,7 +25,7 @@ class CalendarTest extends TestCase {
 	/** @var IConfig */
 	protected $config;
 
-	/** @var MockObject|LoggerInterface  */
+	/** @var MockObject|LoggerInterface */
 	protected $logger;
 
 	protected function setUp(): void {
@@ -43,12 +43,13 @@ class CalendarTest extends TestCase {
 	}
 
 	public function testDelete(): void {
-		/** @var MockObject | CalDavBackend $backend */
-		$backend = $this->getMockBuilder(CalDavBackend::class)->disableOriginalConstructor()->getMock();
-		$backend->expects($this->once())->method('updateShares');
-		$backend->expects($this->any())->method('getShares')->willReturn([
-			['href' => 'principal:user2']
-		]);
+		/** @var CalDavBackend&MockObject $backend */
+		$backend = $this->createMock(CalDavBackend::class);
+		$backend->expects($this->never())
+			->method('updateShares');
+		$backend->expects($this->once())
+			->method('unshare');
+
 		$calendarInfo = [
 			'{http://owncloud.org/ns}owner-principal' => 'user1',
 			'principaluri' => 'user2',
@@ -61,12 +62,13 @@ class CalendarTest extends TestCase {
 
 
 	public function testDeleteFromGroup(): void {
-		/** @var MockObject | CalDavBackend $backend */
-		$backend = $this->getMockBuilder(CalDavBackend::class)->disableOriginalConstructor()->getMock();
-		$backend->expects($this->once())->method('updateShares');
-		$backend->expects($this->any())->method('getShares')->willReturn([
-			['href' => 'principal:group2']
-		]);
+		/** @var CalDavBackend&MockObject $backend */
+		$backend = $this->createMock(CalDavBackend::class);
+		$backend->expects($this->never())
+			->method('updateShares');
+		$backend->expects($this->once())
+			->method('unshare');
+
 		$calendarInfo = [
 			'{http://owncloud.org/ns}owner-principal' => 'user1',
 			'principaluri' => 'user2',
@@ -418,7 +420,7 @@ EOD;
 			$l10n->expects($this->once())
 				->method('t')
 				->with('Busy')
-				->willReturn("Translated busy");
+				->willReturn('Translated busy');
 		} else {
 			$l10n->expects($this->never())
 				->method('t');
@@ -442,7 +444,7 @@ EOD;
 		];
 	}
 
-	public function testRemoveVAlarms() {
+	public function testRemoveVAlarms(): void {
 		$publicObjectData = <<<EOD
 BEGIN:VCALENDAR
 VERSION:2.0

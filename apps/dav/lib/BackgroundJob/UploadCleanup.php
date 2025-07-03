@@ -19,15 +19,13 @@ use OCP\Files\NotFoundException;
 use Psr\Log\LoggerInterface;
 
 class UploadCleanup extends TimedJob {
-	private IRootFolder $rootFolder;
-	private IJobList $jobList;
-	private LoggerInterface $logger;
-
-	public function __construct(ITimeFactory $time, IRootFolder $rootFolder, IJobList $jobList, LoggerInterface $logger) {
+	public function __construct(
+		ITimeFactory $time,
+		private IRootFolder $rootFolder,
+		private IJobList $jobList,
+		private LoggerInterface $logger,
+	) {
 		parent::__construct($time);
-		$this->rootFolder = $rootFolder;
-		$this->jobList = $jobList;
-		$this->logger = $logger;
 
 		// Run once a day
 		$this->setInterval(60 * 60 * 24);
@@ -44,7 +42,7 @@ class UploadCleanup extends TimedJob {
 			/** @var Folder $uploads */
 			$uploads = $userRoot->get('uploads');
 			$uploadFolder = $uploads->get($folder);
-		} catch (NotFoundException | NoUserException $e) {
+		} catch (NotFoundException|NoUserException $e) {
 			$this->jobList->remove(self::class, $argument);
 			return;
 		}
@@ -53,7 +51,7 @@ class UploadCleanup extends TimedJob {
 		$time = $this->time->getTime() - 60 * 60 * 24;
 
 		if (!($uploadFolder instanceof Folder)) {
-			$this->logger->error("Found a file inside the uploads folder. Uid: " . $uid . ' folder: ' . $folder);
+			$this->logger->error('Found a file inside the uploads folder. Uid: ' . $uid . ' folder: ' . $folder);
 			if ($uploadFolder->getMTime() < $time) {
 				$uploadFolder->delete();
 			}

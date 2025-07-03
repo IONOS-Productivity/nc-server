@@ -9,7 +9,7 @@ import axios from '@nextcloud/axios'
 
 window.addEventListener('DOMContentLoaded', () => {
 	$('#loglevel').change(function() {
-		$.post(OC.generateUrl('/settings/admin/log/level'), { level: $(this).val() }, () => {
+		$.post(generateUrl('/settings/admin/log/level'), { level: $(this).val() }, () => {
 			OC.Log.reload()
 		})
 	})
@@ -101,7 +101,6 @@ window.addEventListener('DOMContentLoaded', () => {
 			const $el = $('#postsetupchecks')
 			$('#security-warning-state-loading').addClass('hidden')
 
-			let hasMessages = false
 			const $errorsEl = $el.find('.errors')
 			const $warningsEl = $el.find('.warnings')
 			const $infoEl = $el.find('.info')
@@ -120,33 +119,30 @@ window.addEventListener('DOMContentLoaded', () => {
 				}
 			}
 
+			let hasErrors = false
+			let hasWarnings = false
+
 			if ($errorsEl.find('li').length > 0) {
 				$errorsEl.removeClass('hidden')
-				hasMessages = true
+				hasErrors = true
 			}
 			if ($warningsEl.find('li').length > 0) {
 				$warningsEl.removeClass('hidden')
-				hasMessages = true
+				hasWarnings = true
 			}
 			if ($infoEl.find('li').length > 0) {
 				$infoEl.removeClass('hidden')
-				hasMessages = true
 			}
 
-			if (hasMessages) {
+			if (hasErrors || hasWarnings) {
 				$('#postsetupchecks-hint').removeClass('hidden')
-				if ($errorsEl.find('li').length > 0) {
+				if (hasErrors) {
 					$('#security-warning-state-failure').removeClass('hidden')
 				} else {
 					$('#security-warning-state-warning').removeClass('hidden')
 				}
 			} else {
-				const securityWarning = $('#security-warning')
-				if (securityWarning.children('ul').children().length === 0) {
-					$('#security-warning-state-ok').removeClass('hidden')
-				} else {
-					$('#security-warning-state-failure').removeClass('hidden')
-				}
+				$('#security-warning-state-ok').removeClass('hidden')
 			}
 		})
 	}

@@ -145,6 +145,7 @@ OC.L10N.register(
     "Level" : "Nivel",
     "Actions" : "Acțiuni",
     "No apps found for your version" : "Nu au fost găsite aplicații pentru versiunea ta",
+    "Group name" : "Numele grupului",
     "Type" : "Tip",
     "Learn more" : "Află mai mult",
     "Confirm" : "Confirmă",
@@ -182,6 +183,7 @@ OC.L10N.register(
     "Create new app password" : "Crează o nouă parolă pentru aplicație",
     "Login" : "Autentificare",
     "Password" : "Parolă",
+    "Password confirmation is required" : "Confirmarea parolei este necesară",
     "Server-side encryption" : "Criptare la nivel de server",
     "Enable server-side encryption" : "Activează criptarea pe server",
     "Select default encryption module:" : "Selectează modulul implicit de criptare:",
@@ -189,7 +191,6 @@ OC.L10N.register(
     "Encryption alone does not guarantee security of the system. Please see documentation for more information about how the encryption app works, and the supported use cases." : "Criptarea, ca unică variantă, nu garantează securitatea sistemului. Consultați documentația pentru mai multe informații despre cum funcționează aplicația de criptare și variantele de utilizare acceptate.",
     "This is the final warning: Do you really want to enable encryption?" : "Aceasta este avertizarea finală: Chiar vrei să activezi criptarea?",
     "Submit" : "Trimite",
-    "Remove group" : "Înlătură grupul",
     "Current password" : "Parola curentă",
     "New password" : "Noua parolă",
     "Change password" : "Schimbă parola",
@@ -221,7 +222,6 @@ OC.L10N.register(
     "Unnamed device" : "Dispozitiv fără nume",
     "Your browser does not support WebAuthn." : "Browserul dvs. nu acceptă WebAuthn.",
     "Admins" : "Administratori",
-    "Group name" : "Numele grupului",
     "Sending…" : "Se trimite...",
     "Email sent" : "Mesajul a fost expediat",
     "Location" : "Locație",
@@ -264,9 +264,6 @@ OC.L10N.register(
     "Save" : "Salvează",
     "Security & setup warnings" : "Alerte de securitate & configurare",
     "All checks passed." : "Toate verificările s-au terminat fără erori.",
-    "This community release of Nextcloud is unsupported and instant notifications are unavailable." : "Această versiune comunitară a Nextcloud nu este suportată, iar notificările instantanee nu sunt disponibile.",
-    "The database is missing some indexes. Due to the fact that adding indexes on big tables could take some time they were not added automatically. By running \"occ db:add-missing-indices\" those missing indexes could be added manually while the instance keeps running. Once the indexes are added queries to those tables are usually much faster." : "Lipsesc indecși din baza de date. Datorită faptului că adăugarea indecșilor la tabelele mari durează mult, aceștia nu au fost adăugați automat. Rulând \"occ db:add-missing-indices\", indecși lipsă pot fi adăugați manual în timp ce instanța rulează în continuare. Odată ce indecșii au fost adăugați, interogările acelor tabele vor fi de obicei mai rapide.",
-    "Username" : "Nume utilizator",
-    "Name your device" : "Numiți dispozitivul dvs."
+    "This community release of Nextcloud is unsupported and instant notifications are unavailable." : "Această versiune comunitară a Nextcloud nu este suportată, iar notificările instantanee nu sunt disponibile."
 },
 "nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));");
