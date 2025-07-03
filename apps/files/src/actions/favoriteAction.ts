@@ -2,10 +2,14 @@
  * SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
+import type { Node, View } from '@nextcloud/files'
+
 import { emit } from '@nextcloud/event-bus'
-import { generateUrl } from '@nextcloud/router'
-import { Permission, type Node, View, FileAction } from '@nextcloud/files'
+import { Permission, FileAction } from '@nextcloud/files'
 import { translate as t } from '@nextcloud/l10n'
+import { encodePath } from '@nextcloud/paths'
+import { generateUrl } from '@nextcloud/router'
+import { isPublicShare } from '@nextcloud/sharing/public'
 import axios from '@nextcloud/axios'
 import PQueue from 'p-queue'
 import Vue from 'vue'
@@ -14,7 +18,8 @@ import StarOutlineSvg from '@mdi/svg/svg/star-outline.svg?raw'
 import StarSvg from '@mdi/svg/svg/star.svg?raw'
 
 import logger from '../logger.ts'
-import { encodePath } from '@nextcloud/paths'
+
+export const ACTION_FAVORITE = 'favorite'
 
 const queue = new PQueue({ concurrency: 5 })
 
@@ -59,7 +64,7 @@ export const favoriteNode = async (node: Node, view: View, willFavorite: boolean
 }
 
 export const action = new FileAction({
-	id: 'favorite',
+	id: ACTION_FAVORITE,
 	displayName(nodes: Node[]) {
 		return shouldFavorite(nodes)
 			? t('files', 'Add to favorites')
@@ -72,8 +77,14 @@ export const action = new FileAction({
 	},
 
 	enabled(nodes: Node[]) {
-		// We can only favorite nodes within files and with permissions
-		return !nodes.some(node => !node.root?.startsWith?.('/files'))
+		// Not enabled for public shares
+		if (isPublicShare()) {
+			return false
+		}
+
+		// We can only favorite nodes if they are located in files
+		return nodes.every(node => node.root?.startsWith?.('/files'))
+			// and we have permissions
 			&& nodes.every(node => node.permissions !== Permission.NONE)
 	},
 

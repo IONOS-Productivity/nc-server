@@ -25,6 +25,11 @@
 				{{ t('settings', 'Show storage path') }}
 			</NcCheckboxRadioSwitch>
 			<NcCheckboxRadioSwitch type="switch"
+				data-test="showFirstLogin"
+				:checked.sync="showFirstLogin">
+				{{ t('settings', 'Show first login') }}
+			</NcCheckboxRadioSwitch>
+			<NcCheckboxRadioSwitch type="switch"
 				data-test="showLastLogin"
 				:checked.sync="showLastLogin">
 				{{ t('settings', 'Show last login') }}
@@ -38,6 +43,9 @@
 			</NcNoteCard>
 			<fieldset>
 				<legend>{{ t('settings', 'Group list sorting') }}</legend>
+				<NcNoteCard class="dialog__note"
+					type="info"
+					:text="t('settings', 'Sorting only applies to the currently loaded groups for performance reasons. Groups will be loaded as you navigate or search through the list.')" />
 				<NcCheckboxRadioSwitch type="radio"
 					:checked.sync="groupSorting"
 					data-test="sortGroupsByMemberCount"
@@ -163,6 +171,15 @@ export default {
 			},
 			set(status) {
 				this.setShowConfig('showLanguages', status)
+			},
+		},
+
+		showFirstLogin: {
+			get() {
+				return this.showConfig.showFirstLogin
+			},
+			set(status) {
+				this.setShowConfig('showFirstLogin', status)
 			},
 		},
 
@@ -308,6 +325,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.dialog {
+	&__note {
+		font-weight: normal;
+	}
+}
+
 fieldset {
 	font-weight: bold;
 }

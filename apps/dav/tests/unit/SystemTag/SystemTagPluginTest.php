@@ -9,8 +9,10 @@ namespace OCA\DAV\Tests\unit\SystemTag;
 
 use OC\SystemTag\SystemTag;
 use OCA\DAV\SystemTag\SystemTagNode;
+use OCA\DAV\SystemTag\SystemTagPlugin;
 use OCA\DAV\SystemTag\SystemTagsByIdCollection;
 use OCA\DAV\SystemTag\SystemTagsObjectMappingCollection;
+use OCP\Files\IRootFolder;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -23,12 +25,12 @@ use Sabre\HTTP\RequestInterface;
 use Sabre\HTTP\ResponseInterface;
 
 class SystemTagPluginTest extends \Test\TestCase {
-	public const ID_PROPERTYNAME = \OCA\DAV\SystemTag\SystemTagPlugin::ID_PROPERTYNAME;
-	public const DISPLAYNAME_PROPERTYNAME = \OCA\DAV\SystemTag\SystemTagPlugin::DISPLAYNAME_PROPERTYNAME;
-	public const USERVISIBLE_PROPERTYNAME = \OCA\DAV\SystemTag\SystemTagPlugin::USERVISIBLE_PROPERTYNAME;
-	public const USERASSIGNABLE_PROPERTYNAME = \OCA\DAV\SystemTag\SystemTagPlugin::USERASSIGNABLE_PROPERTYNAME;
-	public const CANASSIGN_PROPERTYNAME = \OCA\DAV\SystemTag\SystemTagPlugin::CANASSIGN_PROPERTYNAME;
-	public const GROUPS_PROPERTYNAME = \OCA\DAV\SystemTag\SystemTagPlugin::GROUPS_PROPERTYNAME;
+	public const ID_PROPERTYNAME = SystemTagPlugin::ID_PROPERTYNAME;
+	public const DISPLAYNAME_PROPERTYNAME = SystemTagPlugin::DISPLAYNAME_PROPERTYNAME;
+	public const USERVISIBLE_PROPERTYNAME = SystemTagPlugin::USERVISIBLE_PROPERTYNAME;
+	public const USERASSIGNABLE_PROPERTYNAME = SystemTagPlugin::USERASSIGNABLE_PROPERTYNAME;
+	public const CANASSIGN_PROPERTYNAME = SystemTagPlugin::CANASSIGN_PROPERTYNAME;
+	public const GROUPS_PROPERTYNAME = SystemTagPlugin::GROUPS_PROPERTYNAME;
 
 	/**
 	 * @var \Sabre\DAV\Server
@@ -41,7 +43,7 @@ class SystemTagPluginTest extends \Test\TestCase {
 	private $tree;
 
 	/**
-	 * @var \OCP\SystemTag\ISystemTagManager
+	 * @var ISystemTagManager
 	 */
 	private $tagManager;
 
@@ -56,12 +58,17 @@ class SystemTagPluginTest extends \Test\TestCase {
 	private $userSession;
 
 	/**
+	 * @var IRootFolder
+	 */
+	private $rootFolder;
+
+	/**
 	 * @var IUser
 	 */
 	private $user;
 
 	/**
-	 * @var \OCA\DAV\SystemTag\SystemTagPlugin
+	 * @var SystemTagPlugin
 	 */
 	private $plugin;
 
@@ -94,13 +101,17 @@ class SystemTagPluginTest extends \Test\TestCase {
 			->expects($this->any())
 			->method('isLoggedIn')
 			->willReturn(true);
+
 		$this->tagMapper = $this->getMockBuilder(ISystemTagObjectMapper::class)
 			->getMock();
+		$this->rootFolder = $this->getMockBuilder(IRootFolder::class)
+			->getMock();
 
-		$this->plugin = new \OCA\DAV\SystemTag\SystemTagPlugin(
+		$this->plugin = new SystemTagPlugin(
 			$this->tagManager,
 			$this->groupManager,
 			$this->userSession,
+			$this->rootFolder,
 			$this->tagMapper
 		);
 		$this->plugin->initialize($this->server);
@@ -543,11 +554,11 @@ class SystemTagPluginTest extends \Test\TestCase {
 			->willReturn($node);
 
 		$request = $this->getMockBuilder(RequestInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 		$response = $this->getMockBuilder(ResponseInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$request->expects($this->once())
 			->method('getPath')
@@ -617,11 +628,11 @@ class SystemTagPluginTest extends \Test\TestCase {
 			->with(1);
 
 		$request = $this->getMockBuilder(RequestInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 		$response = $this->getMockBuilder(ResponseInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$request->expects($this->once())
 			->method('getPath')
@@ -666,11 +677,11 @@ class SystemTagPluginTest extends \Test\TestCase {
 			->method('createFile');
 
 		$request = $this->getMockBuilder(RequestInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 		$response = $this->getMockBuilder(ResponseInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$request->expects($this->once())
 			->method('getPath')
@@ -714,11 +725,11 @@ class SystemTagPluginTest extends \Test\TestCase {
 			->willReturn($node);
 
 		$request = $this->getMockBuilder(RequestInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 		$response = $this->getMockBuilder(ResponseInterface::class)
-				->disableOriginalConstructor()
-				->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$request->expects($this->once())
 			->method('getPath')

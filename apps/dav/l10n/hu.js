@@ -260,14 +260,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "Emlékeztető értesítések küldése azoknak is, akikkel a naptár meg van osztva",
     "Reminders are always sent to organizers and attendees." : "Az értesítések mindig a szervezőknek és a résztvevőknek lesznek elküldve.",
     "Enable notifications for events via push" : "Leküldéses értesítések engedélyezése az eseményekhez",
+    "Cancel" : "Mégse",
+    "Import" : "Importálás",
+    "Error while saving settings" : "Hiba a beállítások mentése során",
     "There was an error updating your attendance status." : "Hiba történt a részvételi állapotának frissítése során.",
     "Please contact the organizer directly." : "Vegye fel a kapcsolatot közvetlenül a szervezővel.",
     "Are you accepting the invitation?" : "Elfogadja az meghívást?",
     "Tentative" : "Feltételes",
-    "Your attendance was updated successfully." : "A részvétele frissítése sikeres.",
-    "Time:" : "Idő:",
-    "Could not open file" : "A fájl nem nyitható meg",
-    "Invalid chunk name" : "Érvénytelen darabnév",
-    "Could not rename part file assembled from chunks" : "Nem lehet átnevezni a darabokból összeállított részleges fájlt"
+    "Your attendance was updated successfully." : "A részvétele frissítése sikeres."
 },
 "nplurals=2; plural=(n != 1);");

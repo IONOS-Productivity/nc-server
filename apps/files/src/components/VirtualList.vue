@@ -57,10 +57,10 @@
 import type { File, Folder, Node } from '@nextcloud/files'
 import type { PropType } from 'vue'
 
+import { defineComponent } from 'vue'
 import debounce from 'debounce'
-import Vue from 'vue'
 
-import filesListWidthMixin from '../mixins/filesListWidth.ts'
+import { useFileListWidth } from '../composables/useFileListWidth.ts'
 import logger from '../logger.ts'
 
 interface RecycledPoolItem {
@@ -69,13 +69,10 @@ interface RecycledPoolItem {
 }
 
 type DataSource = File | Folder
-
 type DataSourceKey = keyof DataSource
 
-export default Vue.extend({
+export default defineComponent({
 	name: 'VirtualList',
-
-	mixins: [filesListWidthMixin],
 
 	props: {
 		dataComponent: {
@@ -103,12 +100,20 @@ export default Vue.extend({
 			default: false,
 		},
 		/**
-		 * Visually hidden caption for the table accesibility
+		 * Visually hidden caption for the table accessibility
 		 */
 		caption: {
 			type: String,
 			default: '',
 		},
+	},
+
+	setup() {
+		const fileListWidth = useFileListWidth()
+
+		return {
+			fileListWidth,
+		}
 	},
 
 	data() {
@@ -173,7 +178,7 @@ export default Vue.extend({
 			if (!this.gridMode) {
 				return 1
 			}
-			return Math.floor(this.filesListWidth / this.itemWidth)
+			return Math.floor(this.fileListWidth / this.itemWidth)
 		},
 
 		/**
@@ -363,15 +368,28 @@ export default Vue.extend({
 		onScroll() {
 			this._onScrollHandle ??= requestAnimationFrame(() => {
 				this._onScrollHandle = null
-				const topScroll = this.$el.scrollTop - this.beforeHeight
-				const index = Math.floor(topScroll / this.itemHeight) * this.columnCount
+
+				const index = this.scrollPosToIndex(this.$el.scrollTop)
+				if (index === this.index) {
+					return
+				}
+
 				// Max 0 to prevent negative index
-				this.index = Math.max(0, index)
+				this.index = Math.max(0, Math.floor(index))
 				this.$emit('scroll')
 			})
 		},
 
+		// Convert scroll position to index
+		// It should be the opposite of `indexToScrollPos`
+		scrollPosToIndex(scrollPos: number): number {
+			const topScroll = scrollPos - this.beforeHeight
+			// Max 0 to prevent negative index
+			return Math.max(0, Math.floor(topScroll / this.itemHeight)) * this.columnCount
+		},
+
 		// Convert index to scroll position
+		// It should be the opposite of `scrollPosToIndex`
 		indexToScrollPos(index: number): number {
 			return Math.floor(index / this.columnCount) * this.itemHeight + this.beforeHeight
 		},

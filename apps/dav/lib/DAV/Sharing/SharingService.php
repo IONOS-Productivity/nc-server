@@ -9,7 +9,9 @@ namespace OCA\DAV\DAV\Sharing;
 
 abstract class SharingService {
 	protected string $resourceType = '';
-	public function __construct(protected SharingMapper $mapper) {
+	public function __construct(
+		protected SharingMapper $mapper,
+	) {
 	}
 
 	public function getResourceType(): string {
@@ -47,15 +49,5 @@ abstract class SharingService {
 
 	public function getSharesForIds(array $resourceIds): array {
 		return $this->mapper->getSharesForIds($resourceIds, $this->getResourceType());
-	}
-
-	/**
-	 * @param array $oldShares
-	 * @return bool
-	 */
-	public function hasGroupShare(array $oldShares): bool {
-		return !empty(array_filter($oldShares, function (array $share) {
-			return $share['{http://owncloud.org/ns}group-share'] === true;
-		}));
 	}
 }

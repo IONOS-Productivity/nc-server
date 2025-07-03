@@ -4,7 +4,9 @@
 -->
 
 <template>
-	<ul v-if="canLinkShare" class="sharing-link-list">
+	<ul v-if="canLinkShare"
+		:aria-label="t('files_sharing', 'Link shares')"
+		class="sharing-link-list">
 		<!-- If no link shares, show the add link default entry -->
 		<SharingEntryLink v-if="!hasLinkShares && canReshare"
 			:can-reshare="canReshare"
@@ -31,7 +33,8 @@
 <script>
 import { getCapabilities } from '@nextcloud/capabilities'
 
-// eslint-disable-next-line no-unused-vars
+import { t } from '@nextcloud/l10n'
+
 import Share from '../models/Share.js'
 import SharingEntryLink from '../components/SharingEntryLink.vue'
 import ShareDetails from '../mixins/ShareDetails.js'
@@ -92,6 +95,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		/**
 		 * Add a new share into the link shares list
 		 * and return the newly created share component

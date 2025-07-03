@@ -3,34 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import type { FilesStore, RootsStore, RootOptions, Service, FileSource } from '../types'
-import type { FileStat, ResponseDataDetailed } from 'webdav'
+import type { FilesStore, RootsStore, RootOptions, Service, FilesState, FileSource } from '../types'
 import type { Folder, Node } from '@nextcloud/files'
 
-import { davGetDefaultPropfind, davResultToNode, davRootPath } from '@nextcloud/files'
 import { defineStore } from 'pinia'
 import { subscribe } from '@nextcloud/event-bus'
 import logger from '../logger'
 import Vue from 'vue'
 
-import { client } from '../services/WebdavClient.ts'
+import { fetchNode } from '../services/WebdavClient.ts'
 import { usePathsStore } from './paths.ts'
-
-const fetchNode = async (node: Node): Promise<Node> => {
-	const propfindPayload = davGetDefaultPropfind()
-	const result = await client.stat(`${davRootPath}${node.path}`, {
-		details: true,
-		data: propfindPayload,
-	}) as ResponseDataDetailed<FileStat>
-	return davResultToNode(result.data)
-}
 
 export const useFilesStore = function(...args) {
 	const store = defineStore('files', {
-		state: () => ({
+		state: (): FilesState => ({
 			files: {} as FilesStore,
 			roots: {} as RootsStore,
-			_initialized: false,
 		}),
 
 		getters: {
@@ -66,7 +54,7 @@ export const useFilesStore = function(...args) {
 
 		actions: {
 			/**
-			 * Get cached nodes within a given path
+			 * Get cached child nodes within a given path
 			 *
 			 * @param service The service (files view)
 			 * @param path The path relative within the service
@@ -87,7 +75,6 @@ export const useFilesStore = function(...args) {
 				}
 
 				// If we found a cache entry and the cache entry was already loaded (has children) then use it
-				// @ts-expect-error The _children prop is undocumented - we need to make this official
 				return (folder?._children ?? [])
 					.map((source: string) => this.getNode(source))
 					.filter(Boolean)
@@ -148,7 +135,7 @@ export const useFilesStore = function(...args) {
 				// If we have multiple nodes with the same file ID, we need to update all of them
 				const nodes = this.getNodesById(node.fileid)
 				if (nodes.length > 1) {
-					await Promise.all(nodes.map(fetchNode)).then(this.updateNodes)
+					await Promise.all(nodes.map(node => fetchNode(node.path))).then(this.updateNodes)
 					logger.debug(nodes.length + ' nodes updated in store', { fileid: node.fileid })
 					return
 				}
@@ -160,7 +147,7 @@ export const useFilesStore = function(...args) {
 				}
 
 				// Otherwise, it means we receive an event for a node that is not in the store
-				fetchNode(node).then(n => this.updateNodes([n]))
+				fetchNode(node.path).then(n => this.updateNodes([n]))
 			},
 
 			// Handlers for legacy sidebar (no real nodes support)

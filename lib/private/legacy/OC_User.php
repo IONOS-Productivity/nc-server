@@ -145,7 +145,7 @@ class OC_User {
 	public static function loginWithApache(\OCP\Authentication\IApacheBackend $backend) {
 		$uid = $backend->getCurrentUserId();
 		$run = true;
-		OC_Hook::emit("OC_User", "pre_login", ["run" => &$run, "uid" => $uid, 'backend' => $backend]);
+		OC_Hook::emit('OC_User', 'pre_login', ['run' => &$run, 'uid' => $uid, 'backend' => $backend]);
 
 		if ($uid) {
 			if (self::getUser() !== $uid) {
@@ -221,9 +221,9 @@ class OC_User {
 	 * Verify with Apache whether user is authenticated.
 	 *
 	 * @return boolean|null
-	 *          true: authenticated
-	 *          false: not authenticated
-	 *          null: not handled / no backend available
+	 *                      true: authenticated
+	 *                      false: not authenticated
+	 *                      null: not handled / no backend available
 	 */
 	public static function handleApacheAuth() {
 		$backend = self::findFirstActiveUsedBackend();
@@ -259,7 +259,7 @@ class OC_User {
 	/**
 	 * Check if the user is logged in, considers also the HTTP basic credentials
 	 *
-	 * @deprecated use \OC::$server->getUserSession()->isLoggedIn()
+	 * @deprecated 12.0.0 use \OC::$server->getUserSession()->isLoggedIn()
 	 * @return bool
 	 */
 	public static function isLoggedIn() {
@@ -361,7 +361,7 @@ class OC_User {
 	 * @return string
 	 *
 	 * returns the path to the users home directory
-	 * @deprecated Use \OC::$server->getUserManager->getHome()
+	 * @deprecated 12.0.0 Use \OC::$server->getUserManager->getHome()
 	 */
 	public static function getHome($uid) {
 		$user = \OC::$server->getUserManager()->get($uid);
@@ -381,7 +381,7 @@ class OC_User {
 	 * @return array associative array with all display names (value) and corresponding uids (key)
 	 *
 	 * Get a list of all display names and user ids.
-	 * @deprecated Use \OC::$server->getUserManager->searchDisplayName($search, $limit, $offset) instead.
+	 * @deprecated 12.0.0 Use \OC::$server->getUserManager->searchDisplayName($search, $limit, $offset) instead.
 	 */
 	public static function getDisplayNames($search = '', $limit = null, $offset = null) {
 		$displayNames = [];

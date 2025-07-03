@@ -19,43 +19,17 @@ use OCP\Mail\IMailer;
 
 class Hooks {
 
-	/** @var IActivityManager */
-	protected $activityManager;
-	/** @var IGroupManager|\OC\Group\Manager */
-	protected $groupManager;
-	/** @var IUserManager */
-	protected $userManager;
-	/** @var IUserSession */
-	protected $userSession;
-	/** @var IURLGenerator */
-	protected $urlGenerator;
-	/** @var IMailer */
-	protected $mailer;
-	/** @var IConfig */
-	protected $config;
-	/** @var IFactory */
-	protected $languageFactory;
-	/** @var Defaults */
-	protected $defaults;
-
-	public function __construct(IActivityManager $activityManager,
-		IGroupManager $groupManager,
-		IUserManager $userManager,
-		IUserSession $userSession,
-		IURLGenerator $urlGenerator,
-		IMailer $mailer,
-		IConfig $config,
-		IFactory $languageFactory,
-		Defaults $defaults) {
-		$this->activityManager = $activityManager;
-		$this->groupManager = $groupManager;
-		$this->userManager = $userManager;
-		$this->userSession = $userSession;
-		$this->urlGenerator = $urlGenerator;
-		$this->mailer = $mailer;
-		$this->config = $config;
-		$this->languageFactory = $languageFactory;
-		$this->defaults = $defaults;
+	public function __construct(
+		protected IActivityManager $activityManager,
+		protected IGroupManager $groupManager,
+		protected IUserManager $userManager,
+		protected IUserSession $userSession,
+		protected IURLGenerator $urlGenerator,
+		protected IMailer $mailer,
+		protected IConfig $config,
+		protected IFactory $languageFactory,
+		protected Defaults $defaults,
+	) {
 	}
 
 	/**
@@ -149,6 +123,7 @@ class Hooks {
 			->setType('personal_settings')
 			->setAffectedUser($user->getUID());
 
+		$instanceName = $this->defaults->getName();
 		$instanceUrl = $this->urlGenerator->getAbsoluteURL('/');
 		$language = $this->languageFactory->getUserLanguage($user);
 		$l = $this->languageFactory->get('settings', $language);
@@ -185,7 +160,7 @@ class Hooks {
 				'instanceUrl' => $instanceUrl,
 			]);
 
-			$template->setSubject($l->t('Email address for %1$s changed on %2$s', [$user->getDisplayName(), $instanceUrl]));
+			$template->setSubject($l->t('Email address for %1$s changed on %2$s', [$user->getDisplayName(), $instanceName]));
 			$template->addHeader();
 			$template->addHeading($l->t('Email address changed for %s', [$user->getDisplayName()]), false);
 			$template->addBodyText($text . ' ' . $l->t('If you did not request this, please contact an administrator.'));

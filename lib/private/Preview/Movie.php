@@ -10,6 +10,7 @@ namespace OC\Preview;
 use OCP\Files\File;
 use OCP\Files\FileInfo;
 use OCP\IImage;
+use OCP\Server;
 use Psr\Log\LoggerInterface;
 
 class Movie extends ProviderV2 {
@@ -64,14 +65,13 @@ class Movie extends ProviderV2 {
 
 		$result = null;
 		if ($this->useTempFile($file)) {
-			// try downloading 5 MB first as it's likely that the first frames are present there
-			// in some cases this doesn't work for example when the moov atom is at the
-			// end of the file, so if it fails we fall back to getting the full file
-			$sizeAttempts = [5242880, null];
-
-			// do not attempt to download the file if the storage is not local (e.g. S3)
-			// We don't want to download the whole (e.g. 37Gb) file
-			if (!$file->getStorage()->isLocal()) {
+			// Try downloading 5 MB first, as it's likely that the first frames are present there.
+			// In some cases this doesn't work, for example when the moov atom is at the
+			// end of the file, so if it fails we fall back to getting the full file.
+			// Unless the file is not local (e.g. S3) as we do not want to download the whole (e.g. 37Gb) file
+			if ($file->getStorage()->isLocal()) {
+				$sizeAttempts = [5242880, null];
+			} else {
 				$sizeAttempts = [5242880];
 			}
 		} else {
@@ -81,6 +81,13 @@ class Movie extends ProviderV2 {
 
 		foreach ($sizeAttempts as $size) {
 			$absPath = $this->getLocalFile($file, $size);
+			if ($absPath === false) {
+				Server::get(LoggerInterface::class)->error(
+					'Failed to get local file to generate thumbnail for: ' . $file->getPath(),
+					['app' => 'core']
+				);
+				return null;
+			}
 
 			$result = null;
 			if (is_string($absPath)) {
@@ -126,7 +133,7 @@ class Movie extends ProviderV2 {
 
 		$proc = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
 		$returnCode = -1;
-		$output = "";
+		$output = '';
 		if (is_resource($proc)) {
 			$stdout = trim(stream_get_contents($pipes[1]));
 			$stderr = trim(stream_get_contents($pipes[2]));

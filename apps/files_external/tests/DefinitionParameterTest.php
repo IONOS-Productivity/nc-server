@@ -9,7 +9,7 @@ namespace OCA\Files_External\Tests;
 use OCA\Files_External\Lib\DefinitionParameter as Param;
 
 class DefinitionParameterTest extends \Test\TestCase {
-	public function testJsonSerialization() {
+	public function testJsonSerialization(): void {
 		$param = new Param('foo', 'bar');
 		$this->assertEquals([
 			'value' => 'bar',
@@ -38,12 +38,12 @@ class DefinitionParameterTest extends \Test\TestCase {
 			'tooltip' => '',
 		], $param->jsonSerialize());
 
-		$param->setType(Param::VALUE_HIDDEN);
-		$param->setFlags(Param::FLAG_NONE);
+		$param->setType(Param::VALUE_TEXT);
+		$param->setFlags(Param::FLAG_HIDDEN);
 		$this->assertEquals([
 			'value' => 'bar',
-			'flags' => Param::FLAG_NONE,
-			'type' => Param::VALUE_HIDDEN,
+			'flags' => Param::FLAG_HIDDEN,
+			'type' => Param::VALUE_TEXT,
 			'tooltip' => '',
 		], $param->jsonSerialize());
 	}
@@ -53,6 +53,7 @@ class DefinitionParameterTest extends \Test\TestCase {
 			[Param::VALUE_TEXT, Param::FLAG_NONE, 'abc', true],
 			[Param::VALUE_TEXT, Param::FLAG_NONE, '', false],
 			[Param::VALUE_TEXT, Param::FLAG_OPTIONAL, '', true],
+			[Param::VALUE_TEXT, Param::FLAG_HIDDEN, '', false],
 
 			[Param::VALUE_BOOLEAN, Param::FLAG_NONE, false, true],
 			[Param::VALUE_BOOLEAN, Param::FLAG_NONE, 123, false],
@@ -62,15 +63,13 @@ class DefinitionParameterTest extends \Test\TestCase {
 
 			[Param::VALUE_PASSWORD, Param::FLAG_NONE, 'foobar', true],
 			[Param::VALUE_PASSWORD, Param::FLAG_NONE, '', false],
-
-			[Param::VALUE_HIDDEN, Param::FLAG_NONE, '', false]
 		];
 	}
 
 	/**
 	 * @dataProvider validateValueProvider
 	 */
-	public function testValidateValue($type, $flags, $value, $success, $expectedValue = null) {
+	public function testValidateValue($type, $flags, $value, $success, $expectedValue = null): void {
 		$param = new Param('foo', 'bar');
 		$param->setType($type);
 		$param->setFlags($flags);

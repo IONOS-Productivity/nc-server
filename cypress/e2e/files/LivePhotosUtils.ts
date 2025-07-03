@@ -14,34 +14,25 @@ type SetupInfo = {
 }
 
 /**
- *
- * @param user
- * @param fileName
- * @param domain
- * @param requesttoken
- * @param metadata
  */
 function setMetadata(user: User, fileName: string, requesttoken: string, metadata: object) {
-	cy.url().then(url => {
-		const hostname = new URL(url).hostname
-		cy.request({
-			method: 'PROPPATCH',
-			url: `http://${hostname}/remote.php/dav/files/${user.userId}/${fileName}`,
-			auth: { user: user.userId, pass: user.password },
-			headers: {
-				requesttoken,
-			},
-			body: `<?xml version="1.0"?>
-				<d:propertyupdate xmlns:d="DAV:" xmlns:nc="http://nextcloud.org/ns">
-					<d:set>
-						<d:prop>
-							${Object.entries(metadata).map(([key, value]) => `<${key}>${value}</${key}>`).join('\n')}
-						</d:prop>
-					</d:set>
-				</d:propertyupdate>`,
-		})
+	const base = Cypress.config('baseUrl')!.replace(/\/index\.php\/?/, '')
+	cy.request({
+		method: 'PROPPATCH',
+		url: `${base}/remote.php/dav/files/${user.userId}/${fileName}`,
+		auth: { user: user.userId, pass: user.password },
+		headers: {
+			requesttoken,
+		},
+		body: `<?xml version="1.0"?>
+			<d:propertyupdate xmlns:d="DAV:" xmlns:nc="http://nextcloud.org/ns">
+				<d:set>
+					<d:prop>
+						${Object.entries(metadata).map(([key, value]) => `<${key}>${value}</${key}>`).join('\n')}
+					</d:prop>
+				</d:set>
+			</d:propertyupdate>`,
 	})
-
 }
 
 /**
@@ -49,14 +40,20 @@ function setMetadata(user: User, fileName: string, requesttoken: string, metadat
  * @param enable
  */
 export function setShowHiddenFiles(enable: boolean) {
-	cy.get('[data-cy-files-navigation-settings-button]').click()
-	// Force:true because the checkbox is hidden by the pretty UI.
-	if (enable) {
-		cy.get('[data-cy-files-settings-setting="show_hidden"] input').check({ force: true })
-	} else {
-		cy.get('[data-cy-files-settings-setting="show_hidden"] input').uncheck({ force: true })
-	}
-	cy.get('[data-cy-files-navigation-settings]').type('{esc}')
+	cy.request('/csrftoken').then(({ body }) => {
+		const requestToken = body.token
+		const url = `${Cypress.config('baseUrl')}/apps/files/api/v1/config/show_hidden`
+		cy.request({
+			method: 'PUT',
+			url,
+			headers: {
+				'Content-Type': 'application/json',
+				requesttoken: requestToken,
+			},
+			body: { value: enable },
+		})
+	})
+	cy.reload()
 }
 
 /**

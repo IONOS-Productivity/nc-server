@@ -263,14 +263,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "Send påminnelsesvarsler til kalenderdelinger også",
     "Reminders are always sent to organizers and attendees." : "Reminders are always sent to organizers and attendees.",
     "Enable notifications for events via push" : "Aktiver varsler for hendelser via push",
+    "Cancel" : "Avbryt",
+    "Import" : "Importer",
+    "Error while saving settings" : "Feil ved lagring av innstillinger",
     "There was an error updating your attendance status." : "Det oppsto en feil under oppdateringen av oppmøtestatusen din.",
     "Please contact the organizer directly." : "Ta kontakt med arrangøren direkte.",
     "Are you accepting the invitation?" : "Aksepterer du invitasjonen?",
     "Tentative" : "Foreløpig",
-    "Your attendance was updated successfully." : "Deltakelsen din ble oppdatert.",
-    "Time:" : "Tid:",
-    "Could not open file" : "Kunne ikke åpne fil",
-    "Invalid chunk name" : "Ugyldig bitnavn",
-    "Could not rename part file assembled from chunks" : "Kunne ikke gi nytt navn til delfil satt sammen fra biter"
+    "Your attendance was updated successfully." : "Deltakelsen din ble oppdatert."
 },
 "nplurals=2; plural=(n != 1);");

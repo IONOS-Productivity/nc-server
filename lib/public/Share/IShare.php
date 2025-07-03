@@ -368,7 +368,7 @@ interface IShare {
 	 * @return \OCP\Share\IShare The modified object
 	 * @since 9.0.0
 	 */
-	public function setExpirationDate(\DateTime|null $expireDate);
+	public function setExpirationDate(?\DateTime $expireDate);
 
 	/**
 	 * Get the expiration date
@@ -379,7 +379,7 @@ interface IShare {
 	public function getExpirationDate();
 
 	/**
-	 * Set overwrite flag for falsy expiry date vavlues
+	 * Set overwrite flag for falsy expiry date values
 	 *
 	 * @param bool $noExpirationDate
 	 * @return \OCP\Share\IShare The modified object
@@ -617,4 +617,20 @@ interface IShare {
 	 * @since 15.0.0
 	 */
 	public function getHideDownload(): bool;
+
+	/**
+	 * Sets a flag that stores whether a reminder via email has been sent
+	 *
+	 * @return self The modified object
+	 * @since 31.0.0
+	 */
+	public function setReminderSent(bool $reminderSent): IShare;
+
+	/**
+	 * Gets a flag that stores whether a reminder via email has been sent
+	 *
+	 * @return bool
+	 * @since 31.0.0
+	 */
+	public function getReminderSent(): bool;
 }

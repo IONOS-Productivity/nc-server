@@ -16,7 +16,6 @@
 	<testsuite name="Nextcloud Server">
 		<directory suffix=".php">lib/</directory>
 		<directory suffix=".php">Core/</directory>
-		<directory suffix=".php">Test/</directory>
 		<file>apps.php</file>
 	</testsuite>
 	<coverage>
@@ -31,6 +30,7 @@
 			<directory suffix=".php">../build</directory>
 			<directory suffix=".php">../lib/composer</directory>
 			<directory suffix=".php">../tests</directory>
+			<directory suffix=".php">../vendor-bin</directory>
 		</exclude>
 	</coverage>
 	<listeners>

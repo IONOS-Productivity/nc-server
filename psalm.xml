@@ -8,8 +8,8 @@
 	resolveFromConfigFile="true"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="https://getpsalm.org/schema/config"
-	xsi:schemaLocation="https://getpsalm.org/schema/config"
-    errorBaseline="build/psalm-baseline.xml"
+	xsi:schemaLocation="https://getpsalm.org/schema/config https://getpsalm.org/schema/config"
+	errorBaseline="build/psalm-baseline.xml"
 	findUnusedBaselineEntry="true"
 	findUnusedCode="false"
 	phpVersion="8.1"
@@ -30,6 +30,7 @@
 		<directory name="apps/federation"/>
 		<directory name="apps/files"/>
 		<directory name="apps/files_external"/>
+		<directory name="apps/files_reminders"/>
 		<directory name="apps/files_sharing"/>
 		<directory name="apps/files_trashbin"/>
 		<directory name="apps/files_versions"/>

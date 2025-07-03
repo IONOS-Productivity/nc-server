@@ -13,7 +13,7 @@ use OCA\User_LDAP\User\User;
 use OCP\IUserBackend;
 use OCP\Notification\IManager as INotificationManager;
 use OCP\User\Backend\ICountMappedUsersBackend;
-use OCP\User\Backend\ICountUsersBackend;
+use OCP\User\Backend\ILimitAwareCountUsersBackend;
 use OCP\User\Backend\IProvideEnabledStateBackend;
 use OCP\UserInterface;
 use Psr\Log\LoggerInterface;
@@ -21,26 +21,17 @@ use Psr\Log\LoggerInterface;
 /**
  * @template-extends Proxy<User_LDAP>
  */
-class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP, ICountUsersBackend, ICountMappedUsersBackend, IProvideEnabledStateBackend {
-	private INotificationManager $notificationManager;
-	private UserPluginManager $userPluginManager;
-	private LoggerInterface $logger;
-	private DeletedUsersIndex $deletedUsersIndex;
-
+class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP, ILimitAwareCountUsersBackend, ICountMappedUsersBackend, IProvideEnabledStateBackend {
 	public function __construct(
-		Helper $helper,
+		private Helper $helper,
 		ILDAPWrapper $ldap,
 		AccessFactory $accessFactory,
-		INotificationManager $notificationManager,
-		UserPluginManager $userPluginManager,
-		LoggerInterface $logger,
-		DeletedUsersIndex $deletedUsersIndex,
+		private INotificationManager $notificationManager,
+		private UserPluginManager $userPluginManager,
+		private LoggerInterface $logger,
+		private DeletedUsersIndex $deletedUsersIndex,
 	) {
 		parent::__construct($helper, $ldap, $accessFactory);
-		$this->notificationManager = $notificationManager;
-		$this->userPluginManager = $userPluginManager;
-		$this->logger = $logger;
-		$this->deletedUsersIndex = $deletedUsersIndex;
 	}
 
 	protected function newInstance(string $configPrefix): User_LDAP {
@@ -203,8 +194,8 @@ class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP
 	/**
 	 * check if a user exists on LDAP
 	 *
-	 * @param string|\OCA\User_LDAP\User\User $user either the Nextcloud user
-	 * name or an instance of that user
+	 * @param string|User $user either the Nextcloud user
+	 *                          name or an instance of that user
 	 */
 	public function userExistsOnLDAP($user, bool $ignoreCache = false): bool {
 		$id = ($user instanceof User) ? $user->getUsername() : $user;
@@ -278,7 +269,7 @@ class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP
 	}
 
 	/**
-	 * checks whether the user is allowed to change his avatar in Nextcloud
+	 * checks whether the user is allowed to change their avatar in Nextcloud
 	 *
 	 * @param string $uid the Nextcloud user name
 	 * @return boolean either the user can or cannot
@@ -343,17 +334,21 @@ class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP
 
 	/**
 	 * Count the number of users
-	 *
-	 * @return int|false
 	 */
-	public function countUsers() {
+	public function countUsers(int $limit = 0): int|false {
 		$this->setup();
 
 		$users = false;
 		foreach ($this->backends as $backend) {
-			$backendUsers = $backend->countUsers();
+			$backendUsers = $backend->countUsers($limit);
 			if ($backendUsers !== false) {
 				$users = (int)$users + $backendUsers;
+				if ($limit > 0) {
+					if ($users >= $limit) {
+						break;
+					}
+					$limit -= $users;
+				}
 			}
 		}
 		return $users;

@@ -36,7 +36,7 @@ class ConnectionTest extends TestCase {
 	/**
 	 * @dataProvider runLocalURLDataProvider
 	 */
-	public function testLocalUrl($source) {
+	public function testLocalUrl($source): void {
 		$subscription = [
 			'id' => 42,
 			'uri' => 'sub123',
@@ -65,7 +65,7 @@ class ConnectionTest extends TestCase {
 			->willThrowException($localServerException);
 		$this->logger->expects(self::once())
 			->method('warning')
-			->with("Subscription 42 was not refreshed because it violates local access rules", ['exception' => $localServerException]);
+			->with('Subscription 42 was not refreshed because it violates local access rules', ['exception' => $localServerException]);
 
 		$this->connection->queryWebcalFeed($subscription);
 	}
