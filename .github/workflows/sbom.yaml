@@ -14,7 +14,7 @@ on:
 
 jobs:
   generate-sbom:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     permissions:
       contents: read
@@ -78,7 +78,7 @@ jobs:
 
   merge-sboms:
     needs: generate-sbom
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     # https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs/running-jobs-in-a-container
     container:
