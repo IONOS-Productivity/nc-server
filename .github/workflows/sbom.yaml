@@ -157,6 +157,7 @@ jobs:
           }
 
           merge_bom "nextcloud"
+          merge_bom "app-simplesettings"
 
       - name: Show BOMs
         run: |
@@ -170,6 +171,7 @@ jobs:
           name: final-boms
           path: |
             bom.nextcloud.xml
+            bom.app-simplesettings.xml
 
   upload-sboms:
     needs: merge-sboms
@@ -204,4 +206,5 @@ jobs:
           }
 
           upload_bom "bom.nextcloud.xml" "${{ vars.DT_OBJECT_NEXTCLOUD }}" \
+          	&& upload_bom "bom.app-simplesettings.xml" "${{ vars.DT_OBJECT_APP_SIMPLESETTINGS }}" \
           	|| exit 1
