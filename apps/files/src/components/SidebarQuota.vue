@@ -135,7 +135,7 @@ export default {
 		padding-bottom: 32px;
 	}
 
-	&--not-unlimited::v-deep .app-navigation-entry__name {
+	&--not-unlimited :deep(.app-navigation-entry__name) {
 		padding-bottom: 50px;
 	}
 
