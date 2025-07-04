@@ -55,16 +55,15 @@
 </template>
 
 <script>
-import axios from '@nextcloud/axios'
-import { generateUrl, imagePath } from '@nextcloud/router'
+import { t } from '@nextcloud/l10n'
 import { loadState } from '@nextcloud/initial-state'
+import { generateUrl, imagePath } from '@nextcloud/router'
+import axios from '@nextcloud/axios'
 import pLimit from 'p-limit'
-import { translate as t } from '@nextcloud/l10n'
-
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-
 import logger from '../../logger.js'
+
+import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 
 const recommended = {
 	calendar: {
@@ -80,7 +79,7 @@ const recommended = {
 		icon: imagePath('core', 'actions/mail.svg'),
 	},
 	spreed: {
-		description: t('core', 'Chatting, video calls, screensharing, online meetings and web conferencing – in your browser and with mobile apps.'),
+		description: t('core', 'Chatting, video calls, screen sharing, online meetings and web conferencing – in your browser and with mobile apps.'),
 		icon: imagePath('core', 'apps/spreed.svg'),
 	},
 	richdocuments: {
@@ -246,7 +245,7 @@ p {
 
 	.info {
 		h3, p {
-			text-align: left;
+			text-align: start;
 		}
 
 		h3 {
@@ -255,7 +254,7 @@ p {
 	}
 
 	.checkbox-radio-switch {
-		margin-left: auto;
+		margin-inline-start: auto;
 		padding: 0 2px;
 	}
 }

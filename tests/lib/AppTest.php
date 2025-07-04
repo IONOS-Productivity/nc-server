@@ -18,6 +18,7 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\ServerVersion;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -313,14 +314,14 @@ class AppTest extends \Test\TestCase {
 	/**
 	 * @dataProvider appVersionsProvider
 	 */
-	public function testIsAppCompatible($ocVersion, $appInfo, $expectedResult) {
+	public function testIsAppCompatible($ocVersion, $appInfo, $expectedResult): void {
 		$this->assertEquals($expectedResult, \OC_App::isAppCompatible($ocVersion, $appInfo));
 	}
 
 	/**
 	 * Tests that the app order is correct
 	 */
-	public function testGetEnabledAppsIsSorted() {
+	public function testGetEnabledAppsIsSorted(): void {
 		$apps = \OC_App::getEnabledApps();
 		// copy array
 		$sortedApps = $apps;
@@ -350,6 +351,7 @@ class AppTest extends \Test\TestCase {
 					'federatedfilesharing',
 					'lookup_server_connector',
 					'oauth2',
+					'profile',
 					'provisioning_api',
 					'settings',
 					'theming',
@@ -373,6 +375,7 @@ class AppTest extends \Test\TestCase {
 					'federatedfilesharing',
 					'lookup_server_connector',
 					'oauth2',
+					'profile',
 					'provisioning_api',
 					'settings',
 					'theming',
@@ -397,6 +400,7 @@ class AppTest extends \Test\TestCase {
 					'federatedfilesharing',
 					'lookup_server_connector',
 					'oauth2',
+					'profile',
 					'provisioning_api',
 					'settings',
 					'theming',
@@ -421,6 +425,7 @@ class AppTest extends \Test\TestCase {
 					'federatedfilesharing',
 					'lookup_server_connector',
 					'oauth2',
+					'profile',
 					'provisioning_api',
 					'settings',
 					'theming',
@@ -445,6 +450,7 @@ class AppTest extends \Test\TestCase {
 					'federatedfilesharing',
 					'lookup_server_connector',
 					'oauth2',
+					'profile',
 					'provisioning_api',
 					'settings',
 					'theming',
@@ -528,11 +534,11 @@ class AppTest extends \Test\TestCase {
 			);
 
 		$apps = \OC_App::getEnabledApps();
-		$this->assertEquals(['files', 'app3', 'cloud_federation_api', 'dav', 'federatedfilesharing', 'lookup_server_connector', 'oauth2', 'provisioning_api', 'settings', 'theming', 'twofactor_backupcodes', 'viewer', 'workflowengine'], $apps);
+		$this->assertEquals(['files', 'app3', 'cloud_federation_api', 'dav', 'federatedfilesharing', 'lookup_server_connector', 'oauth2', 'profile', 'provisioning_api', 'settings', 'theming', 'twofactor_backupcodes', 'viewer', 'workflowengine'], $apps);
 
 		// mock should not be called again here
 		$apps = \OC_App::getEnabledApps();
-		$this->assertEquals(['files', 'app3', 'cloud_federation_api', 'dav', 'federatedfilesharing', 'lookup_server_connector', 'oauth2', 'provisioning_api', 'settings', 'theming', 'twofactor_backupcodes', 'viewer', 'workflowengine'], $apps);
+		$this->assertEquals(['files', 'app3', 'cloud_federation_api', 'dav', 'federatedfilesharing', 'lookup_server_connector', 'oauth2', 'profile', 'provisioning_api', 'settings', 'theming', 'twofactor_backupcodes', 'viewer', 'workflowengine'], $apps);
 
 		$this->restoreAppConfig();
 		\OC_User::setUserId(null);
@@ -567,6 +573,7 @@ class AppTest extends \Test\TestCase {
 			\OCP\Server::get(ICacheFactory::class),
 			\OCP\Server::get(IEventDispatcher::class),
 			\OCP\Server::get(LoggerInterface::class),
+			\OCP\Server::get(ServerVersion::class),
 		));
 	}
 
@@ -619,18 +626,18 @@ class AppTest extends \Test\TestCase {
 	 * @param array $data
 	 * @param array $expected
 	 */
-	public function testParseAppInfo(array $data, array $expected) {
+	public function testParseAppInfo(array $data, array $expected): void {
 		$this->assertSame($expected, \OC_App::parseAppInfo($data));
 	}
 
-	public function testParseAppInfoL10N() {
+	public function testParseAppInfoL10N(): void {
 		$parser = new InfoParser();
 		$data = $parser->parse(\OC::$SERVERROOT . '/tests/data/app/description-multi-lang.xml');
 		$this->assertEquals('English', \OC_App::parseAppInfo($data, 'en')['description']);
 		$this->assertEquals('German', \OC_App::parseAppInfo($data, 'de')['description']);
 	}
 
-	public function testParseAppInfoL10NSingleLanguage() {
+	public function testParseAppInfoL10NSingleLanguage(): void {
 		$parser = new InfoParser();
 		$data = $parser->parse(\OC::$SERVERROOT . '/tests/data/app/description-single-lang.xml');
 		$this->assertEquals('English', \OC_App::parseAppInfo($data, 'en')['description']);

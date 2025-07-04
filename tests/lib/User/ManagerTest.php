@@ -52,7 +52,7 @@ class ManagerTest extends TestCase {
 			->willReturn($this->cache);
 	}
 
-	public function testGetBackends() {
+	public function testGetBackends(): void {
 		$userDummyBackend = $this->createMock(\Test\Util\User\Dummy::class);
 		$manager = new \OC\User\Manager($this->config, $this->cacheFactory, $this->eventDispatcher, $this->logger);
 		$manager->registerBackend($userDummyBackend);
@@ -63,7 +63,7 @@ class ManagerTest extends TestCase {
 	}
 
 
-	public function testUserExistsSingleBackendExists() {
+	public function testUserExistsSingleBackendExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -79,7 +79,21 @@ class ManagerTest extends TestCase {
 		$this->assertTrue($manager->userExists('foo'));
 	}
 
-	public function testUserExistsSingleBackendNotExists() {
+	public function testUserExistsTooLong(): void {
+		/** @var \Test\Util\User\Dummy|MockObject $backend */
+		$backend = $this->createMock(\Test\Util\User\Dummy::class);
+		$backend->expects($this->never())
+			->method('userExists')
+			->with($this->equalTo('foo'))
+			->willReturn(true);
+
+		$manager = new \OC\User\Manager($this->config, $this->cacheFactory, $this->eventDispatcher, $this->logger);
+		$manager->registerBackend($backend);
+
+		$this->assertFalse($manager->userExists('foo' . str_repeat('a', 62)));
+	}
+
+	public function testUserExistsSingleBackendNotExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -95,13 +109,13 @@ class ManagerTest extends TestCase {
 		$this->assertFalse($manager->userExists('foo'));
 	}
 
-	public function testUserExistsNoBackends() {
+	public function testUserExistsNoBackends(): void {
 		$manager = new \OC\User\Manager($this->config, $this->cacheFactory, $this->eventDispatcher, $this->logger);
 
 		$this->assertFalse($manager->userExists('foo'));
 	}
 
-	public function testUserExistsTwoBackendsSecondExists() {
+	public function testUserExistsTwoBackendsSecondExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend1
 		 */
@@ -127,7 +141,7 @@ class ManagerTest extends TestCase {
 		$this->assertTrue($manager->userExists('foo'));
 	}
 
-	public function testUserExistsTwoBackendsFirstExists() {
+	public function testUserExistsTwoBackendsFirstExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend1
 		 */
@@ -151,7 +165,7 @@ class ManagerTest extends TestCase {
 		$this->assertTrue($manager->userExists('foo'));
 	}
 
-	public function testCheckPassword() {
+	public function testCheckPassword(): void {
 		/**
 		 * @var \OC\User\Backend | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -178,7 +192,7 @@ class ManagerTest extends TestCase {
 		$this->assertTrue($user instanceof \OC\User\User);
 	}
 
-	public function testCheckPasswordNotSupported() {
+	public function testCheckPasswordNotSupported(): void {
 		/**
 		 * @var \OC\User\Backend | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -196,7 +210,7 @@ class ManagerTest extends TestCase {
 		$this->assertFalse($manager->checkPassword('foo', 'bar'));
 	}
 
-	public function testGetOneBackendExists() {
+	public function testGetOneBackendExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -214,7 +228,7 @@ class ManagerTest extends TestCase {
 		$this->assertEquals('foo', $manager->get('foo')->getUID());
 	}
 
-	public function testGetOneBackendNotExists() {
+	public function testGetOneBackendNotExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -230,7 +244,21 @@ class ManagerTest extends TestCase {
 		$this->assertEquals(null, $manager->get('foo'));
 	}
 
-	public function testGetOneBackendDoNotTranslateLoginNames() {
+	public function testGetTooLong(): void {
+		/** @var \Test\Util\User\Dummy|MockObject $backend */
+		$backend = $this->createMock(\Test\Util\User\Dummy::class);
+		$backend->expects($this->never())
+			->method('userExists')
+			->with($this->equalTo('foo'))
+			->willReturn(false);
+
+		$manager = new \OC\User\Manager($this->config, $this->cacheFactory, $this->eventDispatcher, $this->logger);
+		$manager->registerBackend($backend);
+
+		$this->assertEquals(null, $manager->get('foo' . str_repeat('a', 62)));
+	}
+
+	public function testGetOneBackendDoNotTranslateLoginNames(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -248,7 +276,7 @@ class ManagerTest extends TestCase {
 		$this->assertEquals('bLeNdEr', $manager->get('bLeNdEr')->getUID());
 	}
 
-	public function testSearchOneBackend() {
+	public function testSearchOneBackend(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -271,7 +299,7 @@ class ManagerTest extends TestCase {
 		$this->assertEquals('foo', array_shift($result)->getUID());
 	}
 
-	public function testSearchTwoBackendLimitOffset() {
+	public function testSearchTwoBackendLimitOffset(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend1
 		 */
@@ -333,13 +361,14 @@ class ManagerTest extends TestCase {
 			['..', 'foo', 'Username must not consist of dots only'],
 			['.test', '', 'A valid password must be provided'],
 			['test', '', 'A valid password must be provided'],
+			['test' . str_repeat('a', 61), '', 'Login is too long'],
 		];
 	}
 
 	/**
 	 * @dataProvider dataCreateUserInvalid
 	 */
-	public function testCreateUserInvalid($uid, $password, $exception) {
+	public function testCreateUserInvalid($uid, $password, $exception): void {
 		/** @var \Test\Util\User\Dummy|\PHPUnit\Framework\MockObject\MockObject $backend */
 		$backend = $this->createMock(\Test\Util\User\Dummy::class);
 		$backend->expects($this->once())
@@ -355,7 +384,7 @@ class ManagerTest extends TestCase {
 		$manager->createUser($uid, $password);
 	}
 
-	public function testCreateUserSingleBackendNotExists() {
+	public function testCreateUserSingleBackendNotExists(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -383,7 +412,7 @@ class ManagerTest extends TestCase {
 	}
 
 
-	public function testCreateUserSingleBackendExists() {
+	public function testCreateUserSingleBackendExists(): void {
 		$this->expectException(\Exception::class);
 
 		/**
@@ -408,7 +437,7 @@ class ManagerTest extends TestCase {
 		$manager->createUser('foo', 'bar');
 	}
 
-	public function testCreateUserSingleBackendNotSupported() {
+	public function testCreateUserSingleBackendNotSupported(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -429,14 +458,14 @@ class ManagerTest extends TestCase {
 		$this->assertFalse($manager->createUser('foo', 'bar'));
 	}
 
-	public function testCreateUserNoBackends() {
+	public function testCreateUserNoBackends(): void {
 		$manager = new \OC\User\Manager($this->config, $this->cacheFactory, $this->eventDispatcher, $this->logger);
 
 		$this->assertFalse($manager->createUser('foo', 'bar'));
 	}
 
 
-	public function testCreateUserFromBackendWithBackendError() {
+	public function testCreateUserFromBackendWithBackendError(): void {
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Could not create account');
 
@@ -455,7 +484,7 @@ class ManagerTest extends TestCase {
 	}
 
 
-	public function testCreateUserTwoBackendExists() {
+	public function testCreateUserTwoBackendExists(): void {
 		$this->expectException(\Exception::class);
 
 		/**
@@ -497,7 +526,7 @@ class ManagerTest extends TestCase {
 		$manager->createUser('foo', 'bar');
 	}
 
-	public function testCountUsersNoBackend() {
+	public function testCountUsersNoBackend(): void {
 		$manager = new \OC\User\Manager($this->config, $this->cacheFactory, $this->eventDispatcher, $this->logger);
 
 		$result = $manager->countUsers();
@@ -505,7 +534,7 @@ class ManagerTest extends TestCase {
 		$this->assertTrue(empty($result));
 	}
 
-	public function testCountUsersOneBackend() {
+	public function testCountUsersOneBackend(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -534,7 +563,7 @@ class ManagerTest extends TestCase {
 		$this->assertEquals(7, $users);
 	}
 
-	public function testCountUsersTwoBackends() {
+	public function testCountUsersTwoBackends(): void {
 		/**
 		 * @var \Test\Util\User\Dummy | \PHPUnit\Framework\MockObject\MockObject $backend
 		 */
@@ -579,7 +608,7 @@ class ManagerTest extends TestCase {
 		$this->assertEquals(7 + 16, $users);
 	}
 
-	public function testCountUsersOnlyDisabled() {
+	public function testCountUsersOnlyDisabled(): void {
 		$manager = \OCP\Server::get(IUserManager::class);
 		// count other users in the db before adding our own
 		$countBefore = $manager->countDisabledUsers();
@@ -604,7 +633,7 @@ class ManagerTest extends TestCase {
 		$user4->delete();
 	}
 
-	public function testCountUsersOnlySeen() {
+	public function testCountUsersOnlySeen(): void {
 		$manager = \OCP\Server::get(IUserManager::class);
 		// count other users in the db before adding our own
 		$countBefore = $manager->countSeenUsers();
@@ -630,7 +659,7 @@ class ManagerTest extends TestCase {
 		$user4->delete();
 	}
 
-	public function testCallForSeenUsers() {
+	public function testCallForSeenUsers(): void {
 		$manager = \OCP\Server::get(IUserManager::class);
 		// count other users in the db before adding our own
 		$count = 0;
@@ -724,7 +753,7 @@ class ManagerTest extends TestCase {
 		$user5->delete();
 	}
 
-	public function testDeleteUser() {
+	public function testDeleteUser(): void {
 		$config = $this->getMockBuilder(AllConfig::class)
 			->disableOriginalConstructor()
 			->getMock();
@@ -747,7 +776,7 @@ class ManagerTest extends TestCase {
 		$this->assertFalse($manager->userExists('foo'));
 	}
 
-	public function testGetByEmail() {
+	public function testGetByEmail(): void {
 		$config = $this->getMockBuilder(AllConfig::class)
 			->disableOriginalConstructor()
 			->getMock();

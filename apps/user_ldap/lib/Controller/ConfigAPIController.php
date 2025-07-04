@@ -21,6 +21,7 @@ use OCP\AppFramework\OCS\OCSNotFoundException;
 use OCP\IRequest;
 use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\ServerVersion;
 use Psr\Log\LoggerInterface;
 
 class ConfigAPIController extends OCSController {
@@ -31,9 +32,10 @@ class ConfigAPIController extends OCSController {
 		IUserSession $userSession,
 		IUserManager $userManager,
 		Manager $keyManager,
+		ServerVersion $serverVersion,
 		private Helper $ldapHelper,
 		private LoggerInterface $logger,
-		private ConnectionFactory $connectionFactory
+		private ConnectionFactory $connectionFactory,
 	) {
 		parent::__construct(
 			$appName,
@@ -41,7 +43,8 @@ class ConfigAPIController extends OCSController {
 			$capabilitiesManager,
 			$userSession,
 			$userManager,
-			$keyManager
+			$keyManager,
+			$serverVersion,
 		);
 	}
 
@@ -71,7 +74,7 @@ class ConfigAPIController extends OCSController {
 	 * Delete a LDAP configuration
 	 *
 	 * @param string $configID ID of the config
-	 * @return DataResponse<Http::STATUS_OK, array<empty>, array{}>
+	 * @return DataResponse<Http::STATUS_OK, list<empty>, array{}>
 	 * @throws OCSException
 	 * @throws OCSNotFoundException Config not found
 	 *
@@ -99,7 +102,7 @@ class ConfigAPIController extends OCSController {
 	 *
 	 * @param string $configID ID of the config
 	 * @param array<string, mixed> $configData New config
-	 * @return DataResponse<Http::STATUS_OK, array<empty>, array{}>
+	 * @return DataResponse<Http::STATUS_OK, list<empty>, array{}>
 	 * @throws OCSException
 	 * @throws OCSBadRequestException Modifying config is not possible
 	 * @throws OCSNotFoundException Config not found

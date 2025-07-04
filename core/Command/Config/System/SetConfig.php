@@ -94,8 +94,8 @@ class SetConfig extends Base {
 					throw new \InvalidArgumentException('Non-numeric value specified');
 				}
 				return [
-					'value' => (int) $value,
-					'readable-value' => 'integer ' . (int) $value,
+					'value' => (int)$value,
+					'readable-value' => 'integer ' . (int)$value,
 				];
 
 			case 'double':
@@ -104,8 +104,8 @@ class SetConfig extends Base {
 					throw new \InvalidArgumentException('Non-numeric value specified');
 				}
 				return [
-					'value' => (double) $value,
-					'readable-value' => 'double ' . (double) $value,
+					'value' => (float)$value,
+					'readable-value' => 'double ' . (float)$value,
 				];
 
 			case 'boolean':
@@ -136,10 +136,17 @@ class SetConfig extends Base {
 				];
 
 			case 'string':
-				$value = (string) $value;
+				$value = (string)$value;
 				return [
 					'value' => $value,
 					'readable-value' => ($value === '') ? 'empty string' : 'string ' . $value,
+				];
+
+			case 'json':
+				$value = json_decode($value, true);
+				return [
+					'value' => $value,
+					'readable-value' => 'json ' . json_encode($value),
 				];
 
 			default:
@@ -183,7 +190,7 @@ class SetConfig extends Base {
 	 */
 	public function completeOptionValues($optionName, CompletionContext $context) {
 		if ($optionName === 'type') {
-			return ['string', 'integer', 'double', 'boolean'];
+			return ['string', 'integer', 'double', 'boolean', 'json', 'null'];
 		}
 		return parent::completeOptionValues($optionName, $context);
 	}

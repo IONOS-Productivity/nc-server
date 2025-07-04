@@ -89,6 +89,9 @@ class ViewControllerTest extends TestCase {
 
 		// Make sure we know the app is enabled
 		$this->appManager->expects($this->any())
+			->method('cleanAppId')
+			->willReturnArgument(0);
+		$this->appManager->expects($this->any())
 			->method('getAppPath')
 			->willReturnCallback(fn (string $appid): string => \OC::$SERVERROOT . '/apps/' . $appid);
 
@@ -188,19 +191,25 @@ class ViewControllerTest extends TestCase {
 
 	public function dataTestShortRedirect(): array {
 		// openfile is true by default
-		// and will be evaluated as truthy
+		// opendetails is undefined by default
+		// both will be evaluated as truthy
 		return [
-			[null,		'/index.php/apps/files/files/123456?openfile=true'],
-			['',		'/index.php/apps/files/files/123456?openfile=true'],
-			['true',		'/index.php/apps/files/files/123456?openfile=true'],
-			['false',	'/index.php/apps/files/files/123456?openfile=false'],
+			[null,		null,		'/index.php/apps/files/files/123456?openfile=true'],
+			['',		null,		'/index.php/apps/files/files/123456?openfile=true'],
+			[null,		'',			'/index.php/apps/files/files/123456?openfile=true&opendetails=true'],
+			['',		'', 		'/index.php/apps/files/files/123456?openfile=true&opendetails=true'],
+			['false',	'',			'/index.php/apps/files/files/123456?openfile=false'],
+			[null,		'false',	'/index.php/apps/files/files/123456?openfile=true&opendetails=false'],
+			['true',	'false',	'/index.php/apps/files/files/123456?openfile=true&opendetails=false'],
+			['false',	'true',		'/index.php/apps/files/files/123456?openfile=false&opendetails=true'],
+			['false',	'false',	'/index.php/apps/files/files/123456?openfile=false&opendetails=false'],
 		];
 	}
 
 	/**
 	 * @dataProvider dataTestShortRedirect
 	 */
-	public function testShortRedirect($openfile, $result) {
+	public function testShortRedirect($openfile, $opendetails, $result) {
 		$this->appManager->expects($this->any())
 			->method('isEnabledForUser')
 			->with('files')
@@ -227,7 +236,7 @@ class ViewControllerTest extends TestCase {
 			->with(123456)
 			->willReturn($node);
 
-		$response = $this->viewController->showFile(123456, $openfile);
+		$response = $this->viewController->showFile(123456, $opendetails, $openfile);
 		$this->assertStringContainsString($result, $response->getHeaders()['Location']);
 	}
 

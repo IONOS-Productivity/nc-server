@@ -23,6 +23,8 @@ OC.L10N.register(
     "Sharing" : "Partage",
     "Federated file sharing" : "Partage de fichiers fédéré",
     "Provide federated file sharing across servers" : "Fourni un partage de fichiers fédéré entre plusieurs serveurs",
+    "Disable upload" : "Désactiver le téléchargement",
+    "Moreover, email addresses of users might be sent to that system in order to verify them." : "De plus, les adresses mail des utilisateurs peuvent être envoyées à ce système pour les vérifier.",
     "Unable to update federated files sharing config" : "Impossible de mettre à jour la configuration du partage fédéré de fichiers ",
     "Adjust how people can share between servers. This includes shares between people on this server as well if they are using federated sharing." : "Configurer comment les utilisateurs peuvent faire des partages entre serveurs. Cela inclut aussi les partages entre personnes de ce serveur s'ils utilisent des partages fédérés.",
     "Allow people on this server to send shares to other servers (this option also allows WebDAV access to public shares)" : "Autoriser les personnes de ce serveur à envoyer des partages vers d'autres serveurs (cette option permet aussi l'accès WebDAV aux partages publics)",
@@ -55,10 +57,6 @@ OC.L10N.register(
     "Remote share" : "Partage distant",
     "Do you want to add the remote share {name} from {owner}@{remote}?" : "Voulez-vous ajouter le partage distant {name} depuis {owner}@{remote} ?",
     "Remote share password" : "Mot de passe du partage distant",
-    "Incoming share could not be processed" : "Le partage entrant n'a pas pu être traité",
-    "Clipboard is not available" : "Le presse-papiers n'est pas disponible",
-    "Your Federated Cloud ID:" : "Votre ID de Cloud Fédéré :",
-    "Twitter" : "Twitter",
-    "Diaspora" : "Diaspora"
+    "Incoming share could not be processed" : "Le partage entrant n'a pas pu être traité"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

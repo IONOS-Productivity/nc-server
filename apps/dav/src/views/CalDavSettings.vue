@@ -150,12 +150,13 @@ export default {
 
 <style scoped>
 	.indented {
-		padding-left: 28px;
+		padding-inline-start: 28px;
 	}
 	/** Use deep selector to affect v-html */
-	* >>> a {
+	* :deep(a) {
 		text-decoration: underline;
 	}
+
 	.settings-hint {
 		margin-top: -.2em;
 		margin-bottom: 1em;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -87,11 +88,6 @@ class Application extends App {
 			);
 			$event->addMissingIndex(
 				'filecache',
-				'fs_id_storage_size',
-				['fileid', 'storage', 'size']
-			);
-			$event->addMissingIndex(
-				'filecache',
 				'fs_storage_path_prefix',
 				['storage', 'path'],
 				['lengths' => [null, 64]]
@@ -151,12 +147,12 @@ class Application extends App {
 				true
 			);
 
-			$event->addMissingIndex(
+			$event->replaceIndex(
 				'cards_properties',
-				'cards_prop_abid',
-				['addressbookid'],
-				[],
-				true
+				['cards_prop_abid'],
+				'cards_prop_abid_name_value',
+				['addressbookid', 'name', 'value'],
+				false,
 			);
 
 			$event->addMissingIndex(
@@ -203,8 +199,13 @@ class Application extends App {
 
 			$event->addMissingIndex(
 				'preferences',
-				'preferences_app_key',
-				['appid', 'configkey']
+				'prefs_uid_lazy_i',
+				['userid', 'lazy']
+			);
+			$event->addMissingIndex(
+				'preferences',
+				'prefs_app_key_ind_fl_i',
+				['appid', 'configkey', 'indexed', 'flags']
 			);
 
 			$event->addMissingIndex(
@@ -229,6 +230,12 @@ class Application extends App {
 				'systemtag_object_mapping',
 				'systag_by_objectid',
 				['objectid']
+			);
+
+			$event->addMissingIndex(
+				'systemtag_object_mapping',
+				'systag_objecttype',
+				['objecttype']
 			);
 		});
 

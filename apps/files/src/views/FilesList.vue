@@ -4,12 +4,12 @@
 -->
 <template>
 	<NcAppContent :page-heading="pageHeading" data-cy-files-content>
-		<div class="files-list__header">
+		<div class="files-list__header" :class="{ 'files-list__header--public': isPublic }">
 			<!-- Current folder breadcrumbs -->
 			<BreadCrumbs :path="directory" @reload="fetchContent">
 				<template #actions>
 					<!-- Sharing button -->
-					<NcButton v-if="canShare && filesListWidth >= 512"
+					<NcButton v-if="canShare && fileListWidth >= 512"
 						:aria-label="shareButtonLabel"
 						:class="{ 'files-list__header-share-button--shared': shareButtonType }"
 						:title="shareButtonLabel"
@@ -17,27 +17,14 @@
 						type="tertiary"
 						@click="openSharingSidebar">
 						<template #icon>
-							<LinkIcon v-if="shareButtonType === Type.SHARE_TYPE_LINK" />
+							<LinkIcon v-if="shareButtonType === ShareType.Link" />
 							<AccountPlusIcon v-else :size="20" />
 						</template>
 					</NcButton>
 
-					<!-- Disabled upload button -->
-					<NcButton v-if="!canUpload || isQuotaExceeded"
-						:aria-label="cantUploadLabel"
-						:title="cantUploadLabel"
-						class="files-list__header-upload-button--disabled"
-						:disabled="true"
-						type="secondary">
-						<template #icon>
-							<PlusIcon :size="20" />
-						</template>
-						{{ t('files', 'New') }}
-					</NcButton>
-
 					<!-- Uploader -->
-					<UploadPicker v-else-if="currentFolder"
-						allow-folders
+					<UploadPicker v-if="canUpload && !isQuotaExceeded && currentFolder"
+						:allow-folders="canUploadFolders"
 						class="files-list__header-upload-button"
 						:content="getContent"
 						:destination="currentFolder"
@@ -51,7 +38,26 @@
 			<!-- Secondary loading indicator -->
 			<NcLoadingIcon v-if="isRefreshing" class="files-list__refresh-icon" />
 
-			<NcButton v-if="filesListWidth >= 512 && enableGridView"
+			<NcActions class="files-list__header-actions"
+				:inline="1"
+				type="tertiary"
+				force-name>
+				<NcActionButton v-for="action in enabledFileListActions"
+					:key="action.id"
+					:disabled="!!loadingAction"
+					:data-cy-files-list-action="action.id"
+					close-after-click
+					@click="execFileListAction(action)">
+					<template #icon>
+						<NcLoadingIcon v-if="loadingAction === action.id" :size="18" />
+						<NcIconSvgWrapper v-else-if="action.iconSvgInline !== undefined && currentView"
+							:svg="action.iconSvgInline(currentView)" />
+					</template>
+					{{ actionDisplayName(action) }}
+				</NcActionButton>
+			</NcActions>
+
+			<NcButton v-if="fileListWidth >= 512 && enableGridView"
 				:aria-label="gridViewButtonLabel"
 				:title="gridViewButtonLabel"
 				class="files-list__header-grid-button"
@@ -65,7 +71,7 @@
 		</div>
 
 		<!-- Drag and drop notice -->
-		<DragAndDropNotice v-if="!loading && canUpload" :current-folder="currentFolder" />
+		<DragAndDropNotice v-if="!loading && canUpload && currentFolder" :current-folder="currentFolder" />
 
 		<!-- Initial loading -->
 		<NcLoadingIcon v-if="loading && !isRefreshing"
@@ -74,7 +80,15 @@
 			:name="t('files', 'Loading current folder')" />
 
 		<!-- Empty content placeholder -->
-		<template v-else-if="!loading && isEmptyDir">
+		<template v-else-if="!loading && isEmptyDir && currentFolder && currentView">
+			<div class="files-list__before">
+				<!-- Headers -->
+				<FilesListHeader v-for="header in headers"
+					:key="header.id"
+					:current-folder="currentFolder"
+					:current-view="currentView"
+					:header="header" />
+			</div>
 			<!-- Empty due to error -->
 			<NcEmptyContent v-if="error" :name="error" data-cy-files-content-error>
 				<template #action>
@@ -129,7 +143,7 @@
 </template>
 
 <script lang="ts">
-import type { ContentsWithRoot, INode } from '@nextcloud/files'
+import type { ContentsWithRoot, FileListAction, Folder, INode } from '@nextcloud/files'
 import type { Upload } from '@nextcloud/upload'
 import type { CancelablePromise } from 'cancelable-promise'
 import type { ComponentPublicInstance } from 'vue'
@@ -138,11 +152,11 @@ import type { UserConfig } from '../types.ts'
 
 import { getCapabilities } from '@nextcloud/capabilities'
 import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
-import { Folder, Node, Permission, sortNodes } from '@nextcloud/files'
+import { Node, Permission, sortNodes, getFileListActions } from '@nextcloud/files'
 import { translate as t } from '@nextcloud/l10n'
 import { join, dirname, normalize } from 'path'
-import { showError, showWarning } from '@nextcloud/dialogs'
-import { Type } from '@nextcloud/sharing'
+import { showError, showSuccess, showWarning } from '@nextcloud/dialogs'
+import { ShareType } from '@nextcloud/sharing'
 import { UploadPicker, UploadStatus } from '@nextcloud/upload'
 import { loadState } from '@nextcloud/initial-state'
 import { defineComponent } from 'vue'
@@ -152,16 +166,19 @@ import IconReload from 'vue-material-design-icons/Reload.vue'
 import LinkIcon from 'vue-material-design-icons/Link.vue'
 import ListViewIcon from 'vue-material-design-icons/FormatListBulletedSquare.vue'
 import NcAppContent from '@nextcloud/vue/dist/Components/NcAppContent.js'
+import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
+import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import AccountPlusIcon from 'vue-material-design-icons/AccountPlus.vue'
 import ViewGridIcon from 'vue-material-design-icons/ViewGrid.vue'
 
 import { action as sidebarAction } from '../actions/sidebarAction.ts'
 import { useNavigation } from '../composables/useNavigation.ts'
+import { useFileListHeaders } from '../composables/useFileListHeaders.ts'
+import { useFileListWidth } from '../composables/useFileListWidth.ts'
 import { useRouteParameters } from '../composables/useRouteParameters.ts'
 import { useFilesStore } from '../store/files.ts'
 import { useFiltersStore } from '../store/filters.ts'
@@ -170,13 +187,13 @@ import { useSelectionStore } from '../store/selection.ts'
 import { useUploaderStore } from '../store/uploader.ts'
 import { useUserConfigStore } from '../store/userconfig.ts'
 import { useViewConfigStore } from '../store/viewConfig.ts'
+import { humanizeWebDAVError } from '../utils/davUtils.ts'
 import BreadCrumbs from '../components/BreadCrumbs.vue'
+import FilesListHeader from '../components/FilesListHeader.vue'
 import FilesListVirtual from '../components/FilesListVirtual.vue'
-import filesListWidthMixin from '../mixins/filesListWidth.ts'
 import filesSortingMixin from '../mixins/filesSorting.ts'
 import logger from '../logger.ts'
 import DragAndDropNotice from '../components/DragAndDropNotice.vue'
-import { humanizeWebDAVError } from '../utils/davUtils.ts'
 
 const isSharingEnabled = (getCapabilities() as { files_sharing?: boolean })?.files_sharing !== undefined
 
@@ -186,15 +203,17 @@ export default defineComponent({
 	components: {
 		BreadCrumbs,
 		DragAndDropNotice,
+		FilesListHeader,
 		FilesListVirtual,
 		LinkIcon,
 		ListViewIcon,
 		NcAppContent,
+		NcActions,
+		NcActionButton,
 		NcButton,
 		NcEmptyContent,
 		NcIconSvgWrapper,
 		NcLoadingIcon,
-		PlusIcon,
 		AccountPlusIcon,
 		UploadPicker,
 		ViewGridIcon,
@@ -203,11 +222,20 @@ export default defineComponent({
 	},
 
 	mixins: [
-		filesListWidthMixin,
 		filesSortingMixin,
 	],
 
+	props: {
+		isPublic: {
+			type: Boolean,
+			default: false,
+		},
+	},
+
 	setup() {
+		const { currentView } = useNavigation()
+		const { directory, fileId } = useRouteParameters()
+		const fileListWidth = useFileListWidth()
 		const filesStore = useFilesStore()
 		const filtersStore = useFiltersStore()
 		const pathsStore = usePathsStore()
@@ -215,8 +243,6 @@ export default defineComponent({
 		const uploaderStore = useUploaderStore()
 		const userConfigStore = useUserConfigStore()
 		const viewConfigStore = useViewConfigStore()
-		const { currentView } = useNavigation()
-		const { directory, fileId } = useRouteParameters()
 
 		const enableGridView = (loadState('core', 'config', [])['enable_non-accessible_features'] ?? true)
 		const forbiddenCharacters = loadState<string[]>('files', 'forbiddenCharacters', [])
@@ -225,6 +251,8 @@ export default defineComponent({
 			currentView,
 			directory,
 			fileId,
+			fileListWidth,
+			headers: useFileListHeaders(),
 			t,
 
 			filesStore,
@@ -238,13 +266,14 @@ export default defineComponent({
 			// non reactive data
 			enableGridView,
 			forbiddenCharacters,
-			Type,
+			ShareType,
 		}
 	},
 
 	data() {
 		return {
 			loading: true,
+			loadingAction: null as string | null,
 			error: null as string | null,
 			promise: null as CancelablePromise<ContentsWithRoot> | Promise<ContentsWithRoot> | null,
 
@@ -253,6 +282,14 @@ export default defineComponent({
 	},
 
 	computed: {
+		canUploadFolders() {
+			// TODO: Remove this small files_sharing hack when https://github.com/nextcloud/server/issues/15921 is implmented
+			if (this.currentView?.id === 'public-file-drop') {
+				return false
+			}
+			return true
+		},
+
 		/**
 		 * Get a callback function for the uploader to fetch directory contents for conflict resolution
 		 */
@@ -373,22 +410,22 @@ export default defineComponent({
 				return t('files', 'Share')
 			}
 
-			if (this.shareButtonType === Type.SHARE_TYPE_LINK) {
+			if (this.shareButtonType === ShareType.Link) {
 				return t('files', 'Shared by link')
 			}
 			return t('files', 'Shared')
 		},
-		shareButtonType(): Type | null {
+		shareButtonType(): ShareType | null {
 			if (!this.shareTypesAttributes) {
 				return null
 			}
 
 			// If all types are links, show the link icon
-			if (this.shareTypesAttributes.some(type => type === Type.SHARE_TYPE_LINK)) {
-				return Type.SHARE_TYPE_LINK
+			if (this.shareTypesAttributes.some(type => type === ShareType.Link)) {
+				return ShareType.Link
 			}
 
-			return Type.SHARE_TYPE_USER
+			return ShareType.User
 		},
 
 		gridViewButtonLabel() {
@@ -406,27 +443,38 @@ export default defineComponent({
 		isQuotaExceeded() {
 			return this.currentFolder?.attributes?.['quota-available-bytes'] === 0
 		},
-		cantUploadLabel() {
-			if (this.isQuotaExceeded) {
-				return t('files', 'Your have used your space quota and cannot upload files anymore')
-			}
-			return t('files', 'You do not have permission to upload or create files here')
-		},
 
 		/**
 		 * Check if current folder has share permissions
 		 */
 		canShare() {
-			return isSharingEnabled
+			return isSharingEnabled && !this.isPublic
 				&& this.currentFolder && (this.currentFolder.permissions & Permission.SHARE) !== 0
-		},
-
-		filtersChanged() {
-			return this.filtersStore.filtersChanged
 		},
 
 		showCustomEmptyView() {
 			return !this.loading && this.isEmptyDir && this.currentView?.emptyView !== undefined
+		},
+
+		enabledFileListActions() {
+			if (!this.currentView || !this.currentFolder) {
+				return []
+			}
+
+			const actions = getFileListActions()
+			const enabledActions = actions
+				.filter(action => {
+					if (action.enabled === undefined) {
+						return true
+					}
+					return action.enabled(
+						this.currentView!,
+						this.dirContents,
+						this.currentFolder as Folder,
+					)
+				})
+				.toSorted((a, b) => a.order - b.order)
+			return enabledActions
 		},
 	},
 
@@ -484,13 +532,6 @@ export default defineComponent({
 			// Also refresh the filtered content
 			this.filterDirContent()
 		},
-
-		filtersChanged() {
-			if (this.filtersChanged) {
-				this.filterDirContent()
-				this.filtersStore.filtersChanged = false
-			}
-		},
 	},
 
 	async mounted() {
@@ -499,6 +540,9 @@ export default defineComponent({
 
 		// reload on settings change
 		subscribe('files:config:updated', this.fetchContent)
+
+		// filter content if filter were changed
+		subscribe('files:filters:changed', this.filterDirContent)
 
 		// Finally, fetch the current directory contents
 		await this.fetchContent()
@@ -699,6 +743,40 @@ export default defineComponent({
 			}
 			this.dirContentsFiltered = nodes
 		},
+
+		actionDisplayName(action: FileListAction): string {
+			let displayName = action.id
+			try {
+				displayName = action.displayName(this.currentView!)
+			} catch (error) {
+				logger.error('Error while getting action display name', { action, error })
+			}
+			return displayName
+		},
+
+		async execFileListAction(action: FileListAction) {
+			this.loadingAction = action.id
+
+			const displayName = this.actionDisplayName(action)
+			try {
+				const success = await action.exec(this.source, this.dirContents, this.currentDir)
+				// If the action returns null, we stay silent
+				if (success === null || success === undefined) {
+					return
+				}
+
+				if (success) {
+					showSuccess(t('files', '"{displayName}" action executed successfully', { displayName }))
+					return
+				}
+				showError(t('files', '"{displayName}" action failed', { displayName }))
+			} catch (error) {
+				logger.error('Error while executing action', { action, error })
+				showError(t('files', '"{displayName}" action failed', { displayName }))
+			} finally {
+				this.loadingAction = null
+			}
+		},
 	},
 })
 </script>
@@ -731,6 +809,11 @@ export default defineComponent({
 		margin-block: var(--app-navigation-padding, 4px);
 		margin-inline: calc(var(--default-clickable-area, 44px) + 2 * var(--app-navigation-padding, 4px)) var(--app-navigation-padding, 4px);
 
+		&--public {
+			// There is no navigation toggle on public shares
+			margin-inline: 0 var(--app-navigation-padding, 4px);
+		}
+
 		>* {
 			// Do not grow or shrink (horizontally)
 			// Only the breadcrumbs shrinks
@@ -744,6 +827,18 @@ export default defineComponent({
 				color: var(--color-main-text) !important;
 			}
 		}
+
+		&-actions {
+			min-width: fit-content !important;
+			margin-inline: calc(var(--default-grid-baseline) * 2);
+		}
+	}
+
+	&__before {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--default-grid-baseline) * 2);
+		margin-inline: calc(var(--default-clickable-area) + 2 * var(--app-navigation-padding));
 	}
 
 	&__empty-view-wrapper {

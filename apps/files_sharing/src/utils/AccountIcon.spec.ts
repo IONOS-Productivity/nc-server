@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import { afterEach, describe, it, expect } from '@jest/globals'
+import { describe, expect, it, afterEach } from 'vitest'
 import { generateAvatarSvg } from './AccountIcon'
 describe('AccountIcon', () => {
 

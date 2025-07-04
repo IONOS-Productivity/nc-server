@@ -197,12 +197,12 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "Испратете известувања за потсетници и до споделувањата на календарот",
     "Reminders are always sent to organizers and attendees." : "Секогаш се испраќаат потсетници до организаторите и до присутните.",
     "Enable notifications for events via push" : "Овозможи известувања за настани преку push",
+    "Cancel" : "Откажи",
+    "Import" : "Увези",
     "There was an error updating your attendance status." : "Настана грешка при ажурирање на вашето присуство.",
     "Please contact the organizer directly." : "Контактирајте го организаторот директно.",
     "Are you accepting the invitation?" : "Дали ја прифаќате поканата?",
     "Tentative" : "Прелиминарно",
-    "Your attendance was updated successfully." : "Вашето присуство е успешно ажурирано.",
-    "Time:" : "Време:",
-    "Could not open file" : "Неможе да се отвори датотеката"
+    "Your attendance was updated successfully." : "Вашето присуство е успешно ажурирано."
 },
 "nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;");

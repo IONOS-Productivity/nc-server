@@ -303,14 +303,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "Senda einnig tilkynningar til þeirra sem deila dagatalinu",
     "Reminders are always sent to organizers and attendees." : "Áminningar eru alltaf sendar til skipuleggjenda og þátttakenda.",
     "Enable notifications for events via push" : "Senda tilkynningar fyrir atburði sem ýtitilkynningar",
+    "Cancel" : "Hætta við",
+    "Import" : "Flytja inn",
+    "Error while saving settings" : "Villa við að vista stillingar",
     "There was an error updating your attendance status." : "Það kom upp villa við að uppfæra mætingarstöðu þína.",
     "Please contact the organizer directly." : "Hafðu samband beint við skipuleggjendurna.",
     "Are you accepting the invitation?" : "Ætlar þú að samþykkja boðið?",
     "Tentative" : "Bráðabirgða",
-    "Your attendance was updated successfully." : "Mætingarstaða þín var uppfærð.",
-    "Time:" : "Tími:",
-    "Could not open file" : "Gat ekki opnað skrá",
-    "Invalid chunk name" : "Ógilt heiti á bút",
-    "Could not rename part file assembled from chunks" : "Ekki var hægt að endurnefna hlutaskrá setta saman úr bútum"
+    "Your attendance was updated successfully." : "Mætingarstaða þín var uppfærð."
 },
 "nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);");

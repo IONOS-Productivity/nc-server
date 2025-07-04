@@ -265,11 +265,11 @@ OC.L10N.register(
     "No compatible server found at {remote}" : "Δεν βρέθηκε συμβατός διακομιστής σε {remote}",
     "Invalid server URL" : "Μη έγκυρο URL διακομιστή",
     "Failed to add the public link to your Nextcloud" : "Αποτυχία στην πρόσθεση του κοινού συνδέσμου στο Nextcloud σας",
-    "Files" : "Αρχεία",
     "Download all files" : "Λήψη όλων των αρχείων",
     "Search for share recipients" : "Αναζήτηση για παραλήπτες διαμοιρασμού",
     "No recommendations. Start typing." : "Δεν υπάρχουν συστάσεις. Αρχίστε να πληκτρολογείτε.",
-    "Allow download" : "Να επιτρέπεται η λήψη",
-    "Enter your name" : "Προσθέστε το όνομά σας"
+    "Enter your name" : "Προσθέστε το όνομά σας",
+    "Name" : "Όνομα",
+    "Filename must not be empty." : "Το όνομα αρχείου δεν πρέπει να είναι κενό."
 },
 "nplurals=2; plural=(n != 1);");

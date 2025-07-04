@@ -301,14 +301,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "Enviar recordatorio también a los usuarios con los que se comparte el calendario",
     "Reminders are always sent to organizers and attendees." : "Los recordatorios siempre se envían a los organizadores y asistentes.",
     "Enable notifications for events via push" : "Activar notificaciones push para eventos",
+    "Cancel" : "Cancelar",
+    "Import" : "Importar",
+    "Error while saving settings" : "Error al guardar los ajustes",
     "There was an error updating your attendance status." : "Ha habido un error al actualizar tu estado de asistencia.",
     "Please contact the organizer directly." : "Por favor, contacta directamente con el organizador.",
     "Are you accepting the invitation?" : "¿Aceptas la invitación?",
     "Tentative" : "Provisional",
-    "Your attendance was updated successfully." : "Tu asistencia se ha actualizado con éxito.",
-    "Time:" : "Hora:",
-    "Could not open file" : "No se ha podido abrir el archivo",
-    "Invalid chunk name" : "Nombre de trozo inválido",
-    "Could not rename part file assembled from chunks" : "No se ha podido renombrar el archivo parcial formado por los fragmentos"
+    "Your attendance was updated successfully." : "Tu asistencia se ha actualizado con éxito."
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");
