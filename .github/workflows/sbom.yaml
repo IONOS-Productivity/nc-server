@@ -118,6 +118,46 @@ jobs:
           npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --output-format XML --output-file '../../bom.app-simplesettings.npm.xml'
 
 
+      #
+      # App: googleanalytics
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:googleanalytics - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/googleanalytics
+          composer CycloneDX:make-sbom --output-file=../../bom.app-googleanalytics.composer.xml
+
+
+      #
+      # App: nc_ionos_processes
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:nc_ionos_processes - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/nc_ionos_processes
+          composer CycloneDX:make-sbom --output-file=../../bom.app-ionos-processes.composer.xml
+
+
+      #
+      # App: nc_themeing
+      #
+
+      # SBOM for composer (generate)
+
+      - name: Generate SBOM (apps:nc_theming - composer)
+        # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
+        run: |
+          cd apps-custom/nc_theming
+          composer CycloneDX:make-sbom --output-file=../../bom.app-theming.composer.xml
+
+
+
 
       # Pass BOMs to next Job
       # https://github.com/actions/upload-artifact
@@ -161,6 +201,9 @@ jobs:
 
           merge_bom "nextcloud"
           merge_bom "app-simplesettings"
+          merge_bom "app-googleanalytics"
+          merge_bom "app-ionos-processes"
+          merge_bom "app-theming"
 
       - name: Show BOMs
         run: |
@@ -175,6 +218,9 @@ jobs:
           path: |
             bom.nextcloud.xml
             bom.app-simplesettings.xml
+            bom.app-googleanalytics.xml
+            bom.app-ionos-processes.xml
+            bom.app-theming.xml
 
   upload-sboms:
     needs: merge-sboms
@@ -210,4 +256,7 @@ jobs:
 
           upload_bom "bom.nextcloud.xml" "${{ vars.DT_OBJECT_NEXTCLOUD }}" \
           	&& upload_bom "bom.app-simplesettings.xml" "${{ vars.DT_OBJECT_APP_SIMPLESETTINGS }}" \
+          	&& upload_bom "bom.app-googleanalytics.xml" "${{ vars.DT_OBJECT_APP_GOOGLE_ANALYTICS }}" \
+          	&& upload_bom "bom.app-ionos-processes.xml" "${{ vars.DT_OBJECT_APP_IONOS_PROCESSES }}" \
+          	&& upload_bom "bom.app-theming.xml" "${{ vars.DT_OBJECT_APP_THEMING }}" \
           	|| exit 1
