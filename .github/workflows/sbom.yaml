@@ -128,7 +128,7 @@ jobs:
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
         run: |
           cd apps-custom/googleanalytics
-          composer CycloneDX:make-sbom --output-file=../../bom.app-googleanalytics.composer.xml
+          composer CycloneDX:make-sbom --output-file=../../bom.app-googleanalytics.xml
 
 
       #
@@ -141,7 +141,7 @@ jobs:
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
         run: |
           cd apps-custom/nc_ionos_processes
-          composer CycloneDX:make-sbom --output-file=../../bom.app-ionos-processes.composer.xml
+          composer CycloneDX:make-sbom --output-file=../../bom.app-ionos-processes.xml
 
 
       #
@@ -154,7 +154,7 @@ jobs:
         # https://packagist.org/packages/cyclonedx/cyclonedx-php-composer
         run: |
           cd apps-custom/nc_theming
-          composer CycloneDX:make-sbom --output-file=../../bom.app-theming.composer.xml
+          composer CycloneDX:make-sbom --output-file=../../bom.app-theming.xml
 
 
 
@@ -201,9 +201,6 @@ jobs:
 
           merge_bom "nextcloud"
           merge_bom "app-simplesettings"
-          merge_bom "app-googleanalytics"
-          merge_bom "app-ionos-processes"
-          merge_bom "app-theming"
 
       - name: Show BOMs
         run: |
