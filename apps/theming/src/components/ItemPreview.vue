@@ -117,7 +117,6 @@ export default {
 .theming__preview {
 	// We make previews on 16/10 screens
 	--ratio: 16;
-
 	position: relative;
 	display: flex;
 	justify-content: flex-start;
@@ -131,7 +130,7 @@ export default {
 		flex-basis: calc(16px * var(--ratio));
 		flex-shrink: 0;
 		height: calc(10px * var(--ratio));
-		margin-right: var(--gap);
+		margin-inline-end: var(--gap);
 		cursor: pointer;
 		border-radius: var(--border-radius);
 		background-repeat: no-repeat;

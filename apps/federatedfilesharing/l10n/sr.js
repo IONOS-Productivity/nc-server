@@ -23,6 +23,16 @@ OC.L10N.register(
     "Sharing" : "Дељење",
     "Federated file sharing" : "Здружено дељење фајлова",
     "Provide federated file sharing across servers" : "Пружа здружено дељење фајлова између сервера",
+    "Confirm data upload to lookup server" : "Потврди отпремање података на сервер претраге",
+    "When enabled, all account properties (e.g. email address) with scope visibility set to \"published\", will be automatically synced and transmitted to an external system and made available in a public, global address book." : "Када је укључено, све особине налога (нпр. и-мејл адреса) са опсегом видљивости постављеним на „објављено” ће се аутоматски синхронизовати, послати на спољни систем и постати доступне у јавном, глобалном адресару.",
+    "Disable upload" : "Искључи отпремање",
+    "Enable data upload" : "Укључи отпремање података",
+    "Confirm querying lookup server" : "Потврди упитивање сервера претраге",
+    "When enabled, the search input when creating shares will be sent to an external system that provides a public and global address book." : "Када је укључено, унос претраге приликом креирања дељења ће се послати на спољни систем који обезбеђује јавни и глобални адресар.",
+    "This is used to retrieve the federated cloud ID to make federated sharing easier." : "Ово се користи за добављање ID здруженог облака и олакшавање здружених дељења.",
+    "Moreover, email addresses of users might be sent to that system in order to verify them." : "Уз то, и-мејл адресе корисника би могле да се шаљу на тај систем да би се потврдиле.",
+    "Disable querying" : "Искључи упитивање",
+    "Enable querying" : "Укључи упитивање",
     "Unable to update federated files sharing config" : "Конфигурација федерисаног дељења фајлова није могла да се ажурира",
     "Adjust how people can share between servers. This includes shares between people on this server as well if they are using federated sharing." : "Подесите како људи могу да деле између сервера. То укључује и дељење између људи на овом серверу ако користе федерисано дељење.",
     "Allow people on this server to send shares to other servers (this option also allows WebDAV access to public shares)" : "Дозволи да људи са овог сервера шаљу дељења на друге сервере (ова опција такође дозвољава WebDAV приступ јавним дељењима)",
@@ -56,10 +66,6 @@ OC.L10N.register(
     "Remote share" : "Удаљено дељење",
     "Do you want to add the remote share {name} from {owner}@{remote}?" : "Да ли желите да додате удаљено дељење {name} од {owner}@{remote}?",
     "Remote share password" : "Лозинка удаљеног дељења",
-    "Incoming share could not be processed" : "Долазеће дељење не може да се обради",
-    "Clipboard is not available" : "Клипборд није доступан",
-    "Your Federated Cloud ID:" : "ИД вашег здруженог облака:",
-    "Twitter" : "Твитер",
-    "Diaspora" : "Дијаспора"
+    "Incoming share could not be processed" : "Долазеће дељење не може да се обради"
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

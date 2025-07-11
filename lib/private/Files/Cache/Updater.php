@@ -116,7 +116,7 @@ class Updater implements IUpdater {
 		}
 
 		// encryption is a pita and touches the cache itself
-		if (isset($data['encrypted']) && !!$data['encrypted']) {
+		if (isset($data['encrypted']) && (bool)$data['encrypted']) {
 			$sizeDifference = null;
 		}
 
@@ -185,7 +185,18 @@ class Updater implements IUpdater {
 	 */
 	public function copyFromStorage(IStorage $sourceStorage, string $source, string $target): void {
 		$this->copyOrRenameFromStorage($sourceStorage, $source, $target, function (ICache $sourceCache, ICacheEntry $sourceInfo) use ($target) {
-			$this->cache->copyFromCache($sourceCache, $sourceInfo, $target);
+			$parent = dirname($target);
+			if ($parent === '.') {
+				$parent = '';
+			}
+			$parentInCache = $this->cache->inCache($parent);
+			if (!$parentInCache) {
+				$parentData = $this->scanner->scan($parent, Scanner::SCAN_SHALLOW, -1, false);
+				$parentInCache = $parentData !== null;
+			}
+			if ($parentInCache) {
+				$this->cache->copyFromCache($sourceCache, $sourceInfo, $target);
+			}
 		});
 	}
 
@@ -273,7 +284,7 @@ class Updater implements IUpdater {
 					// ignore the failure.
 					// with failures concurrent updates, someone else would have already done it.
 					// in the worst case the `storage_mtime` isn't updated, which should at most only trigger an extra rescan
-					$this->logger->warning("Error while updating parent storage_mtime, should be safe to ignore", ['exception' => $e]);
+					$this->logger->warning('Error while updating parent storage_mtime, should be safe to ignore', ['exception' => $e]);
 				}
 			}
 		}

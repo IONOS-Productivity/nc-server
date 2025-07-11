@@ -148,12 +148,14 @@ export default {
 		min-height: 34px !important;
 		display: inline-flex !important;
 	}
+
 	.oauth2-form {
 		display: flex;
 		flex-direction: row;
 	}
+
 	.oauth2-form--input {
 		max-width: 200px;
-		margin-right: 10px;
+		margin-inline-end: 10px;
 	}
 </style>

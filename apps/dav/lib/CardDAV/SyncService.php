@@ -10,7 +10,10 @@ namespace OCA\DAV\CardDAV;
 
 use OCP\AppFramework\Db\TTransactional;
 use OCP\AppFramework\Http;
+use OCP\DB\Exception;
+use OCP\Http\Client\IClient;
 use OCP\Http\Client\IClientService;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -24,29 +27,19 @@ use function is_null;
 class SyncService {
 
 	use TTransactional;
-
-	private CardDavBackend $backend;
-	private IUserManager $userManager;
-	private IDBConnection $dbConnection;
-	private LoggerInterface $logger;
 	private ?array $localSystemAddressBook = null;
-	private Converter $converter;
 	protected string $certPath;
-	private IClientService $clientService;
 
-	public function __construct(CardDavBackend $backend,
-		IUserManager $userManager,
-		IDBConnection $dbConnection,
-		LoggerInterface $logger,
-		Converter $converter,
-		IClientService $clientService) {
-		$this->backend = $backend;
-		$this->userManager = $userManager;
-		$this->logger = $logger;
-		$this->converter = $converter;
+	public function __construct(
+		private CardDavBackend $backend,
+		private IUserManager $userManager,
+		private IDBConnection $dbConnection,
+		private LoggerInterface $logger,
+		private Converter $converter,
+		private IClientService $clientService,
+		private IConfig $config,
+	) {
 		$this->certPath = '';
-		$this->dbConnection = $dbConnection;
-		$this->clientService = $clientService;
 	}
 
 	/**
@@ -77,7 +70,7 @@ class SyncService {
 			$cardUri = basename($resource);
 			if (isset($status[200])) {
 				$vCard = $this->download($url, $userName, $sharedSecret, $resource);
-				$this->atomic(function () use ($addressBookId, $cardUri, $vCard) {
+				$this->atomic(function () use ($addressBookId, $cardUri, $vCard): void {
 					$existingCard = $this->backend->getCard($addressBookId, $cardUri);
 					if ($existingCard === false) {
 						$this->backend->createCard($addressBookId, $cardUri, $vCard);
@@ -97,15 +90,39 @@ class SyncService {
 	 * @throws \Sabre\DAV\Exception\BadRequest
 	 */
 	public function ensureSystemAddressBookExists(string $principal, string $uri, array $properties): ?array {
-		return $this->atomic(function () use ($principal, $uri, $properties) {
-			$book = $this->backend->getAddressBooksByUri($principal, $uri);
-			if (!is_null($book)) {
-				return $book;
-			}
-			$this->backend->createAddressBook($principal, $uri, $properties);
+		try {
+			return $this->atomic(function () use ($principal, $uri, $properties) {
+				$book = $this->backend->getAddressBooksByUri($principal, $uri);
+				if (!is_null($book)) {
+					return $book;
+				}
+				$this->backend->createAddressBook($principal, $uri, $properties);
 
-			return $this->backend->getAddressBooksByUri($principal, $uri);
-		}, $this->dbConnection);
+				return $this->backend->getAddressBooksByUri($principal, $uri);
+			}, $this->dbConnection);
+		} catch (Exception $e) {
+			// READ COMMITTED doesn't prevent a nonrepeatable read above, so
+			// two processes might create an address book here. Ignore our
+			// failure and continue loading the entry written by the other process
+			if ($e->getReason() !== Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+				throw $e;
+			}
+
+			// If this fails we might have hit a replication node that does not
+			// have the row written in the other process.
+			// TODO: find an elegant way to handle this
+			$ab = $this->backend->getAddressBooksByUri($principal, $uri);
+			if ($ab === null) {
+				throw new Exception('Could not create system address book', $e->getCode(), $e);
+			}
+			return $ab;
+		}
+	}
+
+	public function ensureLocalSystemAddressBookExists(): ?array {
+		return $this->ensureSystemAddressBookExists('principals/system/system', 'system', [
+			'{' . Plugin::NS_CARDDAV . '}addressbook-description' => 'System addressbook which holds all users of this instance'
+		]);
 	}
 
 	private function prepareUri(string $host, string $path): string {
@@ -150,7 +167,8 @@ class SyncService {
 		$options = [
 			'auth' => [$userName, $sharedSecret],
 			'body' => $this->buildSyncCollectionRequestBody($syncToken),
-			'headers' => ['Content-Type' => 'application/xml']
+			'headers' => ['Content-Type' => 'application/xml'],
+			'timeout' => $this->config->getSystemValueInt('carddav_sync_request_timeout', IClient::DEFAULT_REQUEST_TIMEOUT)
 		];
 
 		$response = $client->request(
@@ -226,7 +244,7 @@ class SyncService {
 
 		$cardId = self::getCardUri($user);
 		if ($user->isEnabled()) {
-			$this->atomic(function () use ($addressBookId, $cardId, $user) {
+			$this->atomic(function () use ($addressBookId, $cardId, $user): void {
 				$card = $this->backend->getCard($addressBookId, $cardId);
 				if ($card === false) {
 					$vCard = $this->converter->createCardFromUser($user);
@@ -263,10 +281,7 @@ class SyncService {
 	 */
 	public function getLocalSystemAddressBook() {
 		if (is_null($this->localSystemAddressBook)) {
-			$systemPrincipal = "principals/system/system";
-			$this->localSystemAddressBook = $this->ensureSystemAddressBookExists($systemPrincipal, 'system', [
-				'{' . Plugin::NS_CARDDAV . '}addressbook-description' => 'System addressbook which holds all users of this instance'
-			]);
+			$this->localSystemAddressBook = $this->ensureLocalSystemAddressBookExists();
 		}
 
 		return $this->localSystemAddressBook;
@@ -277,7 +292,7 @@ class SyncService {
 	 */
 	public function syncInstance(?\Closure $progressCallback = null) {
 		$systemAddressBook = $this->getLocalSystemAddressBook();
-		$this->userManager->callForAllUsers(function ($user) use ($systemAddressBook, $progressCallback) {
+		$this->userManager->callForAllUsers(function ($user) use ($systemAddressBook, $progressCallback): void {
 			$this->updateUser($user);
 			if (!is_null($progressCallback)) {
 				$progressCallback();

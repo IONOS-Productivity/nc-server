@@ -62,7 +62,7 @@ class Sharing implements IDelegatedSettings {
 			'enforceExpireDate' => $this->getHumanBooleanConfig('core', 'shareapi_enforce_expire_date'),
 			'excludeGroups' => $this->config->getAppValue('core', 'shareapi_exclude_groups', 'no'),
 			'excludeGroupsList' => json_decode($excludedGroups, true) ?? [],
-			'publicShareDisclaimerText' => $this->config->getAppValue('core', 'shareapi_public_link_disclaimertext', null),
+			'publicShareDisclaimerText' => $this->config->getAppValue('core', 'shareapi_public_link_disclaimertext'),
 			'enableLinkPasswordByDefault' => $this->getHumanBooleanConfig('core', 'shareapi_enable_link_password_by_default'),
 			'defaultPermissions' => (int)$this->config->getAppValue('core', 'shareapi_default_permissions', (string)Constants::PERMISSION_ALL),
 			'defaultInternalExpireDate' => $this->getHumanBooleanConfig('core', 'shareapi_default_internal_expire_date'),
@@ -71,13 +71,14 @@ class Sharing implements IDelegatedSettings {
 			'defaultRemoteExpireDate' => $this->getHumanBooleanConfig('core', 'shareapi_default_remote_expire_date'),
 			'remoteExpireAfterNDays' => $this->config->getAppValue('core', 'shareapi_remote_expire_after_n_days', '7'),
 			'enforceRemoteExpireDate' => $this->getHumanBooleanConfig('core', 'shareapi_enforce_remote_expire_date'),
+			'allowCustomTokens' => $this->shareManager->allowCustomTokens(),
 		];
 
 		$this->initialState->provideInitialState('sharingAppEnabled', $this->appManager->isEnabledForUser('files_sharing'));
 		$this->initialState->provideInitialState('sharingDocumentation', $this->urlGenerator->linkToDocs('admin-sharing'));
 		$this->initialState->provideInitialState('sharingSettings', $parameters);
 
-		\OCP\Util::addScript($this->appName, 'vue-settings-admin-sharing');
+		Util::addScript($this->appName, 'vue-settings-admin-sharing');
 		return new TemplateResponse($this->appName, 'settings/admin/sharing', [], '');
 	}
 
@@ -97,8 +98,8 @@ class Sharing implements IDelegatedSettings {
 
 	/**
 	 * @return int whether the form should be rather on the top or bottom of
-	 * the admin section. The forms are arranged in ascending order of the
-	 * priority values. It is required to return a value between 0 and 100.
+	 *             the admin section. The forms are arranged in ascending order of the
+	 *             priority values. It is required to return a value between 0 and 100.
 	 *
 	 * E.g.: 70
 	 */

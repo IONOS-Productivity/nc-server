@@ -14,6 +14,7 @@ use OCA\DAV\CalDAV\Reminder\NotificationProvider\PushProvider;
 use OCA\DAV\CalDAV\Reminder\NotificationProviderManager;
 use OCA\DAV\CalDAV\Reminder\NotificationTypeDoesNotExistException;
 use OCA\DAV\Capabilities;
+use OCP\AppFramework\QueryException;
 use Test\TestCase;
 
 /**
@@ -25,7 +26,7 @@ class NotificationProviderManagerTest extends TestCase {
 	private $providerManager;
 
 	/**
-	 * @throws \OCP\AppFramework\QueryException
+	 * @throws QueryException
 	 */
 	protected function setUp(): void {
 		parent::setUp();
@@ -39,7 +40,7 @@ class NotificationProviderManagerTest extends TestCase {
 	 * @throws NotificationTypeDoesNotExistException
 	 */
 	public function testGetProviderForUnknownType(): void {
-		$this->expectException(\OCA\DAV\CalDAV\Reminder\NotificationTypeDoesNotExistException::class);
+		$this->expectException(NotificationTypeDoesNotExistException::class);
 		$this->expectExceptionMessage('Type NOT EXISTENT is not an accepted type of notification');
 
 		$this->providerManager->getProvider('NOT EXISTENT');
@@ -50,7 +51,7 @@ class NotificationProviderManagerTest extends TestCase {
 	 * @throws ProviderNotAvailableException
 	 */
 	public function testGetProviderForUnRegisteredType(): void {
-		$this->expectException(\OCA\DAV\CalDAV\Reminder\NotificationProvider\ProviderNotAvailableException::class);
+		$this->expectException(ProviderNotAvailableException::class);
 		$this->expectExceptionMessage('No notification provider for type AUDIO available');
 
 		$this->providerManager->getProvider('AUDIO');
@@ -68,7 +69,7 @@ class NotificationProviderManagerTest extends TestCase {
 	}
 
 	/**
-	 * @throws \OCP\AppFramework\QueryException
+	 * @throws QueryException
 	 */
 	public function testRegisterBadProvider(): void {
 		$this->expectException(\InvalidArgumentException::class);

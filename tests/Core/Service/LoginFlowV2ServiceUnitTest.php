@@ -127,10 +127,13 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	/*
 	 * Tests for poll
 	 */
-
-	public function testPollApptokenCouldNotBeDecrypted() {
+	public function testPollPrivateKeyCouldNotBeDecrypted(): void {
 		$this->expectException(LoginFlowV2NotFoundException::class);
 		$this->expectExceptionMessage('Apptoken could not be decrypted');
+
+		$this->crypto->expects($this->once())
+			->method('decrypt')
+			->willThrowException(new \Exception('HMAC mismatch'));
 
 		/*
 		 * Cannot be mocked, because functions like getLoginName are magic functions.
@@ -149,7 +152,33 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 		$this->subjectUnderTest->poll('');
 	}
 
-	public function testPollInvalidToken() {
+	public function testPollApptokenCouldNotBeDecrypted(): void {
+		$this->expectException(LoginFlowV2NotFoundException::class);
+		$this->expectExceptionMessage('Apptoken could not be decrypted');
+
+		/*
+		 * Cannot be mocked, because functions like getLoginName are magic functions.
+		 * To be able to set internal properties, we have to use the real class here.
+		 */
+		[$encrypted, $privateKey,] = $this->getOpenSSLEncryptedPublicAndPrivateKey('test');
+		$loginFlowV2 = new LoginFlowV2();
+		$loginFlowV2->setLoginName('test');
+		$loginFlowV2->setServer('test');
+		$loginFlowV2->setAppPassword('broken#' . $encrypted);
+		$loginFlowV2->setPrivateKey('encrypted(test)');
+
+		$this->crypto->expects($this->once())
+			->method('decrypt')
+			->willReturn($privateKey);
+
+		$this->mapper->expects($this->once())
+			->method('getByPollToken')
+			->willReturn($loginFlowV2);
+
+		$this->subjectUnderTest->poll('test');
+	}
+
+	public function testPollInvalidToken(): void {
 		$this->expectException(LoginFlowV2NotFoundException::class);
 		$this->expectExceptionMessage('Invalid token');
 
@@ -160,14 +189,14 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 		$this->subjectUnderTest->poll('');
 	}
 
-	public function testPollTokenNotYetReady() {
+	public function testPollTokenNotYetReady(): void {
 		$this->expectException(LoginFlowV2NotFoundException::class);
 		$this->expectExceptionMessage('Token not yet ready');
 
 		$this->subjectUnderTest->poll('');
 	}
 
-	public function testPollRemoveDataFromDb() {
+	public function testPollRemoveDataFromDb(): void {
 		[$encrypted, $privateKey] = $this->getOpenSSLEncryptedPublicAndPrivateKey('test_pass');
 
 		$this->crypto->expects($this->once())
@@ -209,7 +238,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	 * Tests for getByLoginToken
 	 */
 
-	public function testGetByLoginToken() {
+	public function testGetByLoginToken(): void {
 		$loginFlowV2 = new LoginFlowV2();
 		$loginFlowV2->setLoginName('test_login');
 		$loginFlowV2->setServer('test_server');
@@ -227,7 +256,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 		$this->assertEquals('test', $result->getAppPassword());
 	}
 
-	public function testGetByLoginTokenLoginTokenInvalid() {
+	public function testGetByLoginTokenLoginTokenInvalid(): void {
 		$this->expectException(LoginFlowV2NotFoundException::class);
 		$this->expectExceptionMessage('Login token invalid');
 
@@ -293,7 +322,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	 * Tests for startLoginFlow
 	 */
 
-	public function testStartLoginFlow() {
+	public function testStartLoginFlow(): void {
 		$loginFlowV2 = new LoginFlowV2();
 
 		$this->mapper->expects($this->once())
@@ -306,7 +335,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 		$this->assertTrue($this->subjectUnderTest->startLoginFlow('test_token'));
 	}
 
-	public function testStartLoginFlowDoesNotExistException() {
+	public function testStartLoginFlowDoesNotExistException(): void {
 		$this->mapper->expects($this->once())
 			->method('getByLoginToken')
 			->willThrowException(new DoesNotExistException(''));
@@ -318,7 +347,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	 * If an exception not of type DoesNotExistException is thrown,
 	 * it is expected that it is not being handled by startLoginFlow.
 	 */
-	public function testStartLoginFlowException() {
+	public function testStartLoginFlowException(): void {
 		$this->expectException(Exception::class);
 
 		$this->mapper->expects($this->once())
@@ -332,7 +361,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	 * Tests for flowDone
 	 */
 
-	public function testFlowDone() {
+	public function testFlowDone(): void {
 		[,, $publicKey] = $this->getOpenSSLEncryptedPublicAndPrivateKey('test_pass');
 
 		$loginFlowV2 = new LoginFlowV2();
@@ -348,7 +377,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 
 		$this->secureRandom->expects($this->once())
 			->method('generate')
-			->with(72, ISecureRandom::CHAR_UPPER.ISecureRandom::CHAR_LOWER.ISecureRandom::CHAR_DIGITS)
+			->with(72, ISecureRandom::CHAR_UPPER . ISecureRandom::CHAR_LOWER . ISecureRandom::CHAR_DIGITS)
 			->willReturn('test_pass');
 
 		// session token
@@ -392,7 +421,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 		$this->assertEquals('server', $loginFlowV2->getServer());
 	}
 
-	public function testFlowDoneDoesNotExistException() {
+	public function testFlowDoneDoesNotExistException(): void {
 		$this->mapper->expects($this->once())
 			->method('getByLoginToken')
 			->willThrowException(new DoesNotExistException(''));
@@ -406,7 +435,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 		$this->assertFalse($result);
 	}
 
-	public function testFlowDonePasswordlessTokenException() {
+	public function testFlowDonePasswordlessTokenException(): void {
 		$this->tokenProvider->expects($this->once())
 			->method('getToken')
 			->willThrowException(new InvalidTokenException(''));
@@ -424,7 +453,7 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	 * Tests for createTokens
 	 */
 
-	public function testCreateTokens() {
+	public function testCreateTokens(): void {
 		$this->config->expects($this->exactly(2))
 			->method('getSystemValue')
 			->willReturn($this->returnCallback(function ($key) {

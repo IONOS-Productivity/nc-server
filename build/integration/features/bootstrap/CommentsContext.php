@@ -136,7 +136,7 @@ class CommentsContext implements \Behat\Behat\Context\Context {
 		}
 
 		if ($res->getStatusCode() !== (int)$statusCode) {
-			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ")");
+			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ')');
 		}
 	}
 
@@ -178,13 +178,13 @@ class CommentsContext implements \Behat\Behat\Context\Context {
 		}
 
 		if ($res->getStatusCode() !== (int)$statusCode) {
-			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ")");
+			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ')');
 		}
 
 		if ($res->getStatusCode() === 207) {
 			$service = new Sabre\Xml\Service();
 			$this->response = $service->parse($res->getBody()->getContents());
-			$this->commentId = (int) ($this->getValueFromNamedEntries('{DAV:}response {DAV:}propstat {DAV:}prop {http://owncloud.org/ns}id', $this->response ?? []) ?? 0);
+			$this->commentId = (int)($this->getValueFromNamedEntries('{DAV:}response {DAV:}propstat {DAV:}prop {http://owncloud.org/ns}id', $this->response ?? []) ?? 0);
 		}
 	}
 
@@ -236,7 +236,7 @@ class CommentsContext implements \Behat\Behat\Context\Context {
 		}
 
 		if ($res->getStatusCode() !== (int)$statusCode) {
-			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ")");
+			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ')');
 		}
 	}
 
@@ -273,7 +273,7 @@ class CommentsContext implements \Behat\Behat\Context\Context {
 			$count = count($this->response);
 		}
 		if ($count !== (int)$number) {
-			throw new \Exception("Found more comments than $number (" . $count . ")");
+			throw new \Exception("Found more comments than $number (" . $count . ')');
 		}
 	}
 
@@ -303,7 +303,7 @@ class CommentsContext implements \Behat\Behat\Context\Context {
 		}
 
 		if ($res->getStatusCode() !== (int)$statusCode) {
-			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ")");
+			throw new \Exception("Response status code was not $statusCode (" . $res->getStatusCode() . ')');
 		}
 	}
 }

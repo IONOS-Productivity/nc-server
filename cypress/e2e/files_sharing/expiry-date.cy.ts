@@ -4,7 +4,6 @@
  */
 
 import { User } from '@nextcloud/cypress'
-import { randomBytes } from 'crypto'
 import { closeSidebar } from '../files/FilesUtils.ts'
 import { createShare, openSharingDetails, openSharingPanel, updateShare } from './FilesSharingUtils.ts'
 
@@ -44,7 +43,8 @@ describe('files_sharing: Expiry date', () => {
 	it('See default expiry date is set and enforced', () => {
 		// Enforce the date
 		cy.runOccCommand('config:app:set --value yes core shareapi_enforce_internal_expire_date')
-		const dir = prepareDirectory()
+		const dir = 'defaultExpiryDateEnforced'
+		prepareDirectory(dir)
 
 		validateExpiryDate(dir, expectedDefaultDateString)
 		cy.findByRole('checkbox', { name: /expiration date/i })
@@ -53,7 +53,8 @@ describe('files_sharing: Expiry date', () => {
 	})
 
 	it('See default expiry date is set also if not enforced', () => {
-		const dir = prepareDirectory()
+		const dir = 'defaultExpiryDate'
+		prepareDirectory(dir)
 
 		validateExpiryDate(dir, expectedDefaultDateString)
 		cy.findByRole('checkbox', { name: /expiration date/i })
@@ -63,13 +64,15 @@ describe('files_sharing: Expiry date', () => {
 	})
 
 	it('Can set custom expiry date', () => {
-		const dir = prepareDirectory()
+		const dir = 'customExpiryDate'
+		prepareDirectory(dir)
 		updateShare(dir, 0, { expiryDate: fortnight })
 		validateExpiryDate(dir, fortnightString)
 	})
 
 	it('Custom expiry date survives reload', () => {
-		const dir = prepareDirectory()
+		const dir = 'customExpiryDateReload'
+		prepareDirectory(dir)
 		updateShare(dir, 0, { expiryDate: fortnight })
 		validateExpiryDate(dir, fortnightString)
 
@@ -82,7 +85,8 @@ describe('files_sharing: Expiry date', () => {
 	 * Ensure that admin default settings do not always override the user set value.
 	 */
 	it('Custom expiry date survives unrelated update', () => {
-		const dir = prepareDirectory()
+		const dir = 'customExpiryUnrelatedChanges'
+		prepareDirectory(dir)
 		updateShare(dir, 0, { expiryDate: fortnight })
 		validateExpiryDate(dir, fortnightString)
 
@@ -96,15 +100,14 @@ describe('files_sharing: Expiry date', () => {
 
 	/**
 	 * Prepare directory, login and share to bob
+	 *
+	 * @param name The directory name
 	 */
-	function prepareDirectory(): string {
-		const name = randomBytes(4)
-			.toString('hex')
+	function prepareDirectory(name: string) {
 		cy.mkdir(alice, `/${name}`)
 		cy.login(alice)
 		cy.visit('/apps/files')
 		createShare(name, bob.userId)
-		return name
 	}
 
 	/**

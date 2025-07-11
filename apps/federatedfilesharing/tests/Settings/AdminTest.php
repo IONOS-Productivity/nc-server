@@ -17,7 +17,7 @@ use Test\TestCase;
 class AdminTest extends TestCase {
 	/** @var Admin */
 	private $admin;
-	/** @var \OCA\FederatedFileSharing\FederatedShareProvider */
+	/** @var FederatedShareProvider */
 	private $federatedShareProvider;
 	/** @var IConfig|\PHPUnit\Framework\MockObject\MockObject */
 	private $gsConfig;
@@ -58,7 +58,7 @@ class AdminTest extends TestCase {
 	 * @dataProvider sharingStateProvider
 	 * @param bool $state
 	 */
-	public function testGetForm($state) {
+	public function testGetForm($state): void {
 		$this->federatedShareProvider
 			->expects($this->once())
 			->method('isOutgoingServer2serverShareEnabled')
@@ -91,10 +91,14 @@ class AdminTest extends TestCase {
 			->expects($this->once())
 			->method('isIncomingServer2serverGroupShareEnabled')
 			->willReturn($state);
+		$this->federatedShareProvider
+			->expects($this->once())
+			->method('isFederatedTrustedShareAutoAccept')
+			->willReturn($state);
 		$this->gsConfig->expects($this->once())->method('onlyInternalFederation')
 			->willReturn($state);
 
-		$this->initialState->expects($this->exactly(9))
+		$this->initialState->expects($this->exactly(10))
 			->method('provideInitialState')
 			->withConsecutive(
 				['internalOnly', $state],
@@ -106,17 +110,18 @@ class AdminTest extends TestCase {
 				['incomingServer2serverGroupShareEnabled', $state],
 				['lookupServerEnabled', $state],
 				['lookupServerUploadEnabled', $state],
+				['federatedTrustedShareAutoAccept', $state]
 			);
 
 		$expected = new TemplateResponse('federatedfilesharing', 'settings-admin', [], '');
 		$this->assertEquals($expected, $this->admin->getForm());
 	}
 
-	public function testGetSection() {
+	public function testGetSection(): void {
 		$this->assertSame('sharing', $this->admin->getSection());
 	}
 
-	public function testGetPriority() {
+	public function testGetPriority(): void {
 		$this->assertSame(20, $this->admin->getPriority());
 	}
 }

@@ -214,14 +214,13 @@ OC.L10N.register(
     "Send reminder notifications to calendar sharees as well" : "Pošiljanje opomnikov tudi naročnikom koledarja.",
     "Reminders are always sent to organizers and attendees." : "Opomniki bodo vedno poslani organizatorjem in udeležencem.",
     "Enable notifications for events via push" : "Omogoči potisna obvestila za dogodke",
+    "Cancel" : "Prekliči",
+    "Import" : "Uvozi",
+    "Error while saving settings" : "Prišlo je do napake med shranjevanjem nastavitev",
     "There was an error updating your attendance status." : "Prišlo je do napake med posodabljanjem vaše udeležbe.",
     "Please contact the organizer directly." : "Z organizatorjem stopite neposredno v stik.",
     "Are you accepting the invitation?" : "Ali želite sprejeti povabilo?",
     "Tentative" : "Začasno",
-    "Your attendance was updated successfully." : "Vaša prisotnost je uspešno posodobljena.",
-    "Time:" : "Čas:",
-    "Could not open file" : "Datoteke ni mogoče odpreti",
-    "Invalid chunk name" : "Neveljavno ime dela",
-    "Could not rename part file assembled from chunks" : "Ni mogoče preimenovati delne datoteke, združene iz delov."
+    "Your attendance was updated successfully." : "Vaša prisotnost je uspešno posodobljena."
 },
 "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);");
