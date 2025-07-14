@@ -33,6 +33,15 @@ function skipIfViewerDisabled(this: Mocha.Context): void {
 		})
 }
 
+/**
+ * Check a file was not downloaded
+ * @param filename The expected filename
+ */
+function fileNotDownloaded(filename: string): void {
+	const downloadsFolder = Cypress.config('downloadsFolder')
+	cy.readFile(join(downloadsFolder, filename)).should('not.exist')
+}
+
 describe('Check router query flags:', function() {
 	let user: User
 	let imageId: number
@@ -49,6 +58,50 @@ describe('Check router query flags:', function() {
 			cy.uploadContent(user, new Blob([]), 'application/zstd', '/archive.zst')
 				.then((response) => { archiveId = Number.parseInt(response.headers['oc-fileid']) })
 			cy.login(user)
+		})
+	})
+
+	describe('"opendetails"', () => {
+		it('open details for known file type', () => {
+			cy.visit(`/apps/files/files/${imageId}?opendetails`)
+
+			// see sidebar
+			sidebarIsOpen('image.jpg')
+
+			// but no viewer
+			cy.findByRole('dialog', { name: 'image.jpg' })
+				.should('not.exist')
+
+			// and no download
+			fileNotDownloaded('image.jpg')
+		})
+
+		it('open details for unknown file type', () => {
+			cy.visit(`/apps/files/files/${archiveId}?opendetails`)
+
+			// see sidebar
+			sidebarIsOpen('archive.zst')
+
+			// but no viewer
+			cy.findByRole('dialog', { name: 'archive.zst' })
+				.should('not.exist')
+
+			// and no download
+			fileNotDownloaded('archive.zst')
+		})
+
+		it('open details for folder', () => {
+			cy.visit(`/apps/files/files/${folderId}?opendetails`)
+
+			// see sidebar
+			sidebarIsOpen('folder')
+
+			// but no viewer
+			cy.findByRole('dialog', { name: 'folder' })
+				.should('not.exist')
+
+			// and no download
+			fileNotDownloaded('folder')
 		})
 	})
 
@@ -90,8 +143,16 @@ describe('Check router query flags:', function() {
 		it('does not open folders but shows details', () => {
 			cy.visit(`/apps/files/files/${folderId}?openfile`)
 
+			// See the URL was replaced
+			cy.url()
+				.should('match', /[?&]opendetails(&|=|$)/)
+				.and('not.match', /openfile/)
+
 			// See the sidebar is correctly opened
-			sidebarIsOpen('folder')
+			cy.get('[data-cy-sidebar]')
+				.should('be.visible')
+				.findByRole('heading', { name: 'folder' })
+				.should('be.visible')
 
 			// see the folder was not changed
 			getRowForFileId(imageId).should('exist')
@@ -100,8 +161,16 @@ describe('Check router query flags:', function() {
 		it('does not open unknown file types but shows details', () => {
 			cy.visit(`/apps/files/files/${archiveId}?openfile`)
 
+			// See the URL was replaced
+			cy.url()
+				.should('match', /[?&]opendetails(&|=|$)/)
+				.and('not.match', /openfile/)
+
 			// See the sidebar is correctly opened
-			sidebarIsOpen('archive.zst')
+			cy.get('[data-cy-sidebar]')
+				.should('be.visible')
+				.findByRole('heading', { name: 'archive.zst' })
+				.should('be.visible')
 
 			// See no file was downloaded
 			const downloadsFolder = Cypress.config('downloadsFolder')

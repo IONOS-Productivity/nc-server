@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 <template>
-	<NcAppNavigationItem :aria-label="t('files', 'Storage informations')"
+	<NcAppNavigationItem :aria-label="t('files', 'Storage information')"
 		:class="{ 'app-navigation-entry__settings-quota--not-unlimited': storageStats.quota >= 0}"
 		:loading="loadingStorageStats"
 		:name="storageStatsTitle"
@@ -135,14 +135,14 @@ export default {
 		padding-bottom: 32px;
 	}
 
-	&--not-unlimited::v-deep .app-navigation-entry__name {
+	&--not-unlimited :deep(.app-navigation-entry__name) {
 		padding-bottom: 50px;
 	}
 
 	progress {
 		position: absolute;
 		bottom: 46px;
-		margin-left: 14px;
+		margin-inline-start: 14px;
 		width: calc(100% - 44px);
 		box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15) inset;
 	}
@@ -150,7 +150,7 @@ export default {
 	.quota-text {
 		position: absolute;
 		bottom: 16px;
-		margin-left: 14px;
+		margin-inline-start: 14px;
 
 		.quota-text-bold {
 			font-weight: 500;

@@ -296,8 +296,8 @@ export default defineComponent({
 					path: this.destination,
 					note: this.note,
 
-					password: this.password || undefined,
-					expireDate: expireDate || undefined,
+					password: this.password || '',
+					expireDate: expireDate || '',
 
 					// Empty string
 					shareWith: '',
@@ -456,7 +456,7 @@ export default defineComponent({
 		width: auto;
 		margin-inline: 12px;
 		span.dialog__actions-separator {
-			margin-left: auto;
+			margin-inline-start: auto;
 		}
 	}
 

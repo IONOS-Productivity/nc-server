@@ -26,8 +26,9 @@
 
 			<!-- clipboard -->
 			<NcActions v-if="share && (!isEmailShareType || isFileRequest) && share.token" ref="copyButton" class="sharing-entry__copy">
-				<NcActionButton :title="copyLinkTooltip"
-					:aria-label="copyLinkTooltip"
+				<NcActionButton :aria-label="copyLinkTooltip"
+					:title="copyLinkTooltip"
+					:href="shareLink"
 					@click.prevent="copyLink">
 					<template #icon>
 						<CheckIcon v-if="copied && copySuccess"
@@ -101,7 +102,8 @@
 				type="date"
 				:min="dateTomorrow"
 				:max="maxExpirationDateEnforced"
-				@change="expirationDateChanged($event)">
+				@update:model-value="onExpirationChange"
+				@change="expirationDateChanged">
 				<template #icon>
 					<IconCalendarBlank :size="20" />
 				</template>
@@ -159,8 +161,8 @@
 					:share="share" />
 
 				<!-- external legacy sharing via url (social...) -->
-				<NcActionLink v-for="({ icon, url, name }, index) in externalLegacyLinkActions"
-					:key="index"
+				<NcActionLink v-for="({ icon, url, name }, actionIndex) in externalLegacyLinkActions"
+					:key="actionIndex"
 					:href="url(shareLink)"
 					:icon="icon"
 					target="_blank">
@@ -216,11 +218,11 @@
 
 <script>
 import { emit } from '@nextcloud/event-bus'
-import { generateUrl } from '@nextcloud/router'
+import { generateUrl, getBaseUrl } from '@nextcloud/router'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { ShareType } from '@nextcloud/sharing'
-import Vue from 'vue'
 import VueQrcode from '@chenfengyuan/vue-qrcode'
+import moment from '@nextcloud/moment'
 
 import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
 import NcActionCheckbox from '@nextcloud/vue/dist/Components/NcActionCheckbox.js'
@@ -356,11 +358,17 @@ export default {
 					}
 					return this.share.shareWith
 				}
+
+				if (this.index === null) {
+					return t('files_sharing', 'Share link')
+				}
 			}
-			if (this.index > 1) {
+
+			if (this.index >= 1) {
 				return t('files_sharing', 'Share link ({index})', { index: this.index })
 			}
-			return t('files_sharing', 'Share link')
+
+			return t('files_sharing', 'Create public link')
 		},
 
 		/**
@@ -375,23 +383,6 @@ export default {
 			}
 			return null
 		},
-		/**
-		 * Is the current share password protected ?
-		 *
-		 * @return {boolean}
-		 */
-		isPasswordProtected: {
-			get() {
-				return this.config.enforcePasswordForPublicLink
-					|| !!this.share.password
-			},
-			async set(enabled) {
-				// TODO: directly save after generation to make sure the share is always protected
-				Vue.set(this.share, 'password', enabled ? await GeneratePassword(true) : '')
-				Vue.set(this.share, 'newPassword', this.share.password)
-			},
-		},
-
 		passwordExpirationTime() {
 			if (this.share.passwordExpirationTime === null) {
 				return null
@@ -526,7 +517,7 @@ export default {
 		 * @return {string}
 		 */
 		shareLink() {
-			return window.location.protocol + '//' + window.location.host + generateUrl('/s/') + this.share.token
+			return generateUrl('/s/{token}', { token: this.share.token }, { baseURL: getBaseUrl() })
 		},
 
 		/**
@@ -876,9 +867,9 @@ export default {
 		},
 
 		expirationDateChanged(event) {
-			const date = event.target.value
-			this.onExpirationChange(date)
-			this.defaultExpirationDateEnabled = !!date
+			const value = event?.target?.value
+			const isValid = !!value && !isNaN(new Date(value).getTime())
+			this.defaultExpirationDateEnabled = isValid
 		},
 
 		/**
@@ -905,7 +896,7 @@ export default {
 
 	&__summary {
 		padding: 8px;
-		padding-left: 10px;
+		padding-inline-start: 10px;
 		display: flex;
 		justify-content: space-between;
 		flex: 1 0;
@@ -934,7 +925,7 @@ export default {
 		}
 	}
 
-	::v-deep .avatar-link-share {
+	:deep(.avatar-link-share) {
 		background-color: var(--color-primary-element);
 	}
 
@@ -947,7 +938,7 @@ export default {
 		height: 44px;
 		margin: 0;
 		padding: 14px;
-		margin-left: auto;
+		margin-inline-start: auto;
 	}
 
 	// put menus to the left
@@ -956,7 +947,7 @@ export default {
 
 		~.action-item,
 		~.sharing-entry__loading {
-			margin-left: 0;
+			margin-inline-start: 0;
 		}
 	}
 

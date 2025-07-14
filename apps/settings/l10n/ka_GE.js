@@ -104,6 +104,7 @@ OC.L10N.register(
     "Level" : "დონე",
     "Actions" : "მოქმედებები",
     "No apps found for your version" : "აპლიკაციები თქვენი ვერსიისთვის ვერ იქნა ნაპოვნი",
+    "Group name" : "ჯგუფის სახელი",
     "Daemon" : "დაემონი",
     "Display Name" : "დისპლეი სახელი",
     "Learn more" : "შეიტყვეთ მეტი",
@@ -142,6 +143,7 @@ OC.L10N.register(
     "Create new app password" : "ახალი აპლიკაციის პაროლის შექმნა",
     "Login" : "ლოგინი",
     "Password" : "პაროლი",
+    "Password confirmation is required" : "საჭიროა პაროლის დამოწმება",
     "Server-side encryption" : "სერვერული-მხარის შიფრაცია",
     "Server-side encryption makes it possible to encrypt files which are uploaded to this server. This comes with limitations like a performance penalty, so enable this only if needed." : "სერვერული-მხარის შიფრაცია იძლევა სერვერზე ატვირთული ფაილების შიფრაციის საშუალებას. ეს ფუნქცია ლიმიტს აწესებს მოქმედებაზე, ასე რომ გააქტიურედ მხოლოდ აუცილებლობისას.",
     "Enable server-side encryption" : "სერვერული-მხარის შიფრაციის ამოქმედება",
@@ -185,7 +187,6 @@ OC.L10N.register(
     "Unnamed device" : "უსახელო მოწყობილობა",
     "As admin you can fine-tune the sharing behavior. Please see the documentation for more information." : "როგორც ადმინისტრატორს შეგიძლიათ გაზიარების ქცევის კორექტირება. დამატებითი ინფორმაციისთვის იხილეთ დოკუმენტაცია.",
     "Admins" : "ადმინისტრატორები",
-    "Group name" : "ჯგუფის სახელი",
     "Sending…" : "იგზავნება…",
     "Email sent" : "ელ-წერილი გაიგზავნა",
     "Location" : "ადგილმდებარეობა",
@@ -223,9 +224,6 @@ OC.L10N.register(
     "Developed by the {communityopen}Nextcloud community{linkclose}, the {githubopen}source code{linkclose} is licensed under the {licenseopen}AGPL{linkclose}." : "განავითარა {communityopen}Nextcloud საზოგადოებამ{linkclose}, {githubopen}კოდი{linkclose} is ლიცენზირებულია {licenseopen}AGPL ლიცენზიით{linkclose}.",
     "Like our Facebook page" : "მოიწონეთ ჩვენი Facebook გვერდი",
     "Check out our blog" : "იხილეთ ჩვენი ბლოგი",
-    "Subscribe to our newsletter" : "გამოიწერეთ ჩვენი სიახლეები",
-    "Username" : "მომხმარებლის სახელი",
-    "User backend" : "მომხმარებელის ბექენდი",
-    "Follow us on Twitter" : "გამოგვყევით Twitter-ზე"
+    "Subscribe to our newsletter" : "გამოიწერეთ ჩვენი სიახლეები"
 },
 "nplurals=2; plural=(n!=1);");

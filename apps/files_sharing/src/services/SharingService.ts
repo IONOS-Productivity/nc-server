@@ -2,22 +2,20 @@
  * SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/// <reference types="@nextcloud/typings" />
 // TODO: Fix this instead of disabling ESLint!!!
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { AxiosPromise } from '@nextcloud/axios'
+import type { ContentsWithRoot } from '@nextcloud/files'
 import type { OCSResponse } from '@nextcloud/typings/ocs'
 import type { ShareAttribute } from '../sharing'
 
-import { Folder, File, type ContentsWithRoot, Permission } from '@nextcloud/files'
-import { generateOcsUrl, generateRemoteUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
+import { Folder, File, Permission, davRemoteURL, davRootPath } from '@nextcloud/files'
+import { generateOcsUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 
 import logger from './logger'
-
-export const rootPath = `/files/${getCurrentUser()?.uid}`
 
 const headers = {
 	'Content-Type': 'application/json',
@@ -37,6 +35,10 @@ const ocsEntryToNode = async function(ocsEntry: any): Promise<Folder | File | nu
 			// different naming for remote shares
 			ocsEntry.item_mtime = ocsEntry.mtime
 			ocsEntry.file_target = ocsEntry.file_target || ocsEntry.mountpoint
+
+			if (ocsEntry.file_target.includes('TemporaryMountPointName')) {
+				ocsEntry.file_target = ocsEntry.name
+			}
 
 			// If the share is not accepted yet we don't know which permissions it will have
 			if (!ocsEntry.accepted) {
@@ -61,7 +63,7 @@ const ocsEntryToNode = async function(ocsEntry: any): Promise<Folder | File | nu
 
 		// Generate path and strip double slashes
 		const path = ocsEntry.path || ocsEntry.file_target || ocsEntry.name
-		const source = generateRemoteUrl(`dav/${rootPath}/${path}`.replaceAll(/\/\//gm, '/'))
+		const source = `${davRemoteURL}${davRootPath}/${path.replace(/^\/+/, '')}`
 
 		let mtime = ocsEntry.item_mtime ? new Date((ocsEntry.item_mtime) * 1000) : undefined
 		// Prefer share time if more recent than item mtime
@@ -88,10 +90,11 @@ const ocsEntryToNode = async function(ocsEntry: any): Promise<Folder | File | nu
 			mtime,
 			size: ocsEntry?.item_size,
 			permissions: ocsEntry?.item_permissions || ocsEntry?.permissions,
-			root: rootPath,
+			root: davRootPath,
 			attributes: {
 				...ocsEntry,
 				'has-preview': hasPreview,
+				'hide-download': ocsEntry?.hide_download === 1,
 				// Also check the sharingStatusAction.ts code
 				'owner-id': ocsEntry?.uid_owner,
 				'owner-display-name': ocsEntry?.displayname_owner,
@@ -233,7 +236,7 @@ export const getContents = async (sharedWithYou = true, sharedWithOthers = true,
 	return {
 		folder: new Folder({
 			id: 0,
-			source: generateRemoteUrl('dav' + rootPath),
+			source: `${davRemoteURL}${davRootPath}`,
 			owner: getCurrentUser()?.uid || null,
 		}),
 		contents,

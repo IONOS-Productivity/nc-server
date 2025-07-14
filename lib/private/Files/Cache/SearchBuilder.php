@@ -108,7 +108,7 @@ class SearchBuilder {
 	public function searchOperatorArrayToDBExprArray(
 		IQueryBuilder $builder,
 		array $operators,
-		?IMetadataQuery $metadataQuery = null
+		?IMetadataQuery $metadataQuery = null,
 	) {
 		return array_filter(array_map(function ($operator) use ($builder, $metadataQuery) {
 			return $this->searchOperatorToDBExpr($builder, $operator, $metadataQuery);
@@ -118,7 +118,7 @@ class SearchBuilder {
 	public function searchOperatorToDBExpr(
 		IQueryBuilder $builder,
 		ISearchOperator $operator,
-		?IMetadataQuery $metadataQuery = null
+		?IMetadataQuery $metadataQuery = null,
 	) {
 		$expr = $builder->expr();
 
@@ -154,7 +154,7 @@ class SearchBuilder {
 		IQueryBuilder $builder,
 		ISearchComparison $comparison,
 		array $operatorMap,
-		?IMetadataQuery $metadataQuery = null
+		?IMetadataQuery $metadataQuery = null,
 	) {
 		if ($comparison->getExtra()) {
 			[$field, $value, $type, $paramType] = $this->getExtraOperatorField($comparison, $metadataQuery);
@@ -295,7 +295,7 @@ class SearchBuilder {
 			throw new \InvalidArgumentException('Cannot search non indexed metadata key');
 		}
 
-		switch($operator->getExtra()) {
+		switch ($operator->getExtra()) {
 			case IMetadataQuery::EXTRA:
 				$metadataQuery->joinIndex($field); // join index table if not joined yet
 				$field = $metadataQuery->getMetadataValueField($field);

@@ -10,14 +10,16 @@ use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IBinaryFinder;
 use OCP\IConfig;
 use OCP\IL10N;
-use PHPUnit\Framework\MockObject\MockObject;
+use OCP\Server;
 use Test\TestCase;
 
 class MailTest extends TestCase {
-
-	private Mail $admin;
-	private IConfig&MockObject $config;
-	private IL10N&MockObject $l10n;
+	/** @var Mail */
+	private $admin;
+	/** @var IConfig */
+	private $config;
+	/** @var IL10N */
+	private $l10n;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -30,22 +32,7 @@ class MailTest extends TestCase {
 		);
 	}
 
-	public static function dataGetForm(): array {
-		return [
-			[true],
-			[false],
-		];
-	}
-
-	/** @dataProvider dataGetForm */
-	public function testGetForm(bool $sendmail) {
-		$finder = $this->createMock(IBinaryFinder::class);
-		$finder->expects(self::once())
-			->method('findBinaryPath')
-			->with('sendmail')
-			->willReturn($sendmail ? '/usr/bin/sendmail': false);
-		$this->overwriteService(IBinaryFinder::class, $finder);
-
+	public function testGetForm(): void {
 		$this->config
 			->expects($this->any())
 			->method('getSystemValue')
@@ -66,7 +53,7 @@ class MailTest extends TestCase {
 			'settings',
 			'settings/admin/additional-mail',
 			[
-				'sendmail_is_available' => $sendmail,
+				'sendmail_is_available' => (bool)Server::get(IBinaryFinder::class)->findBinaryPath('sendmail'),
 				'mail_domain' => 'mx.nextcloud.com',
 				'mail_from_address' => 'no-reply@nextcloud.com',
 				'mail_smtpmode' => 'smtp',
@@ -84,11 +71,11 @@ class MailTest extends TestCase {
 		$this->assertEquals($expected, $this->admin->getForm());
 	}
 
-	public function testGetSection() {
+	public function testGetSection(): void {
 		$this->assertSame('server', $this->admin->getSection());
 	}
 
-	public function testGetPriority() {
+	public function testGetPriority(): void {
 		$this->assertSame(10, $this->admin->getPriority());
 	}
 }

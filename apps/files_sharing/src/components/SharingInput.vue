@@ -5,10 +5,13 @@
 
 <template>
 	<div class="sharing-search">
-		<label for="sharing-search-input">{{ t('files_sharing', 'Search for share recipients') }}</label>
+		<label class="hidden-visually" :for="shareInputId">
+			{{ isExternal ? t('files_sharing', 'Enter external recipients')
+				: t('files_sharing', 'Search for internal recipients') }}
+		</label>
 		<NcSelect ref="select"
 			v-model="value"
-			input-id="sharing-search-input"
+			:input-id="shareInputId"
 			class="sharing-search__input"
 			:disabled="!canReshare"
 			:loading="loading"
@@ -17,10 +20,11 @@
 			:clear-search-on-blur="() => false"
 			:user-select="true"
 			:options="options"
+			:label-outside="true"
 			@search="asyncFind"
 			@option:selected="onSelected">
 			<template #no-options="{ search }">
-				{{ search ? noResultText : t('files_sharing', 'No recommendations. Start typing.') }}
+				{{ search ? noResultText : placeholder }}
 			</template>
 		</NcSelect>
 	</div>
@@ -73,6 +77,20 @@ export default {
 			type: Boolean,
 			required: true,
 		},
+		isExternal: {
+			type: Boolean,
+			default: false,
+		},
+		placeholder: {
+			type: String,
+			default: '',
+		},
+	},
+
+	setup() {
+		return {
+			shareInputId: `share-input-${Math.random().toString(36).slice(2, 7)}`,
+		}
 	},
 
 	data() {
@@ -105,6 +123,10 @@ export default {
 			if (!this.canReshare) {
 				return t('files_sharing', 'Resharing is not allowed')
 			}
+			if (this.placeholder) {
+				return this.placeholder
+			}
+
 			// We can always search with email addresses for users too
 			if (!allowRemoteSharing) {
 				return t('files_sharing', 'Name or email …')
@@ -133,7 +155,10 @@ export default {
 	},
 
 	mounted() {
-		this.getRecommendations()
+		if (!this.isExternal) {
+			// We can only recommend users, groups etc for internal shares
+			this.getRecommendations()
+		}
 	},
 
 	methods: {
@@ -167,19 +192,29 @@ export default {
 				lookup = true
 			}
 
-			const shareType = [
-				ShareType.User,
-				ShareType.Group,
-				ShareType.Remote,
-				ShareType.RemoteGroup,
-				ShareType.Team,
-				ShareType.Room,
-				ShareType.Guest,
-				ShareType.Deck,
-				ShareType.ScienceMesh,
-			]
+			let shareType = []
 
-			if (getCapabilities().files_sharing.public.enabled === true) {
+			const remoteTypes = [ShareType.Remote, ShareType.RemoteGroup]
+
+			if (this.isExternal && !this.config.showFederatedSharesAsInternal) {
+				shareType.push(...remoteTypes)
+			} else {
+				shareType = shareType.concat([
+					ShareType.User,
+					ShareType.Group,
+					ShareType.Team,
+					ShareType.Room,
+					ShareType.Guest,
+					ShareType.Deck,
+					ShareType.ScienceMesh,
+				])
+
+				if (this.config.showFederatedSharesAsInternal) {
+					shareType.push(...remoteTypes)
+				}
+			}
+
+			if (getCapabilities().files_sharing.public.enabled === true && this.isExternal) {
 				shareType.push(ShareType.Email)
 			}
 

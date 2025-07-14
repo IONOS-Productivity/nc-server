@@ -104,6 +104,7 @@ OC.L10N.register(
     "Level" : "Nivel",
     "Actions" : "Acciones",
     "No apps found for your version" : "No se encontraron aplicaciones para tu versión",
+    "Group name" : "Nombre del grupo",
     "Daemon" : "Demonio",
     "Type" : "Tipo",
     "Display Name" : "Nombre a desplegar",
@@ -144,6 +145,7 @@ OC.L10N.register(
     "Create new app password" : "Crear una nueva contraseña de aplicación",
     "Login" : "Iniciar sesión",
     "Password" : "Contraseña",
+    "Password confirmation is required" : "Se requiere la confirmación de la contraseña",
     "Server-side encryption" : "Encripción del lado del servidor",
     "Server-side encryption makes it possible to encrypt files which are uploaded to this server. This comes with limitations like a performance penalty, so enable this only if needed." : "La encripción del lado del servidor hace posible encriptar archivos que serán cargados a este servidor. Esto trae consigo algunas limitaciónes como penalizaciones en el desemeño, asi que habilítalo sólo si es necesario. ",
     "Enable server-side encryption" : "Habilitar encripción del lado del servidor",
@@ -186,7 +188,6 @@ OC.L10N.register(
     "Unnamed device" : "Dispositivo sin nombre",
     "As admin you can fine-tune the sharing behavior. Please see the documentation for more information." : "Como administrador, puedes hacer ajustes finos al comportamiento de compartir. Por favor consulta la documentación para más información. ",
     "Admins" : "Administradores",
-    "Group name" : "Nombre del grupo",
     "Sending…" : "Enviando...",
     "Email sent" : "Correo electrónico enviado",
     "Location" : "Ubicación",
@@ -224,9 +225,6 @@ OC.L10N.register(
     "Developed by the {communityopen}Nextcloud community{linkclose}, the {githubopen}source code{linkclose} is licensed under the {licenseopen}AGPL{linkclose}." : "Desarrollado por la  {communityopen}comunidad Nextcloud {linkclose}, el {githubopen}código fuente {linkclose} está licenciado bajo  {licenseopen}AGPL{linkclose}.",
     "Like our Facebook page" : "Da un Like a nuestra página de Facebook",
     "Check out our blog" : "Visita nuestro blog",
-    "Subscribe to our newsletter" : "Suscribete a nuestro boletín",
-    "Username" : "Usuario",
-    "User backend" : "Backend del usuario",
-    "Follow us on Twitter" : "Síguenos en Twitter"
+    "Subscribe to our newsletter" : "Suscribete a nuestro boletín"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

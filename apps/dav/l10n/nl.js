@@ -179,14 +179,13 @@ OC.L10N.register(
     "Send notifications for events" : "Versturen meldingen voor afspraken",
     "Notifications are sent via background jobs, so these must occur often enough." : "Meldingen worden via achtergrondtaken verstuurd, dus die moeten vaak genoeg plaatsvinden.",
     "Enable notifications for events via push" : "Inschakelen push-melding voor afspraken",
+    "Cancel" : "Annuleren",
+    "Import" : "Import",
+    "Error while saving settings" : "Probleem tijdens het opslaan van instellingen",
     "There was an error updating your attendance status." : "Er trad een fout op bij het bijwerken van je deelnamestatus.",
     "Please contact the organizer directly." : "Neem rechtstreeks contact op met de organisator.",
     "Are you accepting the invitation?" : "Neem je de uitnodiging aan?",
     "Tentative" : "Onder voorbehoud",
-    "Your attendance was updated successfully." : "Je deelname is succesvol bijgewerkt.",
-    "Time:" : "Tijd:",
-    "Could not open file" : "Kan het bestand niet openen",
-    "Invalid chunk name" : "Ongeldige chunknaam",
-    "Could not rename part file assembled from chunks" : "Kon een bestandsdeel dat uit chunks is samengesteld niet hernoemen"
+    "Your attendance was updated successfully." : "Je deelname is succesvol bijgewerkt."
 },
 "nplurals=2; plural=(n != 1);");

@@ -11,14 +11,18 @@ namespace OC\SystemTag;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUser;
+use OCP\IUserSession;
 use OCP\SystemTag\ISystemTag;
 use OCP\SystemTag\ISystemTagManager;
 use OCP\SystemTag\ManagerEvent;
 use OCP\SystemTag\TagAlreadyExistsException;
+use OCP\SystemTag\TagCreationForbiddenException;
 use OCP\SystemTag\TagNotFoundException;
+use OCP\SystemTag\TagUpdateForbiddenException;
 
 /**
  * Manager class for system tags
@@ -36,6 +40,8 @@ class SystemTagManager implements ISystemTagManager {
 		protected IDBConnection $connection,
 		protected IGroupManager $groupManager,
 		protected IEventDispatcher $dispatcher,
+		private IUserSession $userSession,
+		private IAppConfig $appConfig,
 	) {
 		$query = $this->connection->getQueryBuilder();
 		$this->selectTagQuery = $query->select('*')
@@ -45,9 +51,6 @@ class SystemTagManager implements ISystemTagManager {
 			->andWhere($query->expr()->eq('editable', $query->createParameter('editable')));
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function getTagsByIds($tagIds, ?IUser $user = null): array {
 		if (!\is_array($tagIds)) {
 			$tagIds = [$tagIds];
@@ -92,9 +95,6 @@ class SystemTagManager implements ISystemTagManager {
 		return $tags;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function getAllTags($visibilityFilter = null, $nameSearchPattern = null): array {
 		$tags = [];
 
@@ -110,7 +110,7 @@ class SystemTagManager implements ISystemTagManager {
 			$query->andWhere(
 				$query->expr()->like(
 					'name',
-					$query->createNamedParameter('%' . $this->connection->escapeLikeParameter($nameSearchPattern). '%')
+					$query->createNamedParameter('%' . $this->connection->escapeLikeParameter($nameSearchPattern) . '%')
 				)
 			);
 		}
@@ -130,9 +130,6 @@ class SystemTagManager implements ISystemTagManager {
 		return $tags;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function getTag(string $tagName, bool $userVisible, bool $userAssignable): ISystemTag {
 		// Length of name column is 64
 		$truncatedTagName = substr($tagName, 0, 64);
@@ -146,18 +143,19 @@ class SystemTagManager implements ISystemTagManager {
 		$result->closeCursor();
 		if (!$row) {
 			throw new TagNotFoundException(
-				'Tag ("' . $truncatedTagName . '", '. $userVisible . ', ' . $userAssignable . ') does not exist'
+				'Tag ("' . $truncatedTagName . '", ' . $userVisible . ', ' . $userAssignable . ') does not exist'
 			);
 		}
 
 		return $this->createSystemTagFromRow($row);
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function createTag(string $tagName, bool $userVisible, bool $userAssignable): ISystemTag {
-		$tagName = trim($tagName);
+		$user = $this->userSession->getUser();
+		if (!$this->canUserCreateTag($user)) {
+			throw new TagCreationForbiddenException();
+		}
+
 		// Length of name column is 64
 		$truncatedTagName = substr($tagName, 0, 64);
 		$query = $this->connection->getQueryBuilder();
@@ -166,13 +164,14 @@ class SystemTagManager implements ISystemTagManager {
 				'name' => $query->createNamedParameter($truncatedTagName),
 				'visibility' => $query->createNamedParameter($userVisible ? 1 : 0),
 				'editable' => $query->createNamedParameter($userAssignable ? 1 : 0),
+				'etag' => $query->createNamedParameter(md5((string)time())),
 			]);
 
 		try {
 			$query->execute();
 		} catch (UniqueConstraintViolationException $e) {
 			throw new TagAlreadyExistsException(
-				'Tag ("' . $truncatedTagName . '", '. $userVisible . ', ' . $userAssignable . ') already exists',
+				'Tag ("' . $truncatedTagName . '", ' . $userVisible . ', ' . $userAssignable . ') already exists',
 				0,
 				$e
 			);
@@ -194,14 +193,12 @@ class SystemTagManager implements ISystemTagManager {
 		return $tag;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function updateTag(
 		string $tagId,
 		string $newName,
 		bool $userVisible,
 		bool $userAssignable,
+		?string $color,
 	): void {
 		try {
 			$tags = $this->getTagsByIds($tagId);
@@ -209,6 +206,11 @@ class SystemTagManager implements ISystemTagManager {
 			throw new TagNotFoundException(
 				'Tag does not exist', 0, null, [$tagId]
 			);
+		}
+
+		$user = $this->userSession->getUser();
+		if (!$this->canUserUpdateTag($user)) {
+			throw new TagUpdateForbiddenException();
 		}
 
 		$beforeUpdate = array_shift($tags);
@@ -219,7 +221,9 @@ class SystemTagManager implements ISystemTagManager {
 			$tagId,
 			$truncatedNewName,
 			$userVisible,
-			$userAssignable
+			$userAssignable,
+			$beforeUpdate->getETag(),
+			$color
 		);
 
 		$query = $this->connection->getQueryBuilder();
@@ -227,11 +231,13 @@ class SystemTagManager implements ISystemTagManager {
 			->set('name', $query->createParameter('name'))
 			->set('visibility', $query->createParameter('visibility'))
 			->set('editable', $query->createParameter('editable'))
+			->set('color', $query->createParameter('color'))
 			->where($query->expr()->eq('id', $query->createParameter('tagid')))
 			->setParameter('name', $truncatedNewName)
 			->setParameter('visibility', $userVisible ? 1 : 0)
 			->setParameter('editable', $userAssignable ? 1 : 0)
-			->setParameter('tagid', $tagId);
+			->setParameter('tagid', $tagId)
+			->setParameter('color', $color);
 
 		try {
 			if ($query->execute() === 0) {
@@ -241,7 +247,7 @@ class SystemTagManager implements ISystemTagManager {
 			}
 		} catch (UniqueConstraintViolationException $e) {
 			throw new TagAlreadyExistsException(
-				'Tag ("' . $newName . '", '. $userVisible . ', ' . $userAssignable . ') already exists',
+				'Tag ("' . $newName . '", ' . $userVisible . ', ' . $userAssignable . ') already exists',
 				0,
 				$e
 			);
@@ -252,9 +258,6 @@ class SystemTagManager implements ISystemTagManager {
 		));
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function deleteTags($tagIds): void {
 		if (!\is_array($tagIds)) {
 			$tagIds = [$tagIds];
@@ -304,10 +307,11 @@ class SystemTagManager implements ISystemTagManager {
 		}
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function canUserAssignTag(ISystemTag $tag, IUser $user): bool {
+	public function canUserAssignTag(ISystemTag $tag, ?IUser $user): bool {
+		if ($user === null) {
+			return false;
+		}
+
 		// early check to avoid unneeded group lookups
 		if ($tag->isUserAssignable() && $tag->isUserVisible()) {
 			return true;
@@ -332,12 +336,37 @@ class SystemTagManager implements ISystemTagManager {
 		return false;
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function canUserSeeTag(ISystemTag $tag, IUser $user): bool {
+	public function canUserCreateTag(?IUser $user): bool {
+		if ($user === null) {
+			// If no user given, allows only calls from CLI
+			return \OC::$CLI;
+		}
+
+		if ($this->appConfig->getValueBool('systemtags', 'restrict_creation_to_admin', false) === false) {
+			return true;
+		}
+
+		return $this->groupManager->isAdmin($user->getUID());
+	}
+
+	public function canUserUpdateTag(?IUser $user): bool {
+		// We currently have no different permissions for updating tags than for creating them
+		return $this->canUserCreateTag($user);
+	}
+
+	public function canUserSeeTag(ISystemTag $tag, ?IUser $user): bool {
+		// If no user, then we only show public tags
+		if (!$user && $tag->getAccessLevel() === ISystemTag::ACCESS_LEVEL_PUBLIC) {
+			return true;
+		}
+
 		if ($tag->isUserVisible()) {
 			return true;
+		}
+
+		// if not returned yet, and user is not logged in, then the tag is not visible
+		if ($user === null) {
+			return false;
 		}
 
 		if ($this->groupManager->isAdmin($user->getUID())) {
@@ -348,12 +377,9 @@ class SystemTagManager implements ISystemTagManager {
 	}
 
 	private function createSystemTagFromRow($row): SystemTag {
-		return new SystemTag((string)$row['id'], $row['name'], (bool)$row['visibility'], (bool)$row['editable']);
+		return new SystemTag((string)$row['id'], $row['name'], (bool)$row['visibility'], (bool)$row['editable'], $row['etag'], $row['color']);
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function setTagGroups(ISystemTag $tag, array $groupIds): void {
 		// delete relationships first
 		$this->connection->beginTransaction();
@@ -385,9 +411,6 @@ class SystemTagManager implements ISystemTagManager {
 		}
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	public function getTagGroups(ISystemTag $tag): array {
 		$groupIds = [];
 		$query = $this->connection->getQueryBuilder();
@@ -405,4 +428,5 @@ class SystemTagManager implements ISystemTagManager {
 
 		return $groupIds;
 	}
+
 }

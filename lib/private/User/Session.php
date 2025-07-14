@@ -71,14 +71,14 @@ class Session implements IUserSession, Emitter {
 	protected $activeUser;
 
 	public function __construct(
-		private Manager          $manager,
-		private ISession         $session,
-		private ITimeFactory     $timeFactory,
-		private ?IProvider       $tokenProvider,
-		private IConfig          $config,
-		private ISecureRandom    $random,
+		private Manager $manager,
+		private ISession $session,
+		private ITimeFactory $timeFactory,
+		private ?IProvider $tokenProvider,
+		private IConfig $config,
+		private ISecureRandom $random,
 		private ILockdownManager $lockdownManager,
-		private LoggerInterface  $logger,
+		private LoggerInterface $logger,
 		private IEventDispatcher $dispatcher,
 	) {
 	}
@@ -335,6 +335,7 @@ class Session implements IUserSession, Emitter {
 		if ($isToken) {
 			$this->setToken($loginDetails['token']->getId());
 			$this->lockdownManager->setToken($loginDetails['token']);
+			$user->updateLastLoginTimestamp();
 			$firstTimeLogin = false;
 		} else {
 			$this->setToken(null);
@@ -860,9 +861,8 @@ class Session implements IUserSession, Emitter {
 			return true;
 		}
 
-		// Remember me tokens are not app_passwords
-		if ($dbToken->getRemember() === IToken::DO_NOT_REMEMBER) {
-			// Set the session variable so we know this is an app password
+		// Set the session variable so we know this is an app password
+		if ($dbToken instanceof PublicKeyToken && $dbToken->getType() === IToken::PERMANENT_TOKEN) {
 			$this->session->set('app_password', $token);
 		}
 

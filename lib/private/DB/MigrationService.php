@@ -199,9 +199,9 @@ class MigrationService {
 			if ($versionA !== $versionB) {
 				return ($versionA < $versionB) ? -1 : 1;
 			}
-			return ($matchA[2] < $matchB[2]) ? -1 : 1;
+			return strnatcmp($matchA[2], $matchB[2]);
 		}
-		return (basename($a) < basename($b)) ? -1 : 1;
+		return strnatcmp(basename($a), basename($b));
 	}
 
 	/**
@@ -228,7 +228,7 @@ class MigrationService {
 
 		foreach ($files as $file) {
 			$className = basename($file, '.php');
-			$version = (string) substr($className, 7);
+			$version = (string)substr($className, 7);
 			if ($version === '0') {
 				throw new \InvalidArgumentException(
 					"Cannot load a migrations with the name '$version' because it is a reserved number"
@@ -250,7 +250,7 @@ class MigrationService {
 
 		$toBeExecuted = [];
 		foreach ($availableMigrations as $v) {
-			if ($to !== 'latest' && $v > $to) {
+			if ($to !== 'latest' && ($this->sortMigrations($v, $to) > 0)) {
 				continue;
 			}
 			if ($this->shallBeExecuted($v, $knownMigrations)) {
@@ -396,7 +396,7 @@ class MigrationService {
 			} catch (\Exception $e) {
 				// The exception itself does not contain the name of the migration,
 				// so we wrap it here, to make debugging easier.
-				throw new \Exception('Database error when running migration ' . $version . ' for app ' . $this->getApp() . PHP_EOL. $e->getMessage(), 0, $e);
+				throw new \Exception('Database error when running migration ' . $version . ' for app ' . $this->getApp() . PHP_EOL . $e->getMessage(), 0, $e);
 			}
 		}
 	}

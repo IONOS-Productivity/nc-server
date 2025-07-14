@@ -22,7 +22,8 @@ OC.L10N.register(
     "Federated Cloud Sharing" : "Udostępnianie Chmury Federacyjnej",
     "Sharing" : "Udostępnianie",
     "Federated file sharing" : "Udostępnianie federacyjne plików",
-    "Provide federated file sharing across servers" : "Zezwól na udostępnianie federacyjne plików na serwerach",
+    "Provide federated file sharing across servers" : "Zezwalaj na udostępnianie federacyjne plików na serwerach",
+    "This is used to retrieve the federated cloud ID to make federated sharing easier." : "Służy do pobierania ID Chmury Federacyjnej, aby ułatwić udostępnianie federacyjne.",
     "Unable to update federated files sharing config" : "Nie można zaktualizować konfiguracji udostępniania federacyjnego plików",
     "Adjust how people can share between servers. This includes shares between people on this server as well if they are using federated sharing." : "Dostosuj sposób udostępniania między serwerami. Obejmuje to również udostępnianie między ludźmi na tym serwerze, jeśli korzystają z udostępniania federacyjnego.",
     "Allow people on this server to send shares to other servers (this option also allows WebDAV access to public shares)" : "Zezwalaj ludziom na tym serwerze na wysłanie udostępnień do innych serwerów (opcja ta umożliwia również dostęp WebDAV do udostępnień publicznych)",
@@ -55,10 +56,6 @@ OC.L10N.register(
     "Remote share" : "Zdalne udostępnienie",
     "Do you want to add the remote share {name} from {owner}@{remote}?" : "Czy chcesz dodać zdalne udostępnienie {name} od {owner}@{remote}?",
     "Remote share password" : "Hasło zdalnego udostępnienia",
-    "Incoming share could not be processed" : "Nie można przetworzyć przychodzącego udostępnienia",
-    "Clipboard is not available" : "Schowek jest niedostępny",
-    "Your Federated Cloud ID:" : "Twoje ID Chmury Federacyjnej:",
-    "Twitter" : "Twitter",
-    "Diaspora" : "Diaspora"
+    "Incoming share could not be processed" : "Nie można przetworzyć przychodzącego udostępnienia"
 },
 "nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);");

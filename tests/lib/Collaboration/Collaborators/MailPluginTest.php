@@ -26,28 +26,28 @@ use OCP\Share\IShare;
 use Test\TestCase;
 
 class MailPluginTest extends TestCase {
-	/** @var  IConfig|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var IConfig|\PHPUnit\Framework\MockObject\MockObject */
 	protected $config;
 
-	/** @var  IManager|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var IManager|\PHPUnit\Framework\MockObject\MockObject */
 	protected $contactsManager;
 
-	/** @var  ICloudIdManager|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var ICloudIdManager|\PHPUnit\Framework\MockObject\MockObject */
 	protected $cloudIdManager;
 
-	/** @var  MailPlugin */
+	/** @var MailPlugin */
 	protected $plugin;
 
-	/** @var  SearchResult */
+	/** @var SearchResult */
 	protected $searchResult;
 
-	/** @var  IGroupManager|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var IGroupManager|\PHPUnit\Framework\MockObject\MockObject */
 	protected $groupManager;
 
-	/** @var  KnownUserService|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var KnownUserService|\PHPUnit\Framework\MockObject\MockObject */
 	protected $knownUserService;
 
-	/** @var  IUserSession|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var IUserSession|\PHPUnit\Framework\MockObject\MockObject */
 	protected $userSession;
 
 	/** @var IMailer|\PHPUnit\Framework\MockObject\MockObject */
@@ -94,7 +94,7 @@ class MailPluginTest extends TestCase {
 	 * @param array $expected
 	 * @param bool $reachedEnd
 	 */
-	public function testSearch($searchTerm, $contacts, $shareeEnumeration, $expected, $exactIdMatch, $reachedEnd, $validEmail) {
+	public function testSearch($searchTerm, $contacts, $shareeEnumeration, $expected, $exactIdMatch, $reachedEnd, $validEmail): void {
 		$this->config->expects($this->any())
 			->method('getAppValue')
 			->willReturnCallback(
@@ -188,12 +188,12 @@ class MailPluginTest extends TestCase {
 						'UID' => 'uid1',
 						'FN' => 'User @ Localhost',
 						'EMAIL' => [
-							'username@localhost',
+							'username@example.com',
 						],
 					],
 				],
 				true,
-				['emails' => [['uuid' => 'uid1', 'name' => 'User @ Localhost', 'type' => '', 'label' => 'User @ Localhost (username@localhost)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@localhost']]], 'exact' => ['emails' => []]],
+				['emails' => [['uuid' => 'uid1', 'name' => 'User @ Localhost', 'type' => '', 'label' => 'User @ Localhost (username@example.com)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@example.com']]], 'exact' => ['emails' => []]],
 				false,
 				false,
 				false,
@@ -233,24 +233,24 @@ class MailPluginTest extends TestCase {
 				[
 					[
 						'UID' => 'uid3',
-						'FN' => 'User3 @ Localhost',
+						'FN' => 'User3 @ example.com',
 					],
 					[
 						'UID' => 'uid2',
-						'FN' => 'User2 @ Localhost',
+						'FN' => 'User2 @ example.com',
 						'EMAIL' => [
 						],
 					],
 					[
 						'UID' => 'uid1',
-						'FN' => 'User @ Localhost',
+						'FN' => 'User @ example.com',
 						'EMAIL' => [
-							'username@localhost',
+							'username@example.com',
 						],
 					],
 				],
 				true,
-				['emails' => [['uuid' => 'uid1', 'name' => 'User @ Localhost', 'type' => '', 'label' => 'User @ Localhost (username@localhost)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@localhost']]], 'exact' => ['emails' => [['label' => 'test@remote.com', 'uuid' => 'test@remote.com', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'test@remote.com']]]]],
+				['emails' => [['uuid' => 'uid1', 'name' => 'User @ example.com', 'type' => '', 'label' => 'User @ example.com (username@example.com)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@example.com']]], 'exact' => ['emails' => [['label' => 'test@remote.com', 'uuid' => 'test@remote.com', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'test@remote.com']]]]],
 				false,
 				false,
 				true,
@@ -286,56 +286,56 @@ class MailPluginTest extends TestCase {
 			],
 			// data set 9
 			[
-				'username@localhost',
+				'username@example.com',
 				[
 					[
 						'UID' => 'uid3',
-						'FN' => 'User3 @ Localhost',
+						'FN' => 'User3 @ example.com',
 					],
 					[
 						'UID' => 'uid2',
-						'FN' => 'User2 @ Localhost',
+						'FN' => 'User2 @ example.com',
 						'EMAIL' => [
 						],
 					],
 					[
 						'UID' => 'uid1',
-						'FN' => 'User @ Localhost',
+						'FN' => 'User @ example.com',
 						'EMAIL' => [
-							'username@localhost',
+							'username@example.com',
 						],
 					],
 				],
 				true,
-				['emails' => [], 'exact' => ['emails' => [['name' => 'User @ Localhost', 'uuid' => 'uid1', 'type' => '', 'label' => 'User @ Localhost (username@localhost)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@localhost']]]]],
+				['emails' => [], 'exact' => ['emails' => [['name' => 'User @ example.com', 'uuid' => 'uid1', 'type' => '', 'label' => 'User @ example.com (username@example.com)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@example.com']]]]],
 				true,
 				false,
 				false,
 			],
 			// data set 10
 			[
-				'username@localhost',
+				'username@example.com',
 				[
 					[
 						'UID' => 'uid1',
-						'FN' => 'User3 @ Localhost',
+						'FN' => 'User3 @ example.com',
 					],
 					[
 						'UID' => 'uid2',
-						'FN' => 'User2 @ Localhost',
+						'FN' => 'User2 @ example.com',
 						'EMAIL' => [
 						],
 					],
 					[
 						'UID' => 'uid1',
-						'FN' => 'User @ Localhost',
+						'FN' => 'User @ example.com',
 						'EMAIL' => [
-							'username@localhost',
+							'username@example.com',
 						],
 					],
 				],
 				false,
-				['emails' => [], 'exact' => ['emails' => [['name' => 'User @ Localhost', 'uuid' => 'uid1', 'type' => '', 'label' => 'User @ Localhost (username@localhost)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@localhost']]]]],
+				['emails' => [], 'exact' => ['emails' => [['name' => 'User @ example.com', 'uuid' => 'uid1', 'type' => '', 'label' => 'User @ example.com (username@example.com)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@example.com']]]]],
 				true,
 				false,
 				false,
@@ -364,8 +364,8 @@ class MailPluginTest extends TestCase {
 					],
 				],
 				false,
-				['emails' => [], 'exact' => ['emails' => [['name' => 'User Name @ Localhost', 'uuid' => 'uid1', 'type' => '', 'label' => 'User Name @ Localhost (user name@localhost)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'user name@localhost']]]]],
-				true,
+				['emails' => [], 'exact' => ['emails' => []]],
+				false,
 				false,
 				false,
 			],
@@ -538,16 +538,16 @@ class MailPluginTest extends TestCase {
 						'UID' => 'uid1',
 						'FN' => 'User Name',
 						'EMAIL' => [
-							['type' => 'HOME', 'value' => 'username@localhost'],
-							['type' => 'WORK', 'value' => 'username@other'],
+							['type' => 'HOME', 'value' => 'username@example.com'],
+							['type' => 'WORK', 'value' => 'other@example.com'],
 						],
 					],
 				],
 				false,
 				['emails' => [
 				], 'exact' => ['emails' => [
-					['name' => 'User Name', 'uuid' => 'uid1', 'type' => 'HOME', 'label' => 'User Name (username@localhost)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@localhost']],
-					['name' => 'User Name', 'uuid' => 'uid1', 'type' => 'WORK', 'label' => 'User Name (username@other)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@other']]
+					['name' => 'User Name', 'uuid' => 'uid1', 'type' => 'HOME', 'label' => 'User Name (username@example.com)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'username@example.com']],
+					['name' => 'User Name', 'uuid' => 'uid1', 'type' => 'WORK', 'label' => 'User Name (other@example.com)', 'value' => ['shareType' => IShare::TYPE_EMAIL, 'shareWith' => 'other@example.com']]
 				]]],
 				false,
 				false,
@@ -577,7 +577,7 @@ class MailPluginTest extends TestCase {
 	 * @param bool $reachedEnd
 	 * @param array groups
 	 */
-	public function testSearchGroupsOnly($searchTerm, $contacts, $expected, $exactIdMatch, $reachedEnd, $userToGroupMapping, $validEmail) {
+	public function testSearchGroupsOnly($searchTerm, $contacts, $expected, $exactIdMatch, $reachedEnd, $userToGroupMapping, $validEmail): void {
 		$this->config->expects($this->any())
 			->method('getAppValue')
 			->willReturnCallback(
@@ -654,8 +654,8 @@ class MailPluginTest extends TestCase {
 				false,
 				false,
 				[
-					"currentUser" => ["group1"],
-					"User" => ["group1"]
+					'currentUser' => ['group1'],
+					'User' => ['group1']
 				],
 				false,
 			],
@@ -675,8 +675,8 @@ class MailPluginTest extends TestCase {
 				false,
 				false,
 				[
-					"currentUser" => ["group1"],
-					"User" => ["group2"]
+					'currentUser' => ['group1'],
+					'User' => ['group2']
 				],
 				false,
 			],
@@ -696,8 +696,8 @@ class MailPluginTest extends TestCase {
 				false,
 				false,
 				[
-					"currentUser" => ["group1"],
-					"User" => ["group2"]
+					'currentUser' => ['group1'],
+					'User' => ['group2']
 				],
 				true,
 			]

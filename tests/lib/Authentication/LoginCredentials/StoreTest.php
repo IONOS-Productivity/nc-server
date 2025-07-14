@@ -47,7 +47,7 @@ class StoreTest extends TestCase {
 		$this->store = new Store($this->session, $this->logger, $this->crypto, $this->tokenProvider);
 	}
 
-	public function testAuthenticate() {
+	public function testAuthenticate(): void {
 		$params = [
 			'run' => true,
 			'uid' => 'user123',
@@ -64,14 +64,14 @@ class StoreTest extends TestCase {
 		$this->store->authenticate($params);
 	}
 
-	public function testSetSession() {
+	public function testSetSession(): void {
 		$session = $this->createMock(ISession::class);
 
 		$this->store->setSession($session);
 		$this->addToAssertionCount(1);
 	}
 
-	public function testGetLoginCredentialsNoTokenProvider() {
+	public function testGetLoginCredentialsNoTokenProvider(): void {
 		$this->store = new Store($this->session, $this->logger, $this->crypto, null);
 
 		$this->expectException(CredentialsUnavailableException::class);
@@ -79,7 +79,7 @@ class StoreTest extends TestCase {
 		$this->store->getLoginCredentials();
 	}
 
-	public function testGetLoginCredentials() {
+	public function testGetLoginCredentials(): void {
 		$uid = 'uid';
 		$user = 'user123';
 		$password = 'passme';
@@ -108,7 +108,7 @@ class StoreTest extends TestCase {
 		$this->assertEquals($expected, $creds);
 	}
 
-	public function testGetLoginCredentialsSessionNotAvailable() {
+	public function testGetLoginCredentialsSessionNotAvailable(): void {
 		$this->session->expects($this->once())
 			->method('getId')
 			->will($this->throwException(new SessionNotAvailableException()));
@@ -117,7 +117,7 @@ class StoreTest extends TestCase {
 		$this->store->getLoginCredentials();
 	}
 
-	public function testGetLoginCredentialsInvalidToken() {
+	public function testGetLoginCredentialsInvalidToken(): void {
 		$this->session->expects($this->once())
 			->method('getId')
 			->willReturn('sess2233');
@@ -130,7 +130,7 @@ class StoreTest extends TestCase {
 		$this->store->getLoginCredentials();
 	}
 
-	public function testGetLoginCredentialsPartialCredentialsAndSessionName() {
+	public function testGetLoginCredentialsPartialCredentialsAndSessionName(): void {
 		$uid = 'id987';
 		$user = 'user987';
 		$password = '7389374';
@@ -171,7 +171,7 @@ class StoreTest extends TestCase {
 		$this->assertEquals($expected, $actual);
 	}
 
-	public function testGetLoginCredentialsPartialCredentials() {
+	public function testGetLoginCredentialsPartialCredentials(): void {
 		$uid = 'id987';
 		$password = '7389374';
 
@@ -211,7 +211,7 @@ class StoreTest extends TestCase {
 		$this->assertEquals($expected, $actual);
 	}
 
-	public function testGetLoginCredentialsInvalidTokenLoginCredentials() {
+	public function testGetLoginCredentialsInvalidTokenLoginCredentials(): void {
 		$uid = 'id987';
 		$user = 'user987';
 		$password = '7389374';
@@ -241,7 +241,7 @@ class StoreTest extends TestCase {
 		$this->assertEquals($expected, $actual);
 	}
 
-	public function testGetLoginCredentialsPasswordlessToken() {
+	public function testGetLoginCredentialsPasswordlessToken(): void {
 		$this->session->expects($this->once())
 			->method('getId')
 			->willReturn('sess2233');
@@ -252,5 +252,45 @@ class StoreTest extends TestCase {
 		$this->expectException(CredentialsUnavailableException::class);
 
 		$this->store->getLoginCredentials();
+	}
+
+	public function testAuthenticatePasswordlessToken(): void {
+		$user = 'user987';
+		$password = null;
+
+		$params = [
+			'run' => true,
+			'loginName' => $user,
+			'uid' => $user,
+			'password' => $password,
+		];
+
+		$this->session->expects($this->once())
+			->method('set')
+			->with($this->equalTo('login_credentials'), $this->equalTo(json_encode($params)));
+
+
+		$this->session->expects($this->once())
+			->method('getId')
+			->willReturn('sess2233');
+		$this->tokenProvider->expects($this->once())
+			->method('getToken')
+			->with('sess2233')
+			->will($this->throwException(new PasswordlessTokenException()));
+
+		$this->session->expects($this->once())
+			->method('exists')
+			->with($this->equalTo('login_credentials'))
+			->willReturn(true);
+		$this->session->expects($this->once())
+			->method('get')
+			->with($this->equalTo('login_credentials'))
+			->willReturn(json_encode($params));
+
+		$this->store->authenticate($params);
+		$actual = $this->store->getLoginCredentials();
+
+		$expected = new Credentials($user, $user, $password);
+		$this->assertEquals($expected, $actual);
 	}
 }

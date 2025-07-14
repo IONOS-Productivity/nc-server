@@ -57,6 +57,8 @@ if ($config->getSystemValueBool('installed', false)) {
 
 	$application->add(Server::get(Command\Info\File::class));
 	$application->add(Server::get(Command\Info\Space::class));
+	$application->add(Server::get(Command\Info\Storage::class));
+	$application->add(Server::get(Command\Info\Storages::class));
 
 	$application->add(Server::get(Command\Db\ConvertType::class));
 	$application->add(Server::get(Command\Db\ConvertMysqlToMB4::class));
@@ -102,6 +104,7 @@ if ($config->getSystemValueBool('installed', false)) {
 	$application->add(Server::get(Command\Maintenance\Repair::class));
 	$application->add(Server::get(Command\Maintenance\RepairShareOwnership::class));
 
+	$application->add(Server::get(Command\Preview\Cleanup::class));
 	$application->add(Server::get(Command\Preview\Generate::class));
 	$application->add(Server::get(Command\Preview\Repair::class));
 	$application->add(Server::get(Command\Preview\ResetRenderedTexts::class));
@@ -122,6 +125,7 @@ if ($config->getSystemValueBool('installed', false)) {
 	$application->add(Server::get(Command\User\AuthTokens\ListCommand::class));
 	$application->add(Server::get(Command\User\AuthTokens\Delete::class));
 	$application->add(Server::get(Command\User\Keys\Verify::class));
+	$application->add(Server::get(Command\User\Welcome::class));
 
 	$application->add(Server::get(Command\Group\Add::class));
 	$application->add(Server::get(Command\Group\Delete::class));
@@ -144,8 +148,12 @@ if ($config->getSystemValueBool('installed', false)) {
 	$application->add(Server::get(Command\SetupChecks::class));
 	$application->add(Server::get(Command\FilesMetadata\Get::class));
 
+	$application->add(Server::get(Command\TaskProcessing\GetCommand::class));
+	$application->add(Server::get(Command\TaskProcessing\EnabledCommand::class));
 	$application->add(Server::get(Command\TaskProcessing\ListCommand::class));
 	$application->add(Server::get(Command\TaskProcessing\Statistics::class));
+
+	$application->add(Server::get(Command\Memcache\RedisCommand::class));
 } else {
 	$application->add(Server::get(Command\Maintenance\Install::class));
 }

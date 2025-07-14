@@ -2,10 +2,10 @@
  * SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import type { FileSource, PathOptions, ServicesState, Service } from '../types'
+import type { FileSource, PathsStore, PathOptions, ServicesState, Service } from '../types'
 import { defineStore } from 'pinia'
 import { dirname } from '@nextcloud/paths'
-import { type Node, File, FileType, Folder, getNavigation } from '@nextcloud/files'
+import { File, FileType, Folder, Node, getNavigation } from '@nextcloud/files'
 import { subscribe } from '@nextcloud/event-bus'
 import Vue from 'vue'
 import logger from '../logger'
@@ -18,8 +18,7 @@ export const usePathsStore = function(...args) {
 	const store = defineStore('paths', {
 		state: () => ({
 			paths: {} as ServicesState,
-			_initialized: false,
-		}),
+		} as PathsStore),
 
 		getters: {
 			getPath: (state) => {

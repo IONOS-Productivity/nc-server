@@ -26,7 +26,7 @@ class GenerateMimetypeFileBuilder {
 		}, ARRAY_FILTER_USE_KEY);
 
 		// Fetch all files
-		$dir = new \DirectoryIterator(\OC::$SERVERROOT.'/core/img/filetypes');
+		$dir = new \DirectoryIterator(\OC::$SERVERROOT . '/core/img/filetypes');
 
 		$files = [];
 		foreach ($dir as $fileInfo) {
@@ -42,7 +42,7 @@ class GenerateMimetypeFileBuilder {
 
 		// Fetch all themes!
 		$themes = [];
-		$dirs = new \DirectoryIterator(\OC::$SERVERROOT.'/themes/');
+		$dirs = new \DirectoryIterator(\OC::$SERVERROOT . '/themes/');
 		foreach ($dirs as $dir) {
 			//Valid theme dir
 			if ($dir->isFile() || $dir->isDot()) {

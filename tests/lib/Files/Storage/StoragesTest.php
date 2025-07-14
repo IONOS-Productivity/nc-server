@@ -37,8 +37,26 @@ abstract class StoragesTest extends TestCase {
 
 		$this->storage1->moveFromStorage($this->storage2, $source, $target);
 
-		$this->assertTrue($this->storage1->file_exists($target), $target.' was not created');
-		$this->assertFalse($this->storage2->file_exists($source), $source.' still exists');
+		$this->assertTrue($this->storage1->file_exists($target), $target . ' was not created');
+		$this->assertFalse($this->storage2->file_exists($source), $source . ' still exists');
+		$this->assertEquals('foo', $this->storage1->file_get_contents($target));
+	}
+
+	public function testMoveFileFromStorageWithExistingTarget() {
+		$source = 'source.txt';
+		$target = 'target.txt';
+		$this->storage1->file_put_contents($target, 'bar');
+		$this->storage2->file_put_contents($source, 'foo');
+
+		$targetURN = $this->storage1->getURN($this->storage1->getCache()->get($target)->getID());
+		$sourceURN = $this->storage2->getURN($this->storage2->getCache()->get($source)->getID());
+
+		$this->storage1->moveFromStorage($this->storage2, $source, $target);
+
+		$this->assertTrue($this->storage1->file_exists($target), $target . ' was not created in DB');
+		$this->assertFalse($this->storage2->file_exists($source), $source . ' still exists in DB');
+		$this->assertTrue($this->storage1->getObjectStore()->objectExists($sourceURN), $sourceURN . ' was not created in bucket');
+		$this->assertFalse($this->storage1->getObjectStore()->objectExists($targetURN), $targetURN . ' still exists in bucket');
 		$this->assertEquals('foo', $this->storage1->file_get_contents($target));
 	}
 
@@ -75,8 +93,8 @@ abstract class StoragesTest extends TestCase {
 
 		$this->storage1->copyFromStorage($this->storage2, $source, $target);
 
-		$this->assertTrue($this->storage1->file_exists($target), $target.' was not created');
-		$this->assertTrue($this->storage2->file_exists($source), $source.' was deleted');
+		$this->assertTrue($this->storage1->file_exists($target), $target . ' was not created');
+		$this->assertTrue($this->storage2->file_exists($source), $source . ' was deleted');
 		$this->assertEquals('foo', $this->storage1->file_get_contents($target));
 	}
 
