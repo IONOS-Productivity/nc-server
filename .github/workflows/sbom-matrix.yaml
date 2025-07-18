@@ -58,6 +58,7 @@ on:
     branches:
       # Enable once approved
       - ionos-stable
+      - mk/tl/feature/sbom-generation
 
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
@@ -348,7 +349,7 @@ jobs:
           ls -la *.json || echo "No BOM JSON files found"
 
       - name: Upload SBOMs to Dependency Track
-        if: github.ref == 'refs/heads/ionos-stable'
+        if: github.ref == 'refs/heads/ionos-stable' || github.ref == 'refs/heads/mk/tl/feature/sbom-generation'
         env:
           DT_BASE_URL: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
