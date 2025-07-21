@@ -118,6 +118,7 @@ jobs:
             "component": [
               {
                 "name": "nextcloud",
+                "project_name": "HiDrive NEXT Core",
                 "path": ".",
                 "composer_output": "bom.nextcloud.composer.json",
                 "npm_output": "bom.nextcloud.npm.json",
@@ -125,12 +126,14 @@ jobs:
               },
               {
                 "name": "theme-nc-ionos-theme-legacy",
+                "project_name": "HiDrive NEXT Theme: nc-ionos-theme",
                 "path": "themes/nc-ionos-theme/IONOS",
                 "npm_output": "bom.theme-nc-ionos-theme-legacy.json",
                 "project_id": "DT_OBJECT_THEME"
               },
               {
                 "name": "app-simplesettings",
+                "project_name": "HiDrive NEXT App: simplesettings",
                 "path": "apps-custom/simplesettings",
                 "composer_output": "bom.app-simplesettings.composer.json",
                 "npm_output": "bom.app-simplesettings.npm.json",
@@ -138,24 +141,28 @@ jobs:
               },
               {
                 "name": "app-googleanalytics",
+                "project_name": "HiDrive NEXT App: googleanalytics",
                 "path": "apps-custom/googleanalytics",
                 "composer_output": "bom.app-googleanalytics.json",
                 "project_id": "DT_OBJECT_APP_GOOGLE_ANALYTICS"
               },
               {
                 "name": "app-ionos-processes",
+                "project_name": "HiDrive NEXT App: nc_ionos_processes",
                 "path": "apps-custom/nc_ionos_processes",
                 "composer_output": "bom.app-ionos-processes.json",
                 "project_id": "DT_OBJECT_APP_IONOS_PROCESSES"
               },
               {
                 "name": "app-theming",
+                "project_name": "HiDrive NEXT App: nc_theming",
                 "path": "apps-custom/nc_theming",
                 "composer_output": "bom.app-theming.json",
                 "project_id": "DT_OBJECT_APP_THEMING"
               },
               {
                 "name": "app-viewer",
+                "project_name": "HiDrive NEXT App: viewer",
                 "path": "apps-external/viewer",
                 "composer_output": "bom.app-viewer.composer.json",
                 "npm_output": "bom.app-viewer.npm.json",
@@ -163,6 +170,7 @@ jobs:
               },
               {
                 "name": "app-user_oidc",
+                "project_name": "HiDrive NEXT App: user_oidc",
                 "path": "apps-external/user_oidc",
                 "composer_output": "bom.app-user_oidc.composer.json",
                 "npm_output": "bom.app-user_oidc.npm.json",
@@ -170,12 +178,14 @@ jobs:
               },
               {
                 "name": "app-groupquota",
+                "project_name": "HiDrive NEXT App: groupquota",
                 "path": "apps-external/groupquota",
                 "composer_output": "bom.app-groupquota.json",
                 "project_id": "DT_OBJECT_APP_GROUPQUOTA"
               },
               {
                 "name": "app-richdocuments",
+                "project_name": "HiDrive NEXT App: richdocuments",
                 "path": "apps-external/richdocuments",
                 "composer_output": "bom.app-richdocuments.composer.json",
                 "npm_output": "bom.app-richdocuments.npm.json",
@@ -183,6 +193,7 @@ jobs:
               },
               {
                 "name": "app-files_downloadlimit",
+                "project_name": "HiDrive NEXT App: files_downloadlimit",
                 "path": "apps-external/files_downloadlimit",
                 "composer_output": "bom.app-files_downloadlimit.composer.json",
                 "npm_output": "bom.app-files_downloadlimit.npm.json",
@@ -190,6 +201,7 @@ jobs:
               },
               {
                 "name": "app-serverinfo",
+                "project_name": "HiDrive NEXT App: serverinfo",
                 "path": "apps-external/serverinfo",
                 "composer_output": "bom.app-serverinfo.json",
                 "project_id": "DT_OBJECT_APP_SERVERINFO"
@@ -321,7 +333,7 @@ jobs:
   # 4. Uploads each SBOM to the corresponding Dependency Track project
   # 5. Uses custom CA certificate for secure communication with Dependency Track
   upload-sboms:
-    needs: [ setup-matrix, generate-sbom ]
+    needs: [ get-version, setup-matrix, generate-sbom ]
     runs-on: self-hosted
 
     steps:
@@ -342,6 +354,7 @@ jobs:
           DT_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           IONOS_CA_CERT: ${{ secrets.IONOS_CA }}
           MATRIX_CONTEXT: ${{ needs.setup-matrix.outputs.matrix }}
+          PROJECT_VERSION: ${{ needs.get-version.outputs.project_version }}
           VARS_CONTEXT: ${{ toJSon(vars) }}
         run: |
           # Create temporary CA cert file
@@ -349,18 +362,20 @@ jobs:
           echo "$IONOS_CA_CERT" > "${cert_file}"
           
           echo "Beginning SBOM upload process..."
+          echo "PROJECT_VERSION: $PROJECT_VERSION"
           
           # Function to upload SBOM to Dependency Track via REST API
           upload_bom() {
             local bom_file="$1"
             local project_id="$2"
+            local project_name="$3"
             
             if [[ ! -f "$bom_file" ]]; then
               echo "Warning: $bom_file not found, skipping..."
               return 0
             fi
             
-            echo "Uploading SBOM ($bom_file) to project $project_id..."
+            echo "Uploading SBOM ($bom_file) to project $project_id ($project_name)..."
           
             response=$(curl \
               --cacert "${cert_file}" \
@@ -371,7 +386,11 @@ jobs:
               -X POST "${DT_BASE_URL}/api/v1/bom" \
               -H "Content-Type: multipart/form-data" \
               -H "X-API-Key: ${DT_API_KEY}" \
-              -F "project=${project_id}" \
+              -F "isLatest=true" \
+              -F "autoCreate=true" \
+              -F "parentUUID=${project_id}" \
+              -F "projectName=${project_name}" \
+              -F "projectVersion=${PROJECT_VERSION}" \
               -F "bom=@${bom_file}")
             
             http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
@@ -397,6 +416,7 @@ jobs:
             project_id_var_name=$(echo "$component_json" | jq -r '.project_id')
             component_name=$(echo "$component_json" | jq -r '.name')
             project_id_var_value=$(echo "$VARS_CONTEXT" | jq -r --arg key "$project_id_var_name" '.[$key]')
+            project_name=$(echo "$component_json" | jq -r '.project_name')
 
             echo "Processing component: ${component_name}"
 
@@ -414,7 +434,7 @@ jobs:
               continue
             fi
 
-            upload_bom "$bom_file" "$project_id_var_value" || exit 1
+            upload_bom "$bom_file" "$project_id_var_value" "$project_name" || exit 1
           done
 
           # Cleanup
