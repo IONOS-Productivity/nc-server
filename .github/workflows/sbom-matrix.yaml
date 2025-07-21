@@ -1,0 +1,445 @@
+name: SBOM generation (matrix)
+
+# SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2025 STRATO AG
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# ============================================================================
+# SBOM Generation Workflow
+# ============================================================================
+#
+# This workflow automates the generation and upload of Software Bill of Materials
+# (SBOMs) for security and compliance purposes. It processes multiple components
+# of the Nextcloud ecosystem in parallel using a matrix strategy.
+#
+# REQUIREMENTS:
+# - Repository secrets:
+#   * DEPENDENCY_TRACK_API_KEY: API key for Dependency Track instance
+#   * IONOS_CA: CA certificate for secure communication
+#   * FONTAWESOME_PACKAGE_TOKEN: Token for FontAwesome packages
+# - Repository variables:
+#   * DEPENDENCY_TRACK_BASE_URL: Base URL of Dependency Track instance
+#   * DT_OBJECT_*: Project IDs for each component in Dependency Track
+#
+# TRIGGERS:
+# - Push to ionos-stable branch (production)
+#
+# OUTPUT:
+# - CycloneDX SBOM files in JSON format (spec version 1.6)
+# - Separate SBOMs for PHP (Composer) and JavaScript (NPM) dependencies
+# - Combined SBOMs for components with both dependency types
+# - Automatic upload to Dependency Track for vulnerability analysis
+# ============================================================================
+#
+# This workflow generates Software Bill of Materials (SBOMs) for the Nextcloud server
+# and its associated components, including themes and apps. It uses a matrix strategy
+# to process multiple components in parallel, generating separate SBOMs for:
+# - PHP dependencies (via Composer and CycloneDX)
+# - JavaScript dependencies (via NPM and CycloneDX)
+# - Combined SBOMs when components have both PHP and NPM dependencies
+#
+# The generated SBOMs are then uploaded to a Dependency Track instance for
+# vulnerability scanning and license compliance monitoring.
+#
+# Workflow Structure:
+# 1. get-version: Extracts the project version from version.php
+# 2. setup-matrix: Defines the matrix of components to process
+# 3. generate-sbom: Generates SBOMs for each component (runs in parallel)
+# 4. upload-sboms: Uploads all generated SBOMs to Dependency Track
+#
+# Components processed:
+# - Main Nextcloud server (root directory)
+# - Custom legacy theme (themes/nc-ionos-theme/IONOS)
+# - Custom apps (apps-custom/*)
+# - External apps (apps-external/*)
+
+on:
+  push:
+    branches:
+      # Enable once approved
+      - ionos-stable
+      - mk/tl/feature/sbom-generation
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  # Job 1: Extract version information from the repository
+  # This job retrieves the version.php file and extracts the version string
+  # to create a consistent project version identifier for all SBOMs
+  get-version:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    name: get-version
+
+    outputs:
+        project_version: ${{ steps.get-version.outputs.project_version }}
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Get version.php
+        run: curl -o version.php https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/version.php
+
+      - name: Get version string from version.php
+        id: get-version
+        run: |
+          # Extract version string from PHP file and create project version identifier
+          VERSION_STRING=$(php -r "include 'version.php'; echo \$OC_VersionString;")
+          COMMIT_SHA=$(echo "${{ github.sha }}" | cut -c 1-7)
+          PROJECT_VERSION="v${VERSION_STRING}-${COMMIT_SHA}"
+          echo "version_string=${VERSION_STRING}" >> $GITHUB_OUTPUT
+          echo "commit_sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
+          echo "Project version: ${PROJECT_VERSION}"
+
+  # Job 2: Define the matrix of components to process
+  # This job creates a JSON matrix containing all components that need SBOM generation.
+  # Each component entry includes:
+  # - name: Component identifier
+  # - path: Relative path to the component directory
+  # - has_composer: Whether the component has PHP dependencies
+  # - has_npm: Whether the component has NPM dependencies
+  # - composer_output/npm_output: Output filenames for generated SBOMs
+  # - project_id: Environment variable name for Dependency Track project ID
+  setup-matrix:
+    runs-on: self-hosted
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          # Define the matrix of components to process
+          # Each component entry specifies its dependencies and output configuration
+          matrix='{
+            "component": [
+              {
+                "name": "nextcloud",
+                "project_name": "HiDrive NEXT Core",
+                "path": ".",
+                "composer_output": "bom.nextcloud.composer.json",
+                "npm_output": "bom.nextcloud.npm.json",
+                "project_id": "DT_OBJECT_NEXTCLOUD"
+              },
+              {
+                "name": "theme-nc-ionos-theme-legacy",
+                "project_name": "HiDrive NEXT Theme: nc-ionos-theme",
+                "path": "themes/nc-ionos-theme/IONOS",
+                "npm_output": "bom.theme-nc-ionos-theme-legacy.json",
+                "project_id": "DT_OBJECT_THEME"
+              },
+              {
+                "name": "app-simplesettings",
+                "project_name": "HiDrive NEXT App: simplesettings",
+                "path": "apps-custom/simplesettings",
+                "composer_output": "bom.app-simplesettings.composer.json",
+                "npm_output": "bom.app-simplesettings.npm.json",
+                "project_id": "DT_OBJECT_APP_SIMPLESETTINGS"
+              },
+              {
+                "name": "app-googleanalytics",
+                "project_name": "HiDrive NEXT App: googleanalytics",
+                "path": "apps-custom/googleanalytics",
+                "composer_output": "bom.app-googleanalytics.json",
+                "project_id": "DT_OBJECT_APP_GOOGLE_ANALYTICS"
+              },
+              {
+                "name": "app-ionos-processes",
+                "project_name": "HiDrive NEXT App: nc_ionos_processes",
+                "path": "apps-custom/nc_ionos_processes",
+                "composer_output": "bom.app-ionos-processes.json",
+                "project_id": "DT_OBJECT_APP_IONOS_PROCESSES"
+              },
+              {
+                "name": "app-theming",
+                "project_name": "HiDrive NEXT App: nc_theming",
+                "path": "apps-custom/nc_theming",
+                "composer_output": "bom.app-theming.json",
+                "project_id": "DT_OBJECT_APP_THEMING"
+              },
+              {
+                "name": "app-viewer",
+                "project_name": "HiDrive NEXT App: viewer",
+                "path": "apps-external/viewer",
+                "composer_output": "bom.app-viewer.composer.json",
+                "npm_output": "bom.app-viewer.npm.json",
+                "project_id": "DT_OBJECT_APP_VIEWER"
+              },
+              {
+                "name": "app-user_oidc",
+                "project_name": "HiDrive NEXT App: user_oidc",
+                "path": "apps-external/user_oidc",
+                "composer_output": "bom.app-user_oidc.composer.json",
+                "npm_output": "bom.app-user_oidc.npm.json",
+                "project_id": "DT_OBJECT_APP_USER_OIDC"
+              },
+              {
+                "name": "app-groupquota",
+                "project_name": "HiDrive NEXT App: groupquota",
+                "path": "apps-external/groupquota",
+                "composer_output": "bom.app-groupquota.json",
+                "project_id": "DT_OBJECT_APP_GROUPQUOTA"
+              },
+              {
+                "name": "app-richdocuments",
+                "project_name": "HiDrive NEXT App: richdocuments",
+                "path": "apps-external/richdocuments",
+                "composer_output": "bom.app-richdocuments.composer.json",
+                "npm_output": "bom.app-richdocuments.npm.json",
+                "project_id": "DT_OBJECT_APP_RICHDOCUMENTS"
+              },
+              {
+                "name": "app-files_downloadlimit",
+                "project_name": "HiDrive NEXT App: files_downloadlimit",
+                "path": "apps-external/files_downloadlimit",
+                "composer_output": "bom.app-files_downloadlimit.composer.json",
+                "npm_output": "bom.app-files_downloadlimit.npm.json",
+                "project_id": "DT_OBJECT_APP_FILES_DOWNLOADLIMIT"
+              },
+              {
+                "name": "app-serverinfo",
+                "project_name": "HiDrive NEXT App: serverinfo",
+                "path": "apps-external/serverinfo",
+                "composer_output": "bom.app-serverinfo.json",
+                "project_id": "DT_OBJECT_APP_SERVERINFO"
+              }
+            ]
+          }'
+          echo "matrix=$(echo $matrix | jq -c .)" >> $GITHUB_OUTPUT
+
+  # Job 3: Generate SBOMs for each component (runs in parallel)
+  # This job uses the matrix strategy to process each component defined in setup-matrix.
+  # For each component, it:
+  # 1. Sets up the appropriate runtime environment (PHP and/or Node.js)
+  # 2. Installs SBOM generation tools (CycloneDX for Composer and NPM)
+  # 3. Generates SBOMs in CycloneDX format (JSON, spec version 1.6)
+  # 4. For components with both PHP and NPM dependencies, creates a combined SBOM
+  # 5. Uploads the generated SBOMs as workflow artifacts
+  generate-sbom:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    name: generate-sbom
+    needs: [get-version, setup-matrix]
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup PHP with PECL extension
+        if: matrix.component.composer_output
+        uses: shivammathur/setup-php@v2
+        with:
+          tools: composer:v2
+          extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
+        env:
+          runner: self-hosted
+
+      - name: Install CycloneDX (Composer)
+        env:
+          DT_PROJECT_ID: ${{ vars[matrix.component.project_id] }}
+        if: matrix.component.composer_output
+        run: |
+          echo "DT_PROJECT_ID: $DT_PROJECT_ID"
+          composer global config --no-plugins allow-plugins.cyclonedx/cyclonedx-php-composer true
+          composer global require cyclonedx/cyclonedx-php-composer:^v5.2.3
+
+      - name: Generate SBOM (Composer)
+        if: matrix.component.composer_output
+        run: |
+          parent_dir=$(pwd)
+          echo "parent_dir=${parent_dir}"
+          cd "${{ matrix.component.path }}"
+          echo "PWD: $(pwd)"
+          composer CycloneDX:make-sbom --output-file="${parent_dir}/${{ matrix.component.composer_output }}" --output-format=JSON --spec-version=1.6
+          ls -la "${parent_dir}/${{ matrix.component.composer_output }}"
+
+      - name: Set up Node.js
+        if: matrix.component.npm_output
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "${{ matrix.component.path }}/package.json"
+          cache: 'npm'
+          cache-dependency-path: "${{ matrix.component.path }}/package-lock.json"
+
+      - name: Install NPM dependencies
+        if: matrix.component.npm_output
+        working-directory: ${{ matrix.component.path }}
+        env:
+          FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+        run: npm ci
+
+      - name: Generate SBOM (NPM)
+        if: matrix.component.npm_output
+        run: |
+          parent_dir=$(pwd)
+          cd "${{ matrix.component.path }}"
+          npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --package-lock-only --output-format JSON --spec-version 1.6 --output-file "${parent_dir}/${{ matrix.component.npm_output }}"
+          ls -la "${parent_dir}/${{ matrix.component.npm_output }}"
+
+      - name: Generate combined PHP+NPM SBOM
+        if: matrix.component.composer_output && matrix.component.npm_output
+        run: |
+          # Create a combined SBOM by merging PHP and NPM components
+          # This ensures a single comprehensive SBOM for components with both dependency types
+          ls -la "${{ matrix.component.composer_output }}" "${{ matrix.component.npm_output }}"
+          jq -s '
+            {
+              "bomFormat": "CycloneDX",
+              "specVersion": "1.6",
+              "serialNumber": ("urn:uuid:" + (now | tostring | gsub("[^0-9]"; "") + "12345678901234567890" | .[0:8] + "-" + .[8:12] + "-" + .[12:16] + "-" + .[16:20] + "-" + .[20:32])),
+              "version": 1,
+              "metadata": {
+                "timestamp": (now | strftime("%Y-%m-%dT%H:%M:%SZ")),
+                "component": {
+                  "type": "application",
+                  "name": "${{ matrix.component.name }}-npm-composer-combined",
+                  "version": "${{ needs.get-version.outputs.project_version }}"
+                }
+              },
+              "components": (.[0].components + .[1].components | unique_by(.name + .version + .type))
+            }
+          ' "${{ matrix.component.composer_output }}" "${{ matrix.component.npm_output }}" > bom.${{ matrix.component.name }}-combined-sbom.json
+          rm -f "${{ matrix.component.composer_output }}" "${{ matrix.component.npm_output }}"
+
+      - name: Upload component SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.component.name }}
+          path: |
+            ${{ matrix.component.composer_output }}
+            ${{ matrix.component.npm_output }}
+            bom.${{ matrix.component.name }}-combined-sbom.json
+          if-no-files-found: ignore
+
+  # Job 4: Upload SBOMs to Dependency Track
+  # This job downloads all SBOM artifacts generated by the previous job and uploads
+  # them to a Dependency Track instance for vulnerability scanning and analysis.
+  # The upload only happens for specific branches (ionos-stable and the feature branch).
+  #
+  # The job:
+  # 1. Downloads all SBOM artifacts from the generate-sbom job
+  # 2. Iterates through each component in the matrix
+  # 3. Determines which SBOM file to upload (combined, composer-only, or npm-only)
+  # 4. Uploads each SBOM to the corresponding Dependency Track project
+  # 5. Uses custom CA certificate for secure communication with Dependency Track
+  upload-sboms:
+    needs: [ get-version, setup-matrix, generate-sbom ]
+    runs-on: self-hosted
+
+    steps:
+      - name: Download all SBOM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sbom-*
+          merge-multiple: true
+
+      - name: List downloaded files
+        run: |
+          ls -la *.json || echo "No BOM JSON files found"
+
+      - name: Upload SBOMs to Dependency Track
+        if: github.ref == 'refs/heads/ionos-stable' || github.ref == 'refs/heads/mk/tl/feature/sbom-generation'
+        env:
+          DT_BASE_URL: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}
+          DT_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          IONOS_CA_CERT: ${{ secrets.IONOS_CA }}
+          MATRIX_CONTEXT: ${{ needs.setup-matrix.outputs.matrix }}
+          PROJECT_VERSION: ${{ needs.get-version.outputs.project_version }}
+          VARS_CONTEXT: ${{ toJSon(vars) }}
+        run: |
+          # Create temporary CA cert file
+          cert_file=$(mktemp)
+          echo "$IONOS_CA_CERT" > "${cert_file}"
+          
+          echo "Beginning SBOM upload process..."
+          echo "PROJECT_VERSION: $PROJECT_VERSION"
+          
+          # Function to upload SBOM to Dependency Track via REST API
+          upload_bom() {
+            local bom_file="$1"
+            local project_id="$2"
+            local project_name="$3"
+            
+            if [[ ! -f "$bom_file" ]]; then
+              echo "Warning: $bom_file not found, skipping..."
+              return 0
+            fi
+            
+            echo "Uploading SBOM ($bom_file) to project $project_id ($project_name)..."
+          
+            response=$(curl \
+              --cacert "${cert_file}" \
+              --fail-with-body \
+              --silent \
+              --show-error \
+              --write-out "HTTPSTATUS:%{http_code}" \
+              -X POST "${DT_BASE_URL}/api/v1/bom" \
+              -H "Content-Type: multipart/form-data" \
+              -H "X-API-Key: ${DT_API_KEY}" \
+              -F "isLatest=true" \
+              -F "autoCreate=true" \
+              -F "parentUUID=${project_id}" \
+              -F "projectTags=hidrive_next,nextcloud" \
+              -F "projectName=${project_name}" \
+              -F "projectVersion=${PROJECT_VERSION}" \
+              -F "bom=@${bom_file}")
+            
+            http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+            body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]*$//')
+            
+            if [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]]; then
+              echo "✓ Successfully uploaded $bom_file"
+            else
+              echo "✗ Failed to upload $bom_file (HTTP $http_code)"
+              echo "Response: $body"
+              return 1
+            fi
+          }
+          
+          # Upload all BOMs by iterating through the matrix components
+          # Each component is processed to determine which SBOM file to upload
+          echo "${MATRIX_CONTEXT}" | jq -r '.component[] | @base64' | while read -r i; do
+            echo "Processing component from matrix context..."
+            component_json=$(echo "$i" | base64 --decode)
+            
+            composer_output=$(echo "$component_json" | jq -r '.composer_output')
+            npm_output=$(echo "$component_json" | jq -r '.npm_output')
+            project_id_var_name=$(echo "$component_json" | jq -r '.project_id')
+            component_name=$(echo "$component_json" | jq -r '.name')
+            project_id_var_value=$(echo "$VARS_CONTEXT" | jq -r --arg key "$project_id_var_name" '.[$key]')
+            project_name=$(echo "$component_json" | jq -r '.project_name')
+
+            echo "Processing component: ${component_name}"
+
+            # Determine which SBOM file to upload based on component dependencies:
+            # - Combined SBOM if component has both Composer and NPM dependencies
+            # - Individual SBOM files if component has only one dependency type
+            if [[ "$composer_output" != "null" && "$npm_output" != "null" ]]; then
+              bom_file="bom.${component_name}-combined-sbom.json"
+            elif [[ "$composer_output" != "null" ]]; then
+              bom_file=$(echo "$component_json" | jq -r '.composer_output')
+            elif [[ "$npm_output" != "null" ]]; then
+              bom_file=$(echo "$component_json" | jq -r '.npm_output')
+            else
+              echo "Skipping component with no composer or npm."
+              continue
+            fi
+
+            upload_bom "$bom_file" "$project_id_var_value" "$project_name" || exit 1
+          done
+
+          # Cleanup
+          rm -f "${cert_file}"
+          
+          echo "All SBOMs uploaded successfully!"
