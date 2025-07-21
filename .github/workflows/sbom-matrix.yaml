@@ -389,6 +389,7 @@ jobs:
               -F "isLatest=true" \
               -F "autoCreate=true" \
               -F "parentUUID=${project_id}" \
+              -F "projectTags=hidrive_next,nextcloud" \
               -F "projectName=${project_name}" \
               -F "projectVersion=${PROJECT_VERSION}" \
               -F "bom=@${bom_file}")
