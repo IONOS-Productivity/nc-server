@@ -69,43 +69,93 @@ jobs:
           node-version-file: "package.json"
           cache: 'npm'
 
-      - name: Cache custom-npms node_modules
+      - name: Get custom-npms submodule hashes
+        id: submodule_hashes
+        run: |
+          # Get the commit hash for each custom-npm submodule
+          MDI_SVG_HASH=$(git rev-parse HEAD:custom-npms/nc-mdi-svg)
+          MDI_JS_HASH=$(git rev-parse HEAD:custom-npms/nc-mdi-js)
+          VUE_ICONS_HASH=$(git rev-parse HEAD:custom-npms/nc-vue-material-design-icons)
+          NEXTCLOUD_VUE_HASH=$(git rev-parse HEAD:custom-npms/nc-nextcloud-vue)
+          
+          echo "mdi_svg_hash=${MDI_SVG_HASH}" >> $GITHUB_OUTPUT
+          echo "mdi_js_hash=${MDI_JS_HASH}" >> $GITHUB_OUTPUT
+          echo "vue_icons_hash=${VUE_ICONS_HASH}" >> $GITHUB_OUTPUT
+          echo "nextcloud_vue_hash=${NEXTCLOUD_VUE_HASH}" >> $GITHUB_OUTPUT
+          
+          # Create a combined hash for all custom-npms
+          COMBINED_HASH=$(echo "${MDI_SVG_HASH}${MDI_JS_HASH}${VUE_ICONS_HASH}${NEXTCLOUD_VUE_HASH}" | sha256sum | cut -d' ' -f1)
+          echo "combined_hash=${COMBINED_HASH}" >> $GITHUB_OUTPUT
+          
+          echo "Custom-npms submodule hashes:"
+          echo "  nc-mdi-svg: ${MDI_SVG_HASH}"
+          echo "  nc-mdi-js: ${MDI_JS_HASH}"
+          echo "  nc-vue-material-design-icons: ${VUE_ICONS_HASH}"
+          echo "  nc-nextcloud-vue: ${NEXTCLOUD_VUE_HASH}"
+          echo "  Combined: ${COMBINED_HASH}"
+
+      - name: Cache built custom-npms (by submodule commits)
+        id: cache-custom-npms
+        uses: actions/cache@v4
+        with:
+          path: custom-npms/
+          key: ${{ runner.os }}-built-custom-npms-${{ steps.submodule_hashes.outputs.combined_hash }}
+          restore-keys: |
+            ${{ runner.os }}-built-custom-npms-
+
+      - name: Cache custom-npms node_modules (if building)
+        if: steps.cache-custom-npms.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: custom-npms/*/node_modules
-          key: ${{ runner.os }}-custom-npms-${{ hashFiles('custom-npms/*/package-lock.json') }}
+          key: ${{ runner.os }}-custom-npms-modules-${{ steps.submodule_hashes.outputs.combined_hash }}
           restore-keys: |
-            ${{ runner.os }}-custom-npms-
+            ${{ runner.os }}-custom-npms-modules-
 
       - name: Build custom MDI SVG
+        if: steps.cache-custom-npms.outputs.cache-hit != 'true'
         run: |
           cd custom-npms/nc-mdi-svg
           FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }} npm ci
           npm run build
+          echo "✓ nc-mdi-svg built"
 
       - name: Build custom MDI JS
+        if: steps.cache-custom-npms.outputs.cache-hit != 'true'
         run: |
           cd custom-npms/nc-mdi-js
           npm ci
           npm run build
+          echo "✓ nc-mdi-js built"
 
       - name: Build custom Vue icons package
+        if: steps.cache-custom-npms.outputs.cache-hit != 'true'
         run: |
           cd custom-npms/nc-vue-material-design-icons
           npm ci
           npm run build
+          echo "✓ nc-vue-material-design-icons built"
 
       - name: Build custom Nextcloud Vue
+        if: steps.cache-custom-npms.outputs.cache-hit != 'true'
         run: |
           cd custom-npms/nc-nextcloud-vue
           npm ci
           npm run build
+          echo "✓ nc-nextcloud-vue built"
 
-      - name: Cache built custom-npms for other jobs
-        uses: actions/cache/save@v4
-        with:
-          path: custom-npms/
-          key: ${{ runner.os }}-built-custom-npms-${{ github.sha }}
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-custom-npms.outputs.cache-hit }}" == "true" ]; then
+            echo "🎉 Custom-npms cache hit! Skipped building all packages."
+            echo "Using cached packages from hash: ${{ steps.submodule_hashes.outputs.combined_hash }}"
+          else
+            echo "🔨 Cache miss. Built all custom-npms packages."
+            echo "New cache key: ${{ steps.submodule_hashes.outputs.combined_hash }}"
+          fi
+
+    outputs:
+      custom_npms_cache_key: ${{ steps.submodule_hashes.outputs.combined_hash }}
 
   # Build Nextcloud core after custom-npms are ready
   build-nextcloud-core:
@@ -148,7 +198,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: custom-npms/
-          key: ${{ runner.os }}-built-custom-npms-${{ github.sha }}
+          key: ${{ runner.os }}-built-custom-npms-${{ needs.build-custom-npms.outputs.custom_npms_cache_key }}
           fail-on-cache-miss: true
 
       - name: Build Nextcloud core (without custom-npms - already built)
@@ -208,20 +258,47 @@ jobs:
         with:
           node-version-file: "package.json"
 
-      - name: Cache app node_modules
+      - name: Get simplesettings submodule hash
+        id: submodule_hash
+        run: |
+          SIMPLESETTINGS_HASH=$(git rev-parse HEAD:apps-custom/simplesettings)
+          echo "hash=${SIMPLESETTINGS_HASH}" >> $GITHUB_OUTPUT
+          echo "simplesettings submodule hash: ${SIMPLESETTINGS_HASH}"
+
+      - name: Cache built simplesettings app (by submodule commit)
+        id: cache-app
+        uses: actions/cache@v4
+        with:
+          path: apps-custom/simplesettings/
+          key: ${{ runner.os }}-built-simplesettings-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-built-simplesettings-
+
+      - name: Cache app node_modules (if building)
+        if: steps.cache-app.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: apps-custom/simplesettings/node_modules
-          key: ${{ runner.os }}-simplesettings-${{ hashFiles('apps-custom/simplesettings/package-lock.json') }}
+          key: ${{ runner.os }}-simplesettings-modules-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-simplesettings-modules-
 
       - name: Build simplesettings app
-        run: make -f IONOS/Makefile build_dep_simplesettings_app
+        if: steps.cache-app.outputs.cache-hit != 'true'
+        run: |
+          make -f IONOS/Makefile build_dep_simplesettings_app
+          echo "✓ simplesettings app built"
 
-      - name: Cache built app
-        uses: actions/cache/save@v4
-        with:
-          path: apps-custom/simplesettings/
-          key: ${{ runner.os }}-built-simplesettings-${{ github.sha }}
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-app.outputs.cache-hit }}" == "true" ]; then
+            echo "🎉 Simplesettings app cache hit! Skipped building."
+          else
+            echo "🔨 Cache miss. Built simplesettings app."
+          fi
+
+    outputs:
+      cache_key: ${{ steps.submodule_hash.outputs.hash }}
 
   build-viewer-app:
     runs-on: ubuntu-latest
@@ -244,22 +321,49 @@ jobs:
         with:
           tools: composer:v2
 
-      - name: Cache app dependencies
+      - name: Get viewer submodule hash
+        id: submodule_hash
+        run: |
+          VIEWER_HASH=$(git rev-parse HEAD:apps-external/viewer)
+          echo "hash=${VIEWER_HASH}" >> $GITHUB_OUTPUT
+          echo "viewer submodule hash: ${VIEWER_HASH}"
+
+      - name: Cache built viewer app (by submodule commit)
+        id: cache-app
+        uses: actions/cache@v4
+        with:
+          path: apps-external/viewer/
+          key: ${{ runner.os }}-built-viewer-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-built-viewer-
+
+      - name: Cache app dependencies (if building)
+        if: steps.cache-app.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
             apps-external/viewer/node_modules
             ~/.composer/cache
-          key: ${{ runner.os }}-viewer-${{ hashFiles('apps-external/viewer/package-lock.json', 'apps-external/viewer/composer.lock') }}
+          key: ${{ runner.os }}-viewer-deps-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-viewer-deps-
 
       - name: Build viewer app
-        run: make -f IONOS/Makefile build_dep_viewer_app
+        if: steps.cache-app.outputs.cache-hit != 'true'
+        run: |
+          make -f IONOS/Makefile build_dep_viewer_app
+          echo "✓ viewer app built"
 
-      - name: Cache built app
-        uses: actions/cache/save@v4
-        with:
-          path: apps-external/viewer/
-          key: ${{ runner.os }}-built-viewer-${{ github.sha }}
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-app.outputs.cache-hit }}" == "true" ]; then
+            echo "🎉 Viewer app cache hit! Skipped building."
+          else
+            echo "🔨 Cache miss. Built viewer app."
+          fi
+
+    outputs:
+      cache_key: ${{ steps.submodule_hash.outputs.hash }}
 
   build-richdocuments-app:
     runs-on: ubuntu-latest
@@ -282,22 +386,49 @@ jobs:
         with:
           tools: composer:v2
 
-      - name: Cache app dependencies
+      - name: Get richdocuments submodule hash
+        id: submodule_hash
+        run: |
+          RICHDOCUMENTS_HASH=$(git rev-parse HEAD:apps-external/richdocuments)
+          echo "hash=${RICHDOCUMENTS_HASH}" >> $GITHUB_OUTPUT
+          echo "richdocuments submodule hash: ${RICHDOCUMENTS_HASH}"
+
+      - name: Cache built richdocuments app (by submodule commit)
+        id: cache-app
+        uses: actions/cache@v4
+        with:
+          path: apps-external/richdocuments/
+          key: ${{ runner.os }}-built-richdocuments-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-built-richdocuments-
+
+      - name: Cache app dependencies (if building)
+        if: steps.cache-app.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
             apps-external/richdocuments/node_modules
             ~/.composer/cache
-          key: ${{ runner.os }}-richdocuments-${{ hashFiles('apps-external/richdocuments/package-lock.json', 'apps-external/richdocuments/composer.lock') }}
+          key: ${{ runner.os }}-richdocuments-deps-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-richdocuments-deps-
 
       - name: Build richdocuments app
-        run: make -f IONOS/Makefile build_richdocuments_app
+        if: steps.cache-app.outputs.cache-hit != 'true'
+        run: |
+          make -f IONOS/Makefile build_richdocuments_app
+          echo "✓ richdocuments app built"
 
-      - name: Cache built app
-        uses: actions/cache/save@v4
-        with:
-          path: apps-external/richdocuments/
-          key: ${{ runner.os }}-built-richdocuments-${{ github.sha }}
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-app.outputs.cache-hit }}" == "true" ]; then
+            echo "🎉 Richdocuments app cache hit! Skipped building."
+          else
+            echo "🔨 Cache miss. Built richdocuments app."
+          fi
+
+    outputs:
+      cache_key: ${{ steps.submodule_hash.outputs.hash }}
 
   build-user-oidc-app:
     runs-on: ubuntu-latest
@@ -404,25 +535,53 @@ jobs:
         with:
           node-version-file: "package.json"
 
-      - name: Cache theme node_modules
+      - name: Get IONOS theme submodule hash
+        id: submodule_hash
+        run: |
+          IONOS_THEME_HASH=$(git rev-parse HEAD:themes/nc-ionos-theme)
+          echo "hash=${IONOS_THEME_HASH}" >> $GITHUB_OUTPUT
+          echo "IONOS theme submodule hash: ${IONOS_THEME_HASH}"
+
+      - name: Cache built IONOS theme (by submodule commit)
+        id: cache-theme
+        uses: actions/cache@v4
+        with:
+          path: themes/nc-ionos-theme/
+          key: ${{ runner.os }}-built-ionos-theme-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-built-ionos-theme-
+
+      - name: Cache theme node_modules (if building)
+        if: steps.cache-theme.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: themes/nc-ionos-theme/IONOS/node_modules
-          key: ${{ runner.os }}-ionos-theme-${{ hashFiles('themes/nc-ionos-theme/IONOS/package-lock.json') }}
+          key: ${{ runner.os }}-ionos-theme-modules-${{ steps.submodule_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-ionos-theme-modules-
 
       - name: Build IONOS theme
-        run: make -f IONOS/Makefile build_dep_ionos_theme
+        if: steps.cache-theme.outputs.cache-hit != 'true'
+        run: |
+          make -f IONOS/Makefile build_dep_ionos_theme
+          echo "✓ IONOS theme built"
 
-      - name: Cache built theme
-        uses: actions/cache/save@v4
-        with:
-          path: themes/nc-ionos-theme/
-          key: ${{ runner.os }}-built-ionos-theme-${{ github.sha }}
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-theme.outputs.cache-hit }}" == "true" ]; then
+            echo "🎉 IONOS theme cache hit! Skipped building."
+          else
+            echo "🔨 Cache miss. Built IONOS theme."
+          fi
+
+    outputs:
+      cache_key: ${{ steps.submodule_hash.outputs.hash }}
 
   # Final assembly job that combines everything
   hidrive-next-build:
     runs-on: ubuntu-latest
     needs:
+      - build-custom-npms
       - build-nextcloud-core
       - build-simplesettings-app
       - build-viewer-app
@@ -473,7 +632,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: custom-npms/
-          key: ${{ runner.os }}-built-custom-npms-${{ github.sha }}
+          key: ${{ runner.os }}-built-custom-npms-${{ needs.build-custom-npms.outputs.custom_npms_cache_key }}
           fail-on-cache-miss: true
 
       - name: Restore all built apps and themes
@@ -484,21 +643,21 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: apps-custom/simplesettings/
-          key: ${{ runner.os }}-built-simplesettings-${{ github.sha }}
+          key: ${{ runner.os }}-built-simplesettings-${{ needs.build-simplesettings-app.outputs.cache_key }}
           fail-on-cache-miss: true
 
       - name: Restore viewer app
         uses: actions/cache/restore@v4
         with:
           path: apps-external/viewer/
-          key: ${{ runner.os }}-built-viewer-${{ github.sha }}
+          key: ${{ runner.os }}-built-viewer-${{ needs.build-viewer-app.outputs.cache_key }}
           fail-on-cache-miss: true
 
       - name: Restore richdocuments app
         uses: actions/cache/restore@v4
         with:
           path: apps-external/richdocuments/
-          key: ${{ runner.os }}-built-richdocuments-${{ github.sha }}
+          key: ${{ runner.os }}-built-richdocuments-${{ needs.build-richdocuments-app.outputs.cache_key }}
           fail-on-cache-miss: true
 
       - name: Restore user_oidc app
@@ -526,7 +685,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: themes/nc-ionos-theme/
-          key: ${{ runner.os }}-built-ionos-theme-${{ github.sha }}
+          key: ${{ runner.os }}-built-ionos-theme-${{ needs.build-ionos-theme.outputs.cache_key }}
           fail-on-cache-miss: true
 
       - name: Add config partials
