@@ -69,6 +69,9 @@ jobs:
           node-version-file: "package.json"
           cache: 'npm'
 
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential make python3 zip unzip
+
       - name: Get custom-npms submodule hashes
         id: submodule_hashes
         run: |
@@ -186,6 +189,9 @@ jobs:
         env:
           runner: ubuntu-latest
 
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y make zip unzip
+
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
@@ -258,6 +264,9 @@ jobs:
         with:
           node-version-file: "package.json"
 
+      - name: Install build dependencies (if needed)
+        run: sudo apt-get update && sudo apt-get install -y build-essential make python3 zip unzip
+
       - name: Get simplesettings submodule hash
         id: submodule_hash
         run: |
@@ -320,6 +329,9 @@ jobs:
         uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
         with:
           tools: composer:v2
+
+      - name: Install build dependencies (if needed)
+        run: sudo apt-get update && sudo apt-get install -y build-essential make python3 zip unzip
 
       - name: Get viewer submodule hash
         id: submodule_hash
@@ -386,6 +398,9 @@ jobs:
         with:
           tools: composer:v2
 
+      - name: Install build dependencies (if needed)
+        run: sudo apt-get update && sudo apt-get install -y build-essential make python3 zip unzip
+
       - name: Get richdocuments submodule hash
         id: submodule_hash
         run: |
@@ -451,6 +466,9 @@ jobs:
         with:
           tools: composer:v2
 
+      - name: Install build dependencies (if needed)
+        run: sudo apt-get update && sudo apt-get install -y build-essential make python3 zip unzip
+
       - name: Cache app dependencies
         uses: actions/cache@v4
         with:
@@ -484,6 +502,9 @@ jobs:
         with:
           tools: composer:v2
 
+      - name: Install basic dependencies
+        run: sudo apt-get update && sudo apt-get install -y make zip unzip
+
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
@@ -510,6 +531,9 @@ jobs:
         with:
           submodules: true
 
+      - name: Install basic dependencies
+        run: sudo apt-get update && sudo apt-get install -y make zip unzip
+
       - name: Build theming app
         run: make -f IONOS/Makefile build_dep_theming_app
 
@@ -534,6 +558,9 @@ jobs:
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version-file: "package.json"
+
+      - name: Install build dependencies (if needed)
+        run: sudo apt-get update && sudo apt-get install -y build-essential make python3
 
       - name: Get IONOS theme submodule hash
         id: submodule_hash
