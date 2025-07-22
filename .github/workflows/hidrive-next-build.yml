@@ -292,6 +292,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-simplesettings-modules-
 
+      - name: Restore built custom-npms
+        if: steps.cache-app.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: custom-npms/
+          key: ${{ runner.os }}-built-custom-npms-${{ needs.build-custom-npms.outputs.custom_npms_cache_key }}
+          fail-on-cache-miss: true
+
       - name: Build simplesettings app
         if: steps.cache-app.outputs.cache-hit != 'true'
         run: |
@@ -359,6 +367,14 @@ jobs:
           key: ${{ runner.os }}-viewer-deps-${{ steps.submodule_hash.outputs.hash }}
           restore-keys: |
             ${{ runner.os }}-viewer-deps-
+
+      - name: Restore built custom-npms
+        if: steps.cache-app.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: custom-npms/
+          key: ${{ runner.os }}-built-custom-npms-${{ needs.build-custom-npms.outputs.custom_npms_cache_key }}
+          fail-on-cache-miss: true
 
       - name: Build viewer app
         if: steps.cache-app.outputs.cache-hit != 'true'
