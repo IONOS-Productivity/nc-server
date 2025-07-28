@@ -58,6 +58,7 @@ on:
     branches:
       # Enable once approved
       - ionos-stable
+      - tl/dev/sbom-generation-DEMO
 
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
@@ -118,79 +119,79 @@ jobs:
             "component": [
               {
                 "name": "nextcloud",
-                "project_name": "HiDrive NEXT Core",
+                "project_name": "WIP HiDrive NEXT Core",
                 "path": ".",
                 "composer_output": "bom.nextcloud.composer.json",
                 "npm_output": "bom.nextcloud.npm.json"
               },
               {
                 "name": "theme-nc-ionos-theme-legacy",
-                "project_name": "HiDrive NEXT Theme: nc-ionos-theme",
+                "project_name": "WIP HiDrive NEXT Theme: nc-ionos-theme",
                 "path": "themes/nc-ionos-theme/IONOS",
                 "npm_output": "bom.theme-nc-ionos-theme-legacy.json"
               },
               {
                 "name": "app-simplesettings",
-                "project_name": "HiDrive NEXT App: simplesettings",
+                "project_name": "WIP HiDrive NEXT App: simplesettings",
                 "path": "apps-custom/simplesettings",
                 "composer_output": "bom.app-simplesettings.composer.json",
                 "npm_output": "bom.app-simplesettings.npm.json"
               },
               {
                 "name": "app-googleanalytics",
-                "project_name": "HiDrive NEXT App: googleanalytics",
+                "project_name": "WIP HiDrive NEXT App: googleanalytics",
                 "path": "apps-custom/googleanalytics",
                 "composer_output": "bom.app-googleanalytics.json"
               },
               {
                 "name": "app-ionos-processes",
-                "project_name": "HiDrive NEXT App: nc_ionos_processes",
+                "project_name": "WIP HiDrive NEXT App: nc_ionos_processes",
                 "path": "apps-custom/nc_ionos_processes",
                 "composer_output": "bom.app-ionos-processes.json"
               },
               {
                 "name": "app-theming",
-                "project_name": "HiDrive NEXT App: nc_theming",
+                "project_name": "WIP HiDrive NEXT App: nc_theming",
                 "path": "apps-custom/nc_theming",
                 "composer_output": "bom.app-theming.json"
               },
               {
                 "name": "app-viewer",
-                "project_name": "HiDrive NEXT App: viewer",
+                "project_name": "WIP HiDrive NEXT App: viewer",
                 "path": "apps-external/viewer",
                 "composer_output": "bom.app-viewer.composer.json",
                 "npm_output": "bom.app-viewer.npm.json"
               },
               {
                 "name": "app-user_oidc",
-                "project_name": "HiDrive NEXT App: user_oidc",
+                "project_name": "WIP HiDrive NEXT App: user_oidc",
                 "path": "apps-external/user_oidc",
                 "composer_output": "bom.app-user_oidc.composer.json",
                 "npm_output": "bom.app-user_oidc.npm.json"
               },
               {
                 "name": "app-groupquota",
-                "project_name": "HiDrive NEXT App: groupquota",
+                "project_name": "WIP HiDrive NEXT App: groupquota",
                 "path": "apps-external/groupquota",
                 "composer_output": "bom.app-groupquota.json"
               },
               {
                 "name": "app-richdocuments",
-                "project_name": "HiDrive NEXT App: richdocuments",
+                "project_name": "WIP HiDrive NEXT App: richdocuments",
                 "path": "apps-external/richdocuments",
                 "composer_output": "bom.app-richdocuments.composer.json",
                 "npm_output": "bom.app-richdocuments.npm.json"
               },
               {
                 "name": "app-files_downloadlimit",
-                "project_name": "HiDrive NEXT App: files_downloadlimit",
+                "project_name": "WIP HiDrive NEXT App: files_downloadlimit",
                 "path": "apps-external/files_downloadlimit",
                 "composer_output": "bom.app-files_downloadlimit.composer.json",
                 "npm_output": "bom.app-files_downloadlimit.npm.json"
               },
               {
                 "name": "app-serverinfo",
-                "project_name": "HiDrive NEXT App: serverinfo",
+                "project_name": "WIP HiDrive NEXT App: serverinfo",
                 "path": "apps-external/serverinfo",
                 "composer_output": "bom.app-serverinfo.json"
               }
@@ -313,7 +314,7 @@ jobs:
           ls -la *.json || echo "No BOM JSON files found"
 
       - name: Upload SBOMs to Dependency Track
-        if: github.ref == 'refs/heads/ionos-dev'
+        if: github.ref == 'refs/heads/tl/dev/sbom-generation-DEMO'
         env:
           DT_BASE_URL: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
