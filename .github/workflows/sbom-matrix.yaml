@@ -58,6 +58,7 @@ on:
     branches:
       # Enable once approved
       - ionos-stable
+      - tl/dev/sbom-generation
 
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
@@ -121,90 +122,78 @@ jobs:
                 "project_name": "HiDrive NEXT Core",
                 "path": ".",
                 "composer_output": "bom.nextcloud.composer.json",
-                "npm_output": "bom.nextcloud.npm.json",
-                "project_id": "DT_OBJECT_NEXTCLOUD"
+                "npm_output": "bom.nextcloud.npm.json"
               },
               {
                 "name": "theme-nc-ionos-theme-legacy",
                 "project_name": "HiDrive NEXT Theme: nc-ionos-theme",
                 "path": "themes/nc-ionos-theme/IONOS",
-                "npm_output": "bom.theme-nc-ionos-theme-legacy.json",
-                "project_id": "DT_OBJECT_THEME"
+                "npm_output": "bom.theme-nc-ionos-theme-legacy.json"
               },
               {
                 "name": "app-simplesettings",
                 "project_name": "HiDrive NEXT App: simplesettings",
                 "path": "apps-custom/simplesettings",
                 "composer_output": "bom.app-simplesettings.composer.json",
-                "npm_output": "bom.app-simplesettings.npm.json",
-                "project_id": "DT_OBJECT_APP_SIMPLESETTINGS"
+                "npm_output": "bom.app-simplesettings.npm.json"
               },
               {
                 "name": "app-googleanalytics",
                 "project_name": "HiDrive NEXT App: googleanalytics",
                 "path": "apps-custom/googleanalytics",
-                "composer_output": "bom.app-googleanalytics.json",
-                "project_id": "DT_OBJECT_APP_GOOGLE_ANALYTICS"
+                "composer_output": "bom.app-googleanalytics.json"
               },
               {
                 "name": "app-ionos-processes",
                 "project_name": "HiDrive NEXT App: nc_ionos_processes",
                 "path": "apps-custom/nc_ionos_processes",
-                "composer_output": "bom.app-ionos-processes.json",
-                "project_id": "DT_OBJECT_APP_IONOS_PROCESSES"
+                "composer_output": "bom.app-ionos-processes.json"
               },
               {
                 "name": "app-theming",
                 "project_name": "HiDrive NEXT App: nc_theming",
                 "path": "apps-custom/nc_theming",
-                "composer_output": "bom.app-theming.json",
-                "project_id": "DT_OBJECT_APP_THEMING"
+                "composer_output": "bom.app-theming.json"
               },
               {
                 "name": "app-viewer",
                 "project_name": "HiDrive NEXT App: viewer",
                 "path": "apps-external/viewer",
                 "composer_output": "bom.app-viewer.composer.json",
-                "npm_output": "bom.app-viewer.npm.json",
-                "project_id": "DT_OBJECT_APP_VIEWER"
+                "npm_output": "bom.app-viewer.npm.json"
               },
               {
                 "name": "app-user_oidc",
                 "project_name": "HiDrive NEXT App: user_oidc",
                 "path": "apps-external/user_oidc",
                 "composer_output": "bom.app-user_oidc.composer.json",
-                "npm_output": "bom.app-user_oidc.npm.json",
-                "project_id": "DT_OBJECT_APP_USER_OIDC"
+                "npm_output": "bom.app-user_oidc.npm.json"
               },
               {
                 "name": "app-groupquota",
                 "project_name": "HiDrive NEXT App: groupquota",
                 "path": "apps-external/groupquota",
-                "composer_output": "bom.app-groupquota.json",
-                "project_id": "DT_OBJECT_APP_GROUPQUOTA"
+                "composer_output": "bom.app-groupquota.json"
               },
               {
                 "name": "app-richdocuments",
                 "project_name": "HiDrive NEXT App: richdocuments",
                 "path": "apps-external/richdocuments",
                 "composer_output": "bom.app-richdocuments.composer.json",
-                "npm_output": "bom.app-richdocuments.npm.json",
-                "project_id": "DT_OBJECT_APP_RICHDOCUMENTS"
+                "npm_output": "bom.app-richdocuments.npm.json"
               },
               {
                 "name": "app-files_downloadlimit",
                 "project_name": "HiDrive NEXT App: files_downloadlimit",
                 "path": "apps-external/files_downloadlimit",
                 "composer_output": "bom.app-files_downloadlimit.composer.json",
-                "npm_output": "bom.app-files_downloadlimit.npm.json",
-                "project_id": "DT_OBJECT_APP_FILES_DOWNLOADLIMIT"
+                "npm_output": "bom.app-files_downloadlimit.npm.json"
               },
               {
                 "name": "app-serverinfo",
                 "project_name": "HiDrive NEXT App: serverinfo",
                 "path": "apps-external/serverinfo",
-                "composer_output": "bom.app-serverinfo.json",
-                "project_id": "DT_OBJECT_APP_SERVERINFO"
+                "composer_output": "bom.app-serverinfo.json"
               }
             ]
           }'
@@ -286,31 +275,6 @@ jobs:
           npx @cyclonedx/cyclonedx-npm --ignore-npm-errors --package-lock-only --output-format JSON --spec-version 1.6 --output-file "${parent_dir}/${{ matrix.component.npm_output }}"
           ls -la "${parent_dir}/${{ matrix.component.npm_output }}"
 
-      - name: Generate combined PHP+NPM SBOM
-        if: matrix.component.composer_output && matrix.component.npm_output
-        run: |
-          # Create a combined SBOM by merging PHP and NPM components
-          # This ensures a single comprehensive SBOM for components with both dependency types
-          ls -la "${{ matrix.component.composer_output }}" "${{ matrix.component.npm_output }}"
-          jq -s '
-            {
-              "bomFormat": "CycloneDX",
-              "specVersion": "1.6",
-              "serialNumber": ("urn:uuid:" + (now | tostring | gsub("[^0-9]"; "") + "12345678901234567890" | .[0:8] + "-" + .[8:12] + "-" + .[12:16] + "-" + .[16:20] + "-" + .[20:32])),
-              "version": 1,
-              "metadata": {
-                "timestamp": (now | strftime("%Y-%m-%dT%H:%M:%SZ")),
-                "component": {
-                  "type": "application",
-                  "name": "${{ matrix.component.name }}-npm-composer-combined",
-                  "version": "${{ needs.get-version.outputs.project_version }}"
-                }
-              },
-              "components": (.[0].components + .[1].components | unique_by(.name + .version + .type))
-            }
-          ' "${{ matrix.component.composer_output }}" "${{ matrix.component.npm_output }}" > bom.${{ matrix.component.name }}-combined-sbom.json
-          rm -f "${{ matrix.component.composer_output }}" "${{ matrix.component.npm_output }}"
-
       - name: Upload component SBOM artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -318,7 +282,6 @@ jobs:
           path: |
             ${{ matrix.component.composer_output }}
             ${{ matrix.component.npm_output }}
-            bom.${{ matrix.component.name }}-combined-sbom.json
           if-no-files-found: ignore
 
   # Job 4: Upload SBOMs to Dependency Track
@@ -348,7 +311,7 @@ jobs:
           ls -la *.json || echo "No BOM JSON files found"
 
       - name: Upload SBOMs to Dependency Track
-        if: github.ref == 'refs/heads/ionos-stable'
+        if: github.ref == 'refs/heads/tl/dev/sbom-generation'
         env:
           DT_BASE_URL: ${{ vars.DEPENDENCY_TRACK_BASE_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
@@ -369,13 +332,15 @@ jobs:
             local bom_file="$1"
             local project_id="$2"
             local project_name="$3"
+            local artifact_type="$4"
+            local qualified_artifact_name="$3-$4"
             
             if [[ ! -f "$bom_file" ]]; then
               echo "Warning: $bom_file not found, skipping..."
               return 0
             fi
             
-            echo "Uploading SBOM ($bom_file) to project $project_id ($project_name)..."
+            echo "Uploading SBOM ($bom_file) to parent project $project_id ($project_name and artifact type $artifact_type)..."
           
             response=$(curl \
               --cacert "${cert_file}" \
@@ -389,7 +354,7 @@ jobs:
               -F "isLatest=true" \
               -F "autoCreate=true" \
               -F "parentUUID=${project_id}" \
-              -F "projectName=${project_name}" \
+              -F "projectName=${qualified_artifact_name}" \
               -F "projectVersion=${PROJECT_VERSION}" \
               -F "bom=@${bom_file}")
             
@@ -413,28 +378,26 @@ jobs:
             
             composer_output=$(echo "$component_json" | jq -r '.composer_output')
             npm_output=$(echo "$component_json" | jq -r '.npm_output')
-            project_id_var_name=$(echo "$component_json" | jq -r '.project_id')
             component_name=$(echo "$component_json" | jq -r '.name')
-            project_id_var_value=$(echo "$VARS_CONTEXT" | jq -r --arg key "$project_id_var_name" '.[$key]')
-            project_name=$(echo "$component_json" | jq -r '.project_name')
 
             echo "Processing component: ${component_name}"
 
-            # Determine which SBOM file to upload based on component dependencies:
-            # - Combined SBOM if component has both Composer and NPM dependencies
-            # - Individual SBOM files if component has only one dependency type
-            if [[ "$composer_output" != "null" && "$npm_output" != "null" ]]; then
-              bom_file="bom.${component_name}-combined-sbom.json"
-            elif [[ "$composer_output" != "null" ]]; then
-              bom_file=$(echo "$component_json" | jq -r '.composer_output')
-            elif [[ "$npm_output" != "null" ]]; then
-              bom_file=$(echo "$component_json" | jq -r '.npm_output')
-            else
-              echo "Skipping component with no composer or npm."
+            if [[ "$composer_output" == "null" ]] && [[ "$npm_output" == "null" ]]; then
+              echo "Skipping component with neither composer nor npm."
               continue
             fi
 
-            upload_bom "$bom_file" "$project_id_var_value" "$project_name" || exit 1
+            if [[ "$composer_output" != "null" ]]; then
+              bom_file=$(echo "$component_json" | jq -r '.composer_output')
+
+              upload_bom "$bom_file" "${DEPENDENCY_TRACK_ROOT_OBJECT_ID}" "$project_name" "composer" || exit 1
+            fi
+
+            if [[ "$npm_output" != "null" ]]; then
+              bom_file=$(echo "$component_json" | jq -r '.npm_output')
+
+              upload_bom "$bom_file" "${DEPENDENCY_TRACK_ROOT_OBJECT_ID}" "$project_name" "npm" || exit 1
+            fi
           done
 
           # Cleanup
