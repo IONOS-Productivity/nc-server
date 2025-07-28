@@ -265,7 +265,9 @@ jobs:
         working-directory: ${{ matrix.component.path }}
         env:
           FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
-        run: npm ci
+        run: |
+          ls -la
+          npm ci
 
       - name: Generate SBOM (NPM)
         if: matrix.component.npm_output
