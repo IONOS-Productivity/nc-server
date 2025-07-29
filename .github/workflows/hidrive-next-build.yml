@@ -32,6 +32,7 @@ on:
     branches:
       - ionos-dev
       - ionos-stable
+      - tl/dev/fix-package-lock-1350-TEST-CI-BUILD-AND-PROOF
 
 env:
   TARGET_PACKAGE_NAME: hidrive-next.zip
