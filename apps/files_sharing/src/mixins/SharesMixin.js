@@ -4,7 +4,7 @@
  */
 
 import { getCurrentUser } from '@nextcloud/auth'
-import { showError, showSuccess } from '@nextcloud/dialogs'
+import { DialogBuilder, showError, showSuccess } from '@nextcloud/dialogs'
 import { ShareType } from '@nextcloud/sharing'
 import { emit } from '@nextcloud/event-bus'
 
@@ -279,12 +279,38 @@ export default {
 		},
 
 		/**
+		 * Display delete share confirmation dialog
+		 * @returns {Promise<boolean>}
+		 */
+		async askDeleteConfirmation() {
+			let confirmed = false
+			await new DialogBuilder()
+				.setName(t('files_sharing', 'Confirm deletion'))
+				.setText(t('files_sharing', 'You are about to delete this share'))
+				.setButtons([
+					{ label: t('core', 'Cancel') },
+					{
+						label: t('files_sharing', 'Delete share'),
+						type: 'error',
+						callback: () => { confirmed = true },
+					},
+				])
+				.build()
+				.show()
+			return confirmed
+		},
+
+		/**
 		 * Delete share button handler
 		 */
 		async onDelete() {
 			try {
 				this.loading = true
 				this.open = false
+				if (!await this.askDeleteConfirmation()) {
+					this.loading = false
+					return
+				}
 				await this.deleteShare(this.share.id)
 				logger.debug('Share deleted', { shareId: this.share.id })
 				const message = this.share.itemType === 'file'
