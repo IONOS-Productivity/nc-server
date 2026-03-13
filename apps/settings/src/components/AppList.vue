@@ -141,7 +141,7 @@
 <script>
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
 import pLimit from 'p-limit'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import AppItem from './AppList/AppItem.vue'
 import AppManagement from '../mixins/AppManagement'
 import { useAppApiStore } from '../store/app-api-store'
@@ -325,13 +325,14 @@ export default {
 					OC.Notification.show(error)
 				})
 		},
-		updateAll() {
+		async updateAll() {
 			const limit = pLimit(1)
-			this.apps
-				.filter(app => app.update)
+			const updateTasks = this.apps
+				.filter((app) => app.update)
 				.map((app) => limit(() => {
 					this.update(app.id)
 				}))
+			await Promise.all(updateTasks)
 		},
 	},
 }
@@ -392,12 +393,12 @@ $toolbar-height: 44px + $toolbar-padding * 2;
 	}
 
 	&__bundle-header {
+		color: var(--color-main-text);
 		margin-block: 0;
 		margin-inline: 50px 10px;
 		font-weight: bold;
 		font-size: 20px;
 		line-height: 30px;
-		color: var(--color-text-light);
 	}
 }
 

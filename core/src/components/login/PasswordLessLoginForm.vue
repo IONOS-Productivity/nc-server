@@ -27,20 +27,22 @@
 			:loading="loading"
 			@click="authenticate" />
 	</form>
-	<div v-else-if="!supportsWebauthn" class="update">
-		<InformationIcon size="70" />
-		<h2>{{ t('core', 'Browser not supported') }}</h2>
-		<p class="infogroup">
-			{{ t('core', 'Passwordless authentication is not supported in your browser.') }}
-		</p>
-	</div>
-	<div v-else-if="!isHttps && !isLocalhost" class="update">
-		<LockOpenIcon size="70" />
-		<h2>{{ t('core', 'Your connection is not secure') }}</h2>
-		<p class="infogroup">
-			{{ t('core', 'Passwordless authentication is only available over a secure connection.') }}
-		</p>
-	</div>
+
+	<NcEmptyContent v-else-if="!isHttps && !isLocalhost"
+		:name="t('core', 'Your connection is not secure')"
+		:description="t('core', 'Passwordless authentication is only available over a secure connection.')">
+		<template #icon>
+			<LockOpenIcon />
+		</template>
+	</NcEmptyContent>
+
+	<NcEmptyContent v-else
+		:name="t('core', 'Browser not supported')"
+		:description="t('core', 'Passwordless authentication is not supported in your browser.')">
+		<template #icon>
+			<InformationIcon />
+		</template>
+	</NcEmptyContent>
 </template>
 
 <script type="ts">
@@ -51,10 +53,13 @@ import {
 	startAuthentication,
 	finishAuthentication,
 } from '../../services/WebAuthnAuthenticationService.ts'
+
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
+
+import InformationIcon from 'vue-material-design-icons/InformationOutline.vue'
 import LoginButton from './LoginButton.vue'
-import InformationIcon from 'vue-material-design-icons/Information.vue'
 import LockOpenIcon from 'vue-material-design-icons/LockOpen.vue'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
 import logger from '../../logger'
 
 export default defineComponent({
@@ -63,6 +68,7 @@ export default defineComponent({
 		LoginButton,
 		InformationIcon,
 		LockOpenIcon,
+		NcEmptyContent,
 		NcTextField,
 	},
 	props: {
@@ -151,13 +157,6 @@ export default defineComponent({
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
-
-	:deep(label) {
-		text-align: initial;
-	}
-}
-
-.update {
-	margin: 0 auto;
+	margin: 0;
 }
 </style>

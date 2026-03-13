@@ -143,10 +143,10 @@
     "Storage connection error. %s" : "საცავის კავშირის შეცდომა. %s",
     "Storage is temporarily not available" : "საცავი დროებით ხელმიუწვდომელია",
     "Storage connection timeout. %s" : "საცავის კავშირის დროის ამოწურვა. %s",
+    "Images" : "სურათები",
     "Text" : "ტექსტი",
     "Summary" : "შეჯამება",
     "Translate" : "გადათარგმნეთ",
-    "Result" : "შედეგი",
-    "File is currently busy, please try again later" : "ფაილი ამჟამად დაკავებულია, გთხოვთ მოგვიანებით სცადოთ ახლიდან"
+    "Result" : "შედეგი"
 },"pluralForm" :"nplurals=2; plural=(n!=1);"
 }

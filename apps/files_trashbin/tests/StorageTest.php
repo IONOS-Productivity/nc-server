@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /**
  * SPDX-FileCopyrightText: 2017-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -25,7 +27,9 @@ use OCP\Files\Node;
 use OCP\Files\Storage\IStorage;
 use OCP\IUserManager;
 use OCP\Lock\ILockingProvider;
+use OCP\Server;
 use OCP\Share\IShare;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Test\Traits\MountProviderTrait;
 
@@ -49,20 +53,9 @@ class TemporaryNoCross extends Temporary {
 class StorageTest extends \Test\TestCase {
 	use MountProviderTrait;
 
-	/**
-	 * @var string
-	 */
-	private $user;
-
-	/**
-	 * @var View
-	 */
-	private $rootView;
-
-	/**
-	 * @var View
-	 */
-	private $userView;
+	private string $user;
+	private View $rootView;
+	private View $userView;
 
 	// 239 chars so appended timestamp of 12 chars will exceed max length of 250 chars
 	private const LONG_FILENAME = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt';
@@ -80,7 +73,7 @@ class StorageTest extends \Test\TestCase {
 		$trashbinApp->boot($this->createMock(IBootContext::class));
 
 		$this->user = $this->getUniqueId('user');
-		\OC::$server->getUserManager()->createUser($this->user, $this->user);
+		Server::get(IUserManager::class)->createUser($this->user, $this->user);
 
 		// this will setup the FS
 		$this->loginAsUser($this->user);
@@ -100,7 +93,7 @@ class StorageTest extends \Test\TestCase {
 	protected function tearDown(): void {
 		Filesystem::getLoader()->removeStorageWrapper('oc_trashbin');
 		$this->logout();
-		$user = \OC::$server->getUserManager()->get($this->user);
+		$user = Server::get(IUserManager::class)->get($this->user);
 		if ($user !== null) {
 			$user->delete();
 		}
@@ -120,7 +113,7 @@ class StorageTest extends \Test\TestCase {
 
 		// check if file is in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('test.txt', substr($name, 0, strrpos($name, '.')));
 	}
@@ -137,7 +130,7 @@ class StorageTest extends \Test\TestCase {
 
 		// check if folder is in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('folder', substr($name, 0, strrpos($name, '.')));
 
@@ -161,7 +154,7 @@ class StorageTest extends \Test\TestCase {
 
 		// check if file is in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals($truncatedFilename, substr($name, 0, strrpos($name, '.')));
 	}
@@ -180,7 +173,7 @@ class StorageTest extends \Test\TestCase {
 
 		// check if file is in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals($truncatedFilename, substr($name, 0, strrpos($name, '.')));
 	}
@@ -206,7 +199,7 @@ class StorageTest extends \Test\TestCase {
 
 		// check if file is in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('subfile.txt', substr($name, 0, strrpos($name, '.')));
 	}
@@ -233,12 +226,12 @@ class StorageTest extends \Test\TestCase {
 
 		// check if folder is in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('folder', substr($name, 0, strrpos($name, '.')));
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/' . $name . '/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('subfile.txt', $name);
 	}
@@ -261,13 +254,13 @@ class StorageTest extends \Test\TestCase {
 
 		// check if versions are in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('test.txt.v', substr($name, 0, strlen('test.txt.v')));
 
 		// versions deleted
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -278,7 +271,7 @@ class StorageTest extends \Test\TestCase {
 		$this->userView->file_put_contents('folder/inside.txt', 'v1');
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/folder/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		$this->userView->rmdir('folder');
 
@@ -288,19 +281,19 @@ class StorageTest extends \Test\TestCase {
 
 		// check if versions are in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('folder.d', substr($name, 0, strlen('folder.d')));
 
 		// check if versions are in trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions/' . $name . '/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('inside.txt.v', substr($name, 0, strlen('inside.txt.v')));
 
 		// versions deleted
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/folder/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -313,20 +306,20 @@ class StorageTest extends \Test\TestCase {
 		$this->userView->file_put_contents('share/test.txt', 'v2');
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/share/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		$recipientUser = $this->getUniqueId('recipient_');
-		\OC::$server->getUserManager()->createUser($recipientUser, $recipientUser);
+		Server::get(IUserManager::class)->createUser($recipientUser, $recipientUser);
 
-		$node = \OC::$server->getUserFolder($this->user)->get('share');
-		$share = \OC::$server->getShareManager()->newShare();
+		$node = Server::get(IRootFolder::class)->getUserFolder($this->user)->get('share');
+		$share = Server::get(\OCP\Share\IManager::class)->newShare();
 		$share->setNode($node)
 			->setShareType(IShare::TYPE_USER)
 			->setSharedBy($this->user)
 			->setSharedWith($recipientUser)
 			->setPermissions(Constants::PERMISSION_ALL);
-		$share = \OC::$server->getShareManager()->createShare($share);
-		\OC::$server->getShareManager()->acceptShare($share, $recipientUser);
+		$share = Server::get(\OCP\Share\IManager::class)->createShare($share);
+		Server::get(\OCP\Share\IManager::class)->acceptShare($share, $recipientUser);
 
 		$this->loginAsUser($recipientUser);
 
@@ -340,18 +333,18 @@ class StorageTest extends \Test\TestCase {
 
 		// check if versions are in trashbin for both users
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions');
-		$this->assertEquals(1, count($results), 'Versions in owner\'s trashbin');
+		$this->assertCount(1, $results, 'Versions in owner\'s trashbin');
 		$name = $results[0]->getName();
 		$this->assertEquals('test.txt.v', substr($name, 0, strlen('test.txt.v')));
 
 		$results = $this->rootView->getDirectoryContent($recipientUser . '/files_trashbin/versions');
-		$this->assertEquals(1, count($results), 'Versions in recipient\'s trashbin');
+		$this->assertCount(1, $results, 'Versions in recipient\'s trashbin');
 		$name = $results[0]->getName();
 		$this->assertEquals('test.txt.v', substr($name, 0, strlen('test.txt.v')));
 
 		// versions deleted
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/share/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -365,20 +358,19 @@ class StorageTest extends \Test\TestCase {
 		$this->userView->file_put_contents('share/folder/test.txt', 'v2');
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/share/folder/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		$recipientUser = $this->getUniqueId('recipient_');
-		\OC::$server->getUserManager()->createUser($recipientUser, $recipientUser);
-
-		$node = \OC::$server->getUserFolder($this->user)->get('share');
-		$share = \OC::$server->getShareManager()->newShare();
+		Server::get(IUserManager::class)->createUser($recipientUser, $recipientUser);
+		$node = Server::get(IRootFolder::class)->getUserFolder($this->user)->get('share');
+		$share = Server::get(\OCP\Share\IManager::class)->newShare();
 		$share->setNode($node)
 			->setShareType(IShare::TYPE_USER)
 			->setSharedBy($this->user)
 			->setSharedWith($recipientUser)
 			->setPermissions(Constants::PERMISSION_ALL);
-		$share = \OC::$server->getShareManager()->createShare($share);
-		\OC::$server->getShareManager()->acceptShare($share, $recipientUser);
+		$share = Server::get(\OCP\Share\IManager::class)->createShare($share);
+		Server::get(\OCP\Share\IManager::class)->acceptShare($share, $recipientUser);
 
 		$this->loginAsUser($recipientUser);
 
@@ -392,31 +384,31 @@ class StorageTest extends \Test\TestCase {
 
 		// check if versions are in trashbin for owner
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('folder.d', substr($name, 0, strlen('folder.d')));
 
 		// check if file versions are in trashbin for owner
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions/' . $name . '/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('test.txt.v', substr($name, 0, strlen('test.txt.v')));
 
 		// check if versions are in trashbin for recipient
 		$results = $this->rootView->getDirectoryContent($recipientUser . '/files_trashbin/versions');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('folder.d', substr($name, 0, strlen('folder.d')));
 
 		// check if file versions are in trashbin for recipient
 		$results = $this->rootView->getDirectoryContent($recipientUser . '/files_trashbin/versions/' . $name . '/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 		$name = $results[0]->getName();
 		$this->assertEquals('test.txt.v', substr($name, 0, strlen('test.txt.v')));
 
 		// versions deleted
 		$results = $this->rootView->getDirectoryContent($recipientUser . '/files_versions/share/folder/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -432,10 +424,10 @@ class StorageTest extends \Test\TestCase {
 		$this->userView->file_put_contents('test.txt', 'v1');
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		// move to another storage
 		$this->userView->rename('test.txt', 'substorage/test.txt');
@@ -447,15 +439,15 @@ class StorageTest extends \Test\TestCase {
 
 		// versions were moved too
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/substorage');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		// check that nothing got trashed by the rename's unlink() call
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 
 		// check that versions were moved and not trashed
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -471,10 +463,10 @@ class StorageTest extends \Test\TestCase {
 		$this->userView->file_put_contents('folder/inside.txt', 'v1');
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/folder/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		// move to another storage
 		$this->userView->rename('folder', 'substorage/folder');
@@ -486,15 +478,15 @@ class StorageTest extends \Test\TestCase {
 
 		// versions were moved too
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_versions/substorage/folder/');
-		$this->assertEquals(1, count($results));
+		$this->assertCount(1, $results);
 
 		// check that nothing got trashed by the rename's unlink() call
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 
 		// check that versions were moved and not trashed
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/versions/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -502,11 +494,11 @@ class StorageTest extends \Test\TestCase {
 	 */
 	public function testSingleStorageDeleteFileFail(): void {
 		/**
-		 * @var Temporary|\PHPUnit\Framework\MockObject\MockObject $storage
+		 * @var Temporary&MockObject $storage
 		 */
-		$storage = $this->getMockBuilder('\OC\Files\Storage\Temporary')
+		$storage = $this->getMockBuilder(Temporary::class)
 			->setConstructorArgs([[]])
-			->setMethods(['rename', 'unlink', 'moveFromStorage'])
+			->onlyMethods(['rename', 'unlink', 'moveFromStorage'])
 			->getMock();
 
 		$storage->expects($this->any())
@@ -531,7 +523,7 @@ class StorageTest extends \Test\TestCase {
 
 		// file should not be in the trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
 	/**
@@ -539,11 +531,11 @@ class StorageTest extends \Test\TestCase {
 	 */
 	public function testSingleStorageDeleteFolderFail(): void {
 		/**
-		 * @var Temporary|\PHPUnit\Framework\MockObject\MockObject $storage
+		 * @var Temporary&MockObject $storage
 		 */
-		$storage = $this->getMockBuilder('\OC\Files\Storage\Temporary')
+		$storage = $this->getMockBuilder(Temporary::class)
 			->setConstructorArgs([[]])
-			->setMethods(['rename', 'unlink', 'rmdir'])
+			->onlyMethods(['rename', 'unlink', 'rmdir'])
 			->getMock();
 
 		$storage->expects($this->any())
@@ -565,18 +557,15 @@ class StorageTest extends \Test\TestCase {
 
 		// file should not be in the trashbin
 		$results = $this->rootView->getDirectoryContent($this->user . '/files_trashbin/files/');
-		$this->assertEquals(0, count($results));
+		$this->assertCount(0, $results);
 	}
 
-	/**
-	 * @dataProvider dataTestShouldMoveToTrash
-	 */
-	public function testShouldMoveToTrash($mountPoint, $path, $userExists, $appDisablesTrash, $expected): void {
+	#[\PHPUnit\Framework\Attributes\DataProvider('dataTestShouldMoveToTrash')]
+	public function testShouldMoveToTrash(string $mountPoint, string $path, bool $userExists, bool $appDisablesTrash, bool $expected): void {
 		$fileID = 1;
 		$cache = $this->createMock(ICache::class);
 		$cache->expects($this->any())->method('getId')->willReturn($fileID);
-		$tmpStorage = $this->getMockBuilder('\OC\Files\Storage\Temporary')
-			->disableOriginalConstructor()->getMock($cache);
+		$tmpStorage = $this->createMock(Temporary::class);
 		$tmpStorage->expects($this->any())->method('getCache')->willReturn($cache);
 		$userManager = $this->getMockBuilder(IUserManager::class)
 			->disableOriginalConstructor()->getMock();
@@ -605,7 +594,9 @@ class StorageTest extends \Test\TestCase {
 					$eventDispatcher,
 					$rootFolder
 				]
-			)->setMethods(['createMoveToTrashEvent'])->getMock();
+			)
+			->onlyMethods(['createMoveToTrashEvent'])
+			->getMock();
 
 		$storage->expects($this->any())->method('createMoveToTrashEvent')->with($node)
 			->willReturn($event);
@@ -615,7 +606,7 @@ class StorageTest extends \Test\TestCase {
 		);
 	}
 
-	public function dataTestShouldMoveToTrash() {
+	public static function dataTestShouldMoveToTrash(): array {
 		return [
 			['/schiesbn/', '/files/test.txt', true, false, true],
 			['/schiesbn/', '/files/test.txt', false, false, false],
@@ -649,7 +640,7 @@ class StorageTest extends \Test\TestCase {
 		$timeFactory->method('getTime')
 			->willReturn(1000);
 
-		$lockingProvider = \OC::$server->getLockingProvider();
+		$lockingProvider = Server::get(ILockingProvider::class);
 
 		$this->overwriteService(ITimeFactory::class, $timeFactory);
 

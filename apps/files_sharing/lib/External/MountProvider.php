@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -10,8 +11,10 @@ use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\Federation\ICloudIdManager;
 use OCP\Files\Config\IMountProvider;
 use OCP\Files\Storage\IStorageFactory;
+use OCP\Http\Client\IClientService;
 use OCP\IDBConnection;
 use OCP\IUser;
+use OCP\Server;
 
 class MountProvider implements IMountProvider {
 	public const STORAGE = '\OCA\Files_Sharing\External\Storage';
@@ -42,7 +45,7 @@ class MountProvider implements IMountProvider {
 		$data['mountpoint'] = $mountPoint;
 		$data['cloudId'] = $this->cloudIdManager->getCloudId($data['owner'], $data['remote']);
 		$data['certificateManager'] = \OC::$server->getCertificateManager();
-		$data['HttpClientService'] = \OC::$server->getHTTPClientService();
+		$data['HttpClientService'] = Server::get(IClientService::class);
 		return new Mount(self::STORAGE, $mountPoint, $data, $manager, $storageFactory);
 	}
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -20,29 +21,20 @@ use OCP\Mail\IEMailTemplate;
 use OCP\Mail\IMailer;
 use OCP\Security\ICrypto;
 use OCP\Security\ISecureRandom;
+use PHPUnit\Framework\MockObject\MockObject;
 use Test\TestCase;
 
 class NewUserMailHelperTest extends TestCase {
-	/** @var Defaults|\PHPUnit\Framework\MockObject\MockObject */
-	private $defaults;
-	/** @var IURLGenerator|\PHPUnit\Framework\MockObject\MockObject */
-	private $urlGenerator;
-	/** @var IL10N|\PHPUnit\Framework\MockObject\MockObject */
-	private $l10n;
-	/** @var IFactory|\PHPUnit\Framework\MockObject\MockObject */
-	private $l10nFactory;
-	/** @var IMailer|\PHPUnit\Framework\MockObject\MockObject */
-	private $mailer;
-	/** @var ISecureRandom|\PHPUnit\Framework\MockObject\MockObject */
-	private $secureRandom;
-	/** @var ITimeFactory|\PHPUnit\Framework\MockObject\MockObject */
-	private $timeFactory;
-	/** @var IConfig|\PHPUnit\Framework\MockObject\MockObject */
-	private $config;
-	/** @var ICrypto|\PHPUnit\Framework\MockObject\MockObject */
-	private $crypto;
-	/** @var NewUserMailHelper */
-	private $newUserMailHelper;
+	private Defaults&MockObject $defaults;
+	private IURLGenerator&MockObject $urlGenerator;
+	private IL10N&MockObject $l10n;
+	private IFactory&MockObject $l10nFactory;
+	private IMailer&MockObject $mailer;
+	private ISecureRandom&MockObject $secureRandom;
+	private ITimeFactory&MockObject $timeFactory;
+	private IConfig&MockObject $config;
+	private ICrypto&MockObject $crypto;
+	private NewUserMailHelper $newUserMailHelper;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -113,7 +105,7 @@ class NewUserMailHelperTest extends TestCase {
 			->expects($this->once())
 			->method('getTime')
 			->willReturn(12345);
-		/** @var IUser|\PHPUnit\Framework\MockObject\MockObject $user */
+		/** @var IUser&MockObject $user */
 		$user = $this->createMock(IUser::class);
 		$user
 			->expects($this->any())
@@ -264,32 +256,46 @@ class NewUserMailHelperTest extends TestCase {
 				<tr style="padding:0;text-align:left;vertical-align:top">
 					<th style="Margin:0;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
 						<center data-parsed="" style="min-width:490px;width:100%">
-							<table class="button btn default primary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;margin:0 0 30px 0;margin-right:15px;border-radius:8px;max-width:300px;padding:0;text-align:center;vertical-align:top;width:auto;background:#00679e;background-color:#00679e;color:#fefefe;">
-								<tr style="padding:0;text-align:left;vertical-align:top">
-									<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-										<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+							<!--[if (gte mso 9)|(IE)]>
+							<table>
+								<tr>
+									<td>
+									<![endif]-->
+										<table class="button btn default primary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;margin:0 0 30px 0;margin-right:15px;border-radius:8px;max-width:300px;padding:0;text-align:center;vertical-align:top;width:auto;background:#00679e;background-color:#00679e;color:#fefefe;">
 											<tr style="padding:0;text-align:left;vertical-align:top">
-												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #00679e;border-collapse:collapse!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-													<a href="https://example.com/resetPassword/MySuperLongSecureRandomToken" style="Margin:0;border:0 solid #00679e;color:#ffffff;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;padding:8px;text-align:left;outline:1px solid #ffffff;text-decoration:none">Set your password</a>
+												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+													<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+														<tr style="padding:0;text-align:left;vertical-align:top">
+															<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #00679e;border-collapse:collapse!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+																<a href="https://example.com/resetPassword/MySuperLongSecureRandomToken" style="Margin:0;border:0 solid #00679e;color:#ffffff;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;padding:8px;text-align:left;outline:1px solid #ffffff;text-decoration:none">Set your password</a>
+															</td>
+														</tr>
+													</table>
 												</td>
 											</tr>
 										</table>
+									<!--[if (gte mso 9)|(IE)]>
 									</td>
-								</tr>
-							</table>
-							<table class="button btn default secondary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;background-color: #ccc;margin:0 0 30px 0;max-height:40px;max-width:300px;padding:1px;border-radius:8px;text-align:center;vertical-align:top;width:auto">
-								<tr style="padding:0;text-align:left;vertical-align:top">
-									<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-										<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+									<td>
+									<![endif]-->
+										<table class="button btn default secondary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;background-color: #ccc;margin:0 0 30px 0;max-height:40px;max-width:300px;padding:1px;border-radius:8px;text-align:center;vertical-align:top;width:auto">
 											<tr style="padding:0;text-align:left;vertical-align:top">
-												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #777;border-collapse:collapse!important;color:#fefefe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-													<a href="https://nextcloud.com/install/#install-clients" style="Margin:0;background-color:#fff;border:0 solid #777;color:#6C6C6C!important;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;border-radius: 7px;padding:8px;text-align:left;text-decoration:none">Install Client</a>
+												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+													<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+														<tr style="padding:0;text-align:left;vertical-align:top">
+															<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #777;border-collapse:collapse!important;color:#fefefe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+																<a href="https://nextcloud.com/install/#install-clients" style="Margin:0;background-color:#fff;border:0 solid #777;color:#6C6C6C!important;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;border-radius: 7px;padding:8px;text-align:left;text-decoration:none">Install Client</a>
+															</td>
+														</tr>
+													</table>
 												</td>
 											</tr>
 										</table>
+									<!--[if (gte mso 9)|(IE)]>
 									</td>
 								</tr>
 							</table>
+							<![endif]-->
 						</center>
 					</th>
 					<th class="expander" style="Margin:0;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
@@ -371,7 +377,7 @@ EOF;
 				['myLogo',''],
 			]);
 
-		/** @var IUser|\PHPUnit\Framework\MockObject\MockObject $user */
+		/** @var IUser&MockObject $user */
 		$user = $this->createMock(IUser::class);
 		$user
 			->expects($this->any())
@@ -504,32 +510,46 @@ EOF;
 				<tr style="padding:0;text-align:left;vertical-align:top">
 					<th style="Margin:0;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
 						<center data-parsed="" style="min-width:490px;width:100%">
-							<table class="button btn default primary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;margin:0 0 30px 0;margin-right:15px;border-radius:8px;max-width:300px;padding:0;text-align:center;vertical-align:top;width:auto;background:#00679e;background-color:#00679e;color:#fefefe;">
-								<tr style="padding:0;text-align:left;vertical-align:top">
-									<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-										<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+							<!--[if (gte mso 9)|(IE)]>
+							<table>
+								<tr>
+									<td>
+									<![endif]-->
+										<table class="button btn default primary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;margin:0 0 30px 0;margin-right:15px;border-radius:8px;max-width:300px;padding:0;text-align:center;vertical-align:top;width:auto;background:#00679e;background-color:#00679e;color:#fefefe;">
 											<tr style="padding:0;text-align:left;vertical-align:top">
-												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #00679e;border-collapse:collapse!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-													<a href="https://example.com/" style="Margin:0;border:0 solid #00679e;color:#ffffff;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;padding:8px;text-align:left;outline:1px solid #ffffff;text-decoration:none">Go to TestCloud</a>
+												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+													<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+														<tr style="padding:0;text-align:left;vertical-align:top">
+															<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #00679e;border-collapse:collapse!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+																<a href="https://example.com/" style="Margin:0;border:0 solid #00679e;color:#ffffff;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;padding:8px;text-align:left;outline:1px solid #ffffff;text-decoration:none">Go to TestCloud</a>
+															</td>
+														</tr>
+													</table>
 												</td>
 											</tr>
 										</table>
+									<!--[if (gte mso 9)|(IE)]>
 									</td>
-								</tr>
-							</table>
-							<table class="button btn default secondary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;background-color: #ccc;margin:0 0 30px 0;max-height:40px;max-width:300px;padding:1px;border-radius:8px;text-align:center;vertical-align:top;width:auto">
-								<tr style="padding:0;text-align:left;vertical-align:top">
-									<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-										<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+									<td>
+									<![endif]-->
+										<table class="button btn default secondary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;background-color: #ccc;margin:0 0 30px 0;max-height:40px;max-width:300px;padding:1px;border-radius:8px;text-align:center;vertical-align:top;width:auto">
 											<tr style="padding:0;text-align:left;vertical-align:top">
-												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #777;border-collapse:collapse!important;color:#fefefe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-													<a href="https://nextcloud.com/install/#install-clients" style="Margin:0;background-color:#fff;border:0 solid #777;color:#6C6C6C!important;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;border-radius: 7px;padding:8px;text-align:left;text-decoration:none">Install Client</a>
+												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+													<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+														<tr style="padding:0;text-align:left;vertical-align:top">
+															<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #777;border-collapse:collapse!important;color:#fefefe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+																<a href="https://nextcloud.com/install/#install-clients" style="Margin:0;background-color:#fff;border:0 solid #777;color:#6C6C6C!important;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;border-radius: 7px;padding:8px;text-align:left;text-decoration:none">Install Client</a>
+															</td>
+														</tr>
+													</table>
 												</td>
 											</tr>
 										</table>
+									<!--[if (gte mso 9)|(IE)]>
 									</td>
 								</tr>
 							</table>
+							<![endif]-->
 						</center>
 					</th>
 					<th class="expander" style="Margin:0;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
@@ -611,7 +631,7 @@ EOF;
 				['myLogo', ''],
 			]);
 
-		/** @var IUser|\PHPUnit\Framework\MockObject\MockObject $user */
+		/** @var IUser&MockObject $user */
 		$user = $this->createMock(IUser::class);
 		$user
 			->expects($this->any())
@@ -733,32 +753,46 @@ EOF;
 				<tr style="padding:0;text-align:left;vertical-align:top">
 					<th style="Margin:0;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left">
 						<center data-parsed="" style="min-width:490px;width:100%">
-							<table class="button btn default primary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;margin:0 0 30px 0;margin-right:15px;border-radius:8px;max-width:300px;padding:0;text-align:center;vertical-align:top;width:auto;background:#00679e;background-color:#00679e;color:#fefefe;">
-								<tr style="padding:0;text-align:left;vertical-align:top">
-									<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-										<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+							<!--[if (gte mso 9)|(IE)]>
+							<table>
+								<tr>
+									<td>
+									<![endif]-->
+										<table class="button btn default primary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;margin:0 0 30px 0;margin-right:15px;border-radius:8px;max-width:300px;padding:0;text-align:center;vertical-align:top;width:auto;background:#00679e;background-color:#00679e;color:#fefefe;">
 											<tr style="padding:0;text-align:left;vertical-align:top">
-												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #00679e;border-collapse:collapse!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-													<a href="https://example.com/" style="Margin:0;border:0 solid #00679e;color:#ffffff;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;padding:8px;text-align:left;outline:1px solid #ffffff;text-decoration:none">Go to TestCloud</a>
+												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+													<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+														<tr style="padding:0;text-align:left;vertical-align:top">
+															<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #00679e;border-collapse:collapse!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+																<a href="https://example.com/" style="Margin:0;border:0 solid #00679e;color:#ffffff;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;padding:8px;text-align:left;outline:1px solid #ffffff;text-decoration:none">Go to TestCloud</a>
+															</td>
+														</tr>
+													</table>
 												</td>
 											</tr>
 										</table>
+									<!--[if (gte mso 9)|(IE)]>
 									</td>
-								</tr>
-							</table>
-							<table class="button btn default secondary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;background-color: #ccc;margin:0 0 30px 0;max-height:40px;max-width:300px;padding:1px;border-radius:8px;text-align:center;vertical-align:top;width:auto">
-								<tr style="padding:0;text-align:left;vertical-align:top">
-									<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-										<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+									<td>
+									<![endif]-->
+										<table class="button btn default secondary float-center" style="Margin:0 0 30px 0;border-collapse:collapse;border-spacing:0;display:inline-block;float:none;background-color: #ccc;margin:0 0 30px 0;max-height:40px;max-width:300px;padding:1px;border-radius:8px;text-align:center;vertical-align:top;width:auto">
 											<tr style="padding:0;text-align:left;vertical-align:top">
-												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #777;border-collapse:collapse!important;color:#fefefe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
-													<a href="https://nextcloud.com/install/#install-clients" style="Margin:0;background-color:#fff;border:0 solid #777;color:#6C6C6C!important;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;border-radius: 7px;padding:8px;text-align:left;text-decoration:none">Install Client</a>
+												<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border-collapse:collapse!important;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+													<table style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%">
+														<tr style="padding:0;text-align:left;vertical-align:top">
+															<td style="-moz-hyphens:auto;-webkit-hyphens:auto;Margin:0;border:0 solid #777;border-collapse:collapse!important;color:#fefefe;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;hyphens:auto;line-height:normal;margin:0;padding:0;text-align:left;vertical-align:top;word-wrap:break-word">
+																<a href="https://nextcloud.com/install/#install-clients" style="Margin:0;background-color:#fff;border:0 solid #777;color:#6C6C6C!important;display:inline-block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:regular;line-height:normal;margin:0;border-radius: 7px;padding:8px;text-align:left;text-decoration:none">Install Client</a>
+															</td>
+														</tr>
+													</table>
 												</td>
 											</tr>
 										</table>
+									<!--[if (gte mso 9)|(IE)]>
 									</td>
 								</tr>
 							</table>
+							<![endif]-->
 						</center>
 					</th>
 					<th class="expander" style="Margin:0;color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
@@ -830,7 +864,7 @@ EOF;
 	}
 
 	public function testSendMail(): void {
-		/** @var IUser|\PHPUnit\Framework\MockObject\MockObject $user */
+		/** @var IUser&MockObject $user */
 		$user = $this->createMock(IUser::class);
 		$user
 			->expects($this->once())
@@ -840,7 +874,7 @@ EOF;
 			->expects($this->once())
 			->method('getDisplayName')
 			->willReturn('John Doe');
-		/** @var IEMailTemplate|\PHPUnit\Framework\MockObject\MockObject $emailTemplate */
+		/** @var IEMailTemplate&MockObject $emailTemplate */
 		$emailTemplate = $this->createMock(IEMailTemplate::class);
 		$message = $this->createMock(Message::class);
 		$message

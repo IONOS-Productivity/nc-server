@@ -65,7 +65,7 @@
 						style="margin-top: 6px;"
 						@click="removeMount(mount)">
 						<template #icon>
-							<NcIconSvgWrapper :path="mdiDelete" />
+							<NcIconSvgWrapper :path="mdiDeleteOutline" />
 						</template>
 					</NcButton>
 				</div>
@@ -152,15 +152,16 @@ import { computed, ref } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { loadState } from '@nextcloud/initial-state'
+import { emit } from '@nextcloud/event-bus'
 
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 
-import { mdiPlus, mdiCheck, mdiClose, mdiDelete } from '@mdi/js'
+import { mdiPlus, mdiCheck, mdiClose, mdiDeleteOutline } from '@mdi/js'
 
 import { useAppApiStore } from '../../store/app-api-store.ts'
 import { useAppsStore } from '../../store/apps-store.ts'
@@ -216,7 +217,7 @@ export default {
 			mdiPlus,
 			mdiCheck,
 			mdiClose,
-			mdiDelete,
+			mdiDeleteOutline,
 		}
 	},
 	data() {
@@ -277,8 +278,15 @@ export default {
 					this.configuredDeployOptions = null
 				})
 		},
-		submitDeployOptions() {
-			this.enable(this.app.id, this.deployOptions)
+		async submitDeployOptions() {
+			await this.appApiStore.fetchDockerDaemons()
+			if (this.appApiStore.dockerDaemons.length === 1 && this.app.needsDownload) {
+				this.enable(this.app.id, this.appApiStore.dockerDaemons[0], this.deployOptions)
+			} else if (this.app.needsDownload) {
+				emit('showDaemonSelectionModal', this.deployOptions)
+			} else {
+				this.enable(this.app.id, this.app.daemon, this.deployOptions)
+			}
 			this.$emit('update:show', false)
 		},
 	},

@@ -70,8 +70,7 @@ describe('files_sharing: Public share - File drop', { testIsolation: true }, () 
 			.should('not.exist')
 	})
 
-	// TODO: reenable folder upload with https://github.com/nextcloud/server/issues/15921
-	it.skip('Can only see upload files and upload folders menu entries', () => {
+	it('Can only see upload files and upload folders menu entries', () => {
 		cy.contains(`Upload files to ${shareName}`)
 			.should('be.visible')
 
@@ -88,16 +87,6 @@ describe('files_sharing: Public share - File drop', { testIsolation: true }, () 
 			.findAllByRole('menuitem')
 			.should('have.length', 2)
 	})
-	it('Can only see upload files', () => {
-		cy.contains(`Upload files to ${shareName}`)
-			.should('be.visible')
-
-		cy.findByRole('button', { name: 'New' })
-			.should('be.visible')
-			.click()
-		cy.findByRole('menu')
-			.should('not.exist')
-	})
 
 	it('Can only see dedicated upload button', () => {
 		cy.contains(`Upload files to ${shareName}`)
@@ -106,9 +95,15 @@ describe('files_sharing: Public share - File drop', { testIsolation: true }, () 
 		cy.findByRole('button', { name: 'Upload' })
 			.should('be.visible')
 			.click()
-		// But no menu
+		// See upload actions
+		cy.findByRole('menuitem', { name: 'Upload files' })
+			.should('be.visible')
+		cy.findByRole('menuitem', { name: 'Upload folders' })
+			.should('be.visible')
+		// But no other
 		cy.findByRole('menu')
-			.should('not.exist')
+			.findAllByRole('menuitem')
+			.should('have.length', 2)
 	})
 
 	it('Can upload files', () => {

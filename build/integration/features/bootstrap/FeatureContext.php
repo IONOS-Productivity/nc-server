@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -24,5 +25,7 @@ class FeatureContext implements Context, SnippetAcceptingContext {
 		$this->deleteServerConfig('bruteForce', 'whitelist_0');
 		$this->deleteServerConfig('bruteForce', 'whitelist_1');
 		$this->deleteServerConfig('bruteforcesettings', 'apply_allowlist_to_ratelimit');
+		$this->deleteServerConfig('core', 'shareapi_exclude_groups');
+		$this->deleteServerConfig('core', 'shareapi_exclude_groups_list');
 	}
 }

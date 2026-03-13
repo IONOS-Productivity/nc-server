@@ -65,12 +65,12 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { loadState } from '@nextcloud/initial-state'
 
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
-import Delete from 'vue-material-design-icons/Delete.vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import Delete from 'vue-material-design-icons/TrashCanOutline.vue'
 import Undo from 'vue-material-design-icons/UndoVariant.vue'
-import Upload from 'vue-material-design-icons/Upload.vue'
+import Upload from 'vue-material-design-icons/TrayArrowUp.vue'
 
 import FieldMixin from '../../mixins/admin/FieldMixin.js'
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -9,6 +10,7 @@ namespace Test\Files\Config;
 
 use OC\DB\Exceptions\DbalException;
 use OC\DB\QueryBuilder\Literal;
+use OC\Files\Cache\Cache;
 use OC\Files\Config\UserMountCache;
 use OC\Files\Mount\MountPoint;
 use OC\Files\Storage\Storage;
@@ -25,6 +27,7 @@ use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
+use OCP\Server;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
 use Test\Util\User\Dummy;
@@ -44,7 +47,7 @@ class UserMountCacheTest extends TestCase {
 
 		$this->fileIds = [];
 
-		$this->connection = \OC::$server->getDatabaseConnection();
+		$this->connection = Server::get(IDBConnection::class);
 
 		$config = $this->getMockBuilder(IConfig::class)
 			->disableOriginalConstructor()
@@ -78,39 +81,33 @@ class UserMountCacheTest extends TestCase {
 	protected function tearDown(): void {
 		$builder = $this->connection->getQueryBuilder();
 
-		$builder->delete('mounts')->execute();
+		$builder->delete('mounts')->executeStatement();
 
 		$builder = $this->connection->getQueryBuilder();
 
 		foreach ($this->fileIds as $fileId) {
 			$builder->delete('filecache')
 				->where($builder->expr()->eq('fileid', new Literal($fileId)))
-				->execute();
+				->executeStatement();
 		}
 	}
 
 	private function getStorage($storageId, $rootInternalPath = '') {
 		$rootId = $this->createCacheEntry($rootInternalPath, $storageId);
 
-		$storageCache = $this->getMockBuilder('\OC\Files\Cache\Storage')
-			->disableOriginalConstructor()
-			->getMock();
+		$storageCache = $this->createMock(\OC\Files\Cache\Storage::class);
 		$storageCache->expects($this->any())
 			->method('getNumericId')
 			->willReturn($storageId);
 
-		$cache = $this->getMockBuilder('\OC\Files\Cache\Cache')
-			->disableOriginalConstructor()
-			->getMock();
+		$cache = $this->createMock(Cache::class);
 		$cache->expects($this->any())
 			->method('getId')
 			->willReturn($rootId);
 		$cache->method('getNumericStorageId')
 			->willReturn($storageId);
 
-		$storage = $this->getMockBuilder('\OC\Files\Storage\Storage')
-			->disableOriginalConstructor()
-			->getMock();
+		$storage = $this->createMock(Storage::class);
 		$storage->expects($this->any())
 			->method('getStorageCache')
 			->willReturn($storageCache);
@@ -418,7 +415,7 @@ class UserMountCacheTest extends TestCase {
 					->from('filecache')
 					->where($query->expr()->eq('storage', $query->createNamedParameter($storageId)))
 					->andWhere($query->expr()->eq('path_hash', $query->createNamedParameter(md5($internalPath))));
-				$id = (int)$query->execute()->fetchColumn();
+				$id = (int)$query->executeQuery()->fetchColumn();
 			} else {
 				throw $e;
 			}
@@ -478,9 +475,9 @@ class UserMountCacheTest extends TestCase {
 		$fileId = $this->createCacheEntry('/foo/bar', 2);
 
 
-		$mount1 = $this->getMockBuilder('\OC\Files\Mount\MountPoint')
+		$mount1 = $this->getMockBuilder(MountPoint::class)
 			->setConstructorArgs([$storage1, '/'])
-			->setMethods(['getStorageRootId'])
+			->onlyMethods(['getStorageRootId'])
 			->getMock();
 
 		$mount1->expects($this->any())
@@ -511,9 +508,9 @@ class UserMountCacheTest extends TestCase {
 		$folderId = $this->createCacheEntry('/foo', 2);
 		$fileId = $this->createCacheEntry('/bar/asd', 2);
 
-		$mount1 = $this->getMockBuilder('\OC\Files\Mount\MountPoint')
+		$mount1 = $this->getMockBuilder(MountPoint::class)
 			->setConstructorArgs([$storage1, '/foo/'])
-			->setMethods(['getStorageRootId'])
+			->onlyMethods(['getStorageRootId'])
 			->getMock();
 
 		$mount1->expects($this->any())
@@ -560,7 +557,7 @@ class UserMountCacheTest extends TestCase {
 
 		$mount1 = $this->getMockBuilder(MountPoint::class)
 			->setConstructorArgs([$storage1, '/u1/'])
-			->setMethods(['getStorageRootId', 'getNumericStorageId'])
+			->onlyMethods(['getStorageRootId', 'getNumericStorageId'])
 			->getMock();
 
 		$mount1->expects($this->any())

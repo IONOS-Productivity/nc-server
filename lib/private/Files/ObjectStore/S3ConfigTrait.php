@@ -18,6 +18,10 @@ trait S3ConfigTrait {
 	/** Maximum number of concurrent multipart uploads */
 	protected int $concurrency;
 
+	/** Timeout, in seconds, for the connection to S3 server, not for the
+	 *  request. */
+	protected float $connectTimeout;
+
 	protected int $timeout;
 
 	protected string|false $proxy;
@@ -34,4 +38,6 @@ trait S3ConfigTrait {
 	private int|float $copySizeLimit;
 
 	private bool $useMultipartCopy = true;
+
+	protected int $retriesMaxAttempts;
 }

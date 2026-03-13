@@ -19,10 +19,12 @@ use OCA\DAV\Connector\Sabre\Exception\Forbidden as DAVForbiddenException;
 use OCA\DAV\Connector\Sabre\Exception\UnsupportedMediaType;
 use OCP\App\IAppManager;
 use OCP\Encryption\Exceptions\GenericEncryptionException;
+use OCP\Files;
 use OCP\Files\EntityTooLargeException;
 use OCP\Files\FileInfo;
 use OCP\Files\ForbiddenException;
 use OCP\Files\GenericFileException;
+use OCP\Files\IMimeTypeDetector;
 use OCP\Files\InvalidContentException;
 use OCP\Files\InvalidPathException;
 use OCP\Files\LockNotAcquiredException;
@@ -30,6 +32,7 @@ use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 use OCP\Files\Storage\IWriteStreamStorage;
 use OCP\Files\StorageNotAvailableException;
+use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use OCP\L10N\IFactory as IL10NFactory;
@@ -66,14 +69,14 @@ class File extends Node implements IFile {
 		} else {
 			// Querying IL10N directly results in a dependency loop
 			/** @var IL10NFactory $l10nFactory */
-			$l10nFactory = \OC::$server->get(IL10NFactory::class);
+			$l10nFactory = Server::get(IL10NFactory::class);
 			$this->l10n = $l10nFactory->get(Application::APP_ID);
 		}
 
 		if (isset($request)) {
 			$this->request = $request;
 		} else {
-			$this->request = \OC::$server->get(IRequest::class);
+			$this->request = Server::get(IRequest::class);
 		}
 	}
 
@@ -201,6 +204,9 @@ class File extends Node implements IFile {
 				}
 			}
 
+			$lengthHeader = $this->request->getHeader('content-length');
+			$expected = $lengthHeader !== '' ? (int)$lengthHeader : null;
+
 			if ($partStorage->instanceOfStorage(IWriteStreamStorage::class)) {
 				$isEOF = false;
 				$wrappedData = CallbackWrapper::wrap($data, null, null, null, null, function ($stream) use (&$isEOF): void {
@@ -212,7 +218,7 @@ class File extends Node implements IFile {
 					$count = -1;
 					try {
 						/** @var IWriteStreamStorage $partStorage */
-						$count = $partStorage->writeStream($internalPartPath, $wrappedData);
+						$count = $partStorage->writeStream($internalPartPath, $wrappedData, $expected);
 					} catch (GenericFileException $e) {
 						$logger = Server::get(LoggerInterface::class);
 						$logger->error('Error while writing stream to storage: ' . $e->getMessage(), ['exception' => $e, 'app' => 'webdav']);
@@ -225,17 +231,14 @@ class File extends Node implements IFile {
 			} else {
 				$target = $partStorage->fopen($internalPartPath, 'wb');
 				if ($target === false) {
-					\OC::$server->get(LoggerInterface::class)->error('\OC\Files\Filesystem::fopen() failed', ['app' => 'webdav']);
+					Server::get(LoggerInterface::class)->error('\OC\Files\Filesystem::fopen() failed', ['app' => 'webdav']);
 					// because we have no clue about the cause we can only throw back a 500/Internal Server Error
 					throw new Exception($this->l10n->t('Could not write file contents'));
 				}
-				[$count, $result] = \OC_Helper::streamCopy($data, $target);
+				[$count, $result] = Files::streamCopy($data, $target, true);
 				fclose($target);
 			}
-
-			$lengthHeader = $this->request->getHeader('content-length');
-			$expected = $lengthHeader !== '' ? (int)$lengthHeader : -1;
-			if ($result === false && $expected >= 0) {
+			if ($result === false && $expected !== null) {
 				throw new Exception(
 					$this->l10n->t(
 						'Error while copying file to target location (copied: %1$s, expected filesize: %2$s)',
@@ -250,7 +253,7 @@ class File extends Node implements IFile {
 			// if content length is sent by client:
 			// double check if the file was fully received
 			// compare expected and actual size
-			if ($expected >= 0
+			if ($expected !== null
 				&& $expected !== $count
 				&& $this->request->getMethod() === 'PUT'
 			) {
@@ -266,9 +269,9 @@ class File extends Node implements IFile {
 			}
 		} catch (\Exception $e) {
 			if ($e instanceof LockedException) {
-				\OC::$server->get(LoggerInterface::class)->debug($e->getMessage(), ['exception' => $e]);
+				Server::get(LoggerInterface::class)->debug($e->getMessage(), ['exception' => $e]);
 			} else {
-				\OC::$server->get(LoggerInterface::class)->error($e->getMessage(), ['exception' => $e]);
+				Server::get(LoggerInterface::class)->error($e->getMessage(), ['exception' => $e]);
 			}
 
 			if ($needsPartFile) {
@@ -309,7 +312,7 @@ class File extends Node implements IFile {
 					$renameOkay = $storage->moveFromStorage($partStorage, $internalPartPath, $internalPath);
 					$fileExists = $storage->file_exists($internalPath);
 					if ($renameOkay === false || $fileExists === false) {
-						\OC::$server->get(LoggerInterface::class)->error('renaming part file to final file failed $renameOkay: ' . ($renameOkay ? 'true' : 'false') . ', $fileExists: ' . ($fileExists ? 'true' : 'false') . ')', ['app' => 'webdav']);
+						Server::get(LoggerInterface::class)->error('renaming part file to final file failed $renameOkay: ' . ($renameOkay ? 'true' : 'false') . ', $fileExists: ' . ($fileExists ? 'true' : 'false') . ')', ['app' => 'webdav']);
 						throw new Exception($this->l10n->t('Could not rename part file to final file'));
 					}
 				} catch (ForbiddenException $ex) {
@@ -376,7 +379,7 @@ class File extends Node implements IFile {
 	}
 
 	private function getPartFileBasePath($path) {
-		$partFileInStorage = \OC::$server->getConfig()->getSystemValue('part_file_in_storage', true);
+		$partFileInStorage = Server::get(IConfig::class)->getSystemValue('part_file_in_storage', true);
 		if ($partFileInStorage) {
 			$filename = basename($path);
 			// hash does not need to be secure but fast and semi unique
@@ -464,16 +467,16 @@ class File extends Node implements IFile {
 
 			if ($res === false) {
 				if ($this->fileView->file_exists($path)) {
-					throw new ServiceUnavailable($this->l10n->t('Could not open file: %1$s, file does seem to exist', [$path]));
+					throw new ServiceUnavailable($this->l10n->t('Could not open file: %1$s (%2$d), file does seem to exist', [$path, $this->info->getId()]));
 				} else {
-					throw new ServiceUnavailable($this->l10n->t('Could not open file: %1$s, file doesn\'t seem to exist', [$path]));
+					throw new ServiceUnavailable($this->l10n->t('Could not open file: %1$s (%2$d), file doesn\'t seem to exist', [$path, $this->info->getId()]));
 				}
 			}
 
 			// comparing current file size with the one in DB
 			// if different, fix DB and refresh cache.
 			if ($this->getSize() !== $this->fileView->filesize($this->getPath())) {
-				$logger = \OC::$server->get(LoggerInterface::class);
+				$logger = Server::get(LoggerInterface::class);
 				$logger->warning('fixing cached size of file id=' . $this->getId());
 
 				$this->getFileInfo()->getStorage()->getUpdater()->update($this->getFileInfo()->getInternalPath());
@@ -532,7 +535,7 @@ class File extends Node implements IFile {
 		if ($this->request->getMethod() === 'PROPFIND') {
 			return $mimeType;
 		}
-		return \OC::$server->getMimeTypeDetector()->getSecureMimeType($mimeType);
+		return Server::get(IMimeTypeDetector::class)->getSecureMimeType($mimeType);
 	}
 
 	/**

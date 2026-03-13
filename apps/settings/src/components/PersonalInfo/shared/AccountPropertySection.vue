@@ -46,8 +46,8 @@
 
 <script>
 import debounce from 'debounce'
-import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
-import NcTextArea from '@nextcloud/vue/dist/Components/NcTextArea.js'
+import NcInputField from '@nextcloud/vue/components/NcInputField'
+import NcTextArea from '@nextcloud/vue/components/NcTextArea'
 
 import HeaderBar from './HeaderBar.vue'
 
@@ -223,7 +223,7 @@ section {
 		}
 
 		&--error {
-			color: var(--color-error);
+			color: var(--color-text-error);
 		}
 	}
 

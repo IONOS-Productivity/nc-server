@@ -7,14 +7,14 @@ namespace Composer\Autoload;
 class ComposerStaticInitSettings
 {
     public static $prefixLengthsPsr4 = array (
-        'O' => 
+        'O' =>
         array (
             'OCA\\Settings\\' => 13,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'OCA\\Settings\\' => 
+        'OCA\\Settings\\' =>
         array (
             0 => __DIR__ . '/..' . '/../lib',
         ),
@@ -34,6 +34,7 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\Command\\AdminDelegation\\Add' => __DIR__ . '/..' . '/../lib/Command/AdminDelegation/Add.php',
         'OCA\\Settings\\Command\\AdminDelegation\\Remove' => __DIR__ . '/..' . '/../lib/Command/AdminDelegation/Remove.php',
         'OCA\\Settings\\Command\\AdminDelegation\\Show' => __DIR__ . '/..' . '/../lib/Command/AdminDelegation/Show.php',
+        'OCA\\Settings\\ConfigLexicon' => __DIR__ . '/..' . '/../lib/ConfigLexicon.php',
         'OCA\\Settings\\Controller\\AISettingsController' => __DIR__ . '/..' . '/../lib/Controller/AISettingsController.php',
         'OCA\\Settings\\Controller\\AdminSettingsController' => __DIR__ . '/..' . '/../lib/Controller/AdminSettingsController.php',
         'OCA\\Settings\\Controller\\AppSettingsController' => __DIR__ . '/..' . '/../lib/Controller/AppSettingsController.php',
@@ -47,6 +48,7 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\Controller\\LogSettingsController' => __DIR__ . '/..' . '/../lib/Controller/LogSettingsController.php',
         'OCA\\Settings\\Controller\\MailSettingsController' => __DIR__ . '/..' . '/../lib/Controller/MailSettingsController.php',
         'OCA\\Settings\\Controller\\PersonalSettingsController' => __DIR__ . '/..' . '/../lib/Controller/PersonalSettingsController.php',
+        'OCA\\Settings\\Controller\\PresetController' => __DIR__ . '/..' . '/../lib/Controller/PresetController.php',
         'OCA\\Settings\\Controller\\ReasonsController' => __DIR__ . '/..' . '/../lib/Controller/ReasonsController.php',
         'OCA\\Settings\\Controller\\TwoFactorSettingsController' => __DIR__ . '/..' . '/../lib/Controller/TwoFactorSettingsController.php',
         'OCA\\Settings\\Controller\\UsersController' => __DIR__ . '/..' . '/../lib/Controller/UsersController.php',
@@ -69,6 +71,7 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\Sections\\Admin\\Delegation' => __DIR__ . '/..' . '/../lib/Sections/Admin/Delegation.php',
         'OCA\\Settings\\Sections\\Admin\\Groupware' => __DIR__ . '/..' . '/../lib/Sections/Admin/Groupware.php',
         'OCA\\Settings\\Sections\\Admin\\Overview' => __DIR__ . '/..' . '/../lib/Sections/Admin/Overview.php',
+        'OCA\\Settings\\Sections\\Admin\\Presets' => __DIR__ . '/..' . '/../lib/Sections/Admin/Presets.php',
         'OCA\\Settings\\Sections\\Admin\\Security' => __DIR__ . '/..' . '/../lib/Sections/Admin/Security.php',
         'OCA\\Settings\\Sections\\Admin\\Server' => __DIR__ . '/..' . '/../lib/Sections/Admin/Server.php',
         'OCA\\Settings\\Sections\\Admin\\Sharing' => __DIR__ . '/..' . '/../lib/Sections/Admin/Sharing.php',
@@ -78,6 +81,7 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\Sections\\Personal\\Security' => __DIR__ . '/..' . '/../lib/Sections/Personal/Security.php',
         'OCA\\Settings\\Sections\\Personal\\SyncClients' => __DIR__ . '/..' . '/../lib/Sections/Personal/SyncClients.php',
         'OCA\\Settings\\Service\\AuthorizedGroupService' => __DIR__ . '/..' . '/../lib/Service/AuthorizedGroupService.php',
+        'OCA\\Settings\\Service\\ConflictException' => __DIR__ . '/..' . '/../lib/Service/ConflictException.php',
         'OCA\\Settings\\Service\\NotFoundException' => __DIR__ . '/..' . '/../lib/Service/NotFoundException.php',
         'OCA\\Settings\\Service\\ServiceException' => __DIR__ . '/..' . '/../lib/Service/ServiceException.php',
         'OCA\\Settings\\Settings\\Admin\\ArtificialIntelligence' => __DIR__ . '/..' . '/../lib/Settings/Admin/ArtificialIntelligence.php',
@@ -85,6 +89,7 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\Settings\\Admin\\Mail' => __DIR__ . '/..' . '/../lib/Settings/Admin/Mail.php',
         'OCA\\Settings\\Settings\\Admin\\MailProvider' => __DIR__ . '/..' . '/../lib/Settings/Admin/MailProvider.php',
         'OCA\\Settings\\Settings\\Admin\\Overview' => __DIR__ . '/..' . '/../lib/Settings/Admin/Overview.php',
+        'OCA\\Settings\\Settings\\Admin\\Presets' => __DIR__ . '/..' . '/../lib/Settings/Admin/Presets.php',
         'OCA\\Settings\\Settings\\Admin\\Security' => __DIR__ . '/..' . '/../lib/Settings/Admin/Security.php',
         'OCA\\Settings\\Settings\\Admin\\Server' => __DIR__ . '/..' . '/../lib/Settings/Admin/Server.php',
         'OCA\\Settings\\Settings\\Admin\\Sharing' => __DIR__ . '/..' . '/../lib/Settings/Admin/Sharing.php',
@@ -118,6 +123,7 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\SetupChecks\\JavaScriptModules' => __DIR__ . '/..' . '/../lib/SetupChecks/JavaScriptModules.php',
         'OCA\\Settings\\SetupChecks\\JavaScriptSourceMaps' => __DIR__ . '/..' . '/../lib/SetupChecks/JavaScriptSourceMaps.php',
         'OCA\\Settings\\SetupChecks\\LegacySSEKeyFormat' => __DIR__ . '/..' . '/../lib/SetupChecks/LegacySSEKeyFormat.php',
+        'OCA\\Settings\\SetupChecks\\LoggingLevel' => __DIR__ . '/..' . '/../lib/SetupChecks/LoggingLevel.php',
         'OCA\\Settings\\SetupChecks\\MaintenanceWindowStart' => __DIR__ . '/..' . '/../lib/SetupChecks/MaintenanceWindowStart.php',
         'OCA\\Settings\\SetupChecks\\MemcacheConfigured' => __DIR__ . '/..' . '/../lib/SetupChecks/MemcacheConfigured.php',
         'OCA\\Settings\\SetupChecks\\MimeTypeMigrationAvailable' => __DIR__ . '/..' . '/../lib/SetupChecks/MimeTypeMigrationAvailable.php',
@@ -144,8 +150,10 @@ class ComposerStaticInitSettings
         'OCA\\Settings\\SetupChecks\\SupportedDatabase' => __DIR__ . '/..' . '/../lib/SetupChecks/SupportedDatabase.php',
         'OCA\\Settings\\SetupChecks\\SystemIs64bit' => __DIR__ . '/..' . '/../lib/SetupChecks/SystemIs64bit.php',
         'OCA\\Settings\\SetupChecks\\TaskProcessingPickupSpeed' => __DIR__ . '/..' . '/../lib/SetupChecks/TaskProcessingPickupSpeed.php',
+        'OCA\\Settings\\SetupChecks\\TaskProcessingSuccessRate' => __DIR__ . '/..' . '/../lib/SetupChecks/TaskProcessingSuccessRate.php',
         'OCA\\Settings\\SetupChecks\\TempSpaceAvailable' => __DIR__ . '/..' . '/../lib/SetupChecks/TempSpaceAvailable.php',
         'OCA\\Settings\\SetupChecks\\TransactionIsolation' => __DIR__ . '/..' . '/../lib/SetupChecks/TransactionIsolation.php',
+        'OCA\\Settings\\SetupChecks\\TwoFactorConfiguration' => __DIR__ . '/..' . '/../lib/SetupChecks/TwoFactorConfiguration.php',
         'OCA\\Settings\\SetupChecks\\WellKnownUrls' => __DIR__ . '/..' . '/../lib/SetupChecks/WellKnownUrls.php',
         'OCA\\Settings\\SetupChecks\\Woff2Loading' => __DIR__ . '/..' . '/../lib/SetupChecks/Woff2Loading.php',
         'OCA\\Settings\\UserMigration\\AccountMigrator' => __DIR__ . '/..' . '/../lib/UserMigration/AccountMigrator.php',

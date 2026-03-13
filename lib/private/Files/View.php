@@ -17,6 +17,7 @@ use OC\User\Manager as UserManager;
 use OC\User\User;
 use OCA\Files_Sharing\SharedMount;
 use OCP\Constants;
+use OCP\Files;
 use OCP\Files\Cache\ICacheEntry;
 use OCP\Files\ConnectionLostException;
 use OCP\Files\EmptyFileNameException;
@@ -629,7 +630,7 @@ class View {
 				[$storage, $internalPath] = $this->resolvePath($path);
 				$target = $storage->fopen($internalPath, 'w');
 				if ($target) {
-					[, $result] = \OC_Helper::streamCopy($data, $target);
+					[, $result] = Files::streamCopy($data, $target, true);
 					fclose($target);
 					fclose($data);
 
@@ -1467,8 +1468,7 @@ class View {
 	public function addSubMounts(FileInfo $info, $extOnly = false): void {
 		$mounts = Filesystem::getMountManager()->findIn($info->getPath());
 		$info->setSubMounts(array_filter($mounts, function (IMountPoint $mount) use ($extOnly) {
-			$subStorage = $mount->getStorage();
-			return !($extOnly && $subStorage instanceof \OCA\Files_Sharing\SharedStorage);
+			return !($extOnly && $mount instanceof SharedMount);
 		}));
 	}
 
@@ -1828,43 +1828,25 @@ class View {
 	 * @return string
 	 * @throws NotFoundException
 	 */
-	public function getPath($id, ?int $storageId = null) {
+	public function getPath($id, ?int $storageId = null): string {
 		$id = (int)$id;
-		$manager = Filesystem::getMountManager();
-		$mounts = $manager->findIn($this->fakeRoot);
-		$mounts[] = $manager->find($this->fakeRoot);
-		$mounts = array_filter($mounts);
-		// reverse the array, so we start with the storage this view is in
-		// which is the most likely to contain the file we're looking for
-		$mounts = array_reverse($mounts);
+		$rootFolder = Server::get(Files\IRootFolder::class);
 
-		// put non-shared mounts in front of the shared mount
-		// this prevents unneeded recursion into shares
-		usort($mounts, function (IMountPoint $a, IMountPoint $b) {
-			return $a instanceof SharedMount && (!$b instanceof SharedMount) ? 1 : -1;
-		});
-
-		if (!is_null($storageId)) {
-			$mounts = array_filter($mounts, function (IMountPoint $mount) use ($storageId) {
-				return $mount->getNumericStorageId() === $storageId;
-			});
+		$node = $rootFolder->getFirstNodeByIdInPath($id, $this->getRoot());
+		if ($node) {
+			if ($storageId === null || $storageId === $node->getStorage()->getCache()->getNumericStorageId()) {
+				return $this->getRelativePath($node->getPath()) ?? '';
+			}
+		} else {
+			throw new NotFoundException(sprintf('File with id "%s" has not been found.', $id));
 		}
 
-		foreach ($mounts as $mount) {
-			/**
-			 * @var \OC\Files\Mount\MountPoint $mount
-			 */
-			if ($mount->getStorage()) {
-				$cache = $mount->getStorage()->getCache();
-				$internalPath = $cache->getPathById($id);
-				if (is_string($internalPath)) {
-					$fullPath = $mount->getMountPoint() . $internalPath;
-					if (!is_null($path = $this->getRelativePath($fullPath))) {
-						return $path;
-					}
-				}
+		foreach ($rootFolder->getByIdInPath($id, $this->getRoot()) as $node) {
+			if ($storageId === $node->getStorage()->getCache()->getNumericStorageId()) {
+				return $this->getRelativePath($node->getPath()) ?? '';
 			}
 		}
+
 		throw new NotFoundException(sprintf('File with id "%s" has not been found.', $id));
 	}
 
@@ -1904,7 +1886,15 @@ class View {
 		}, $providers));
 
 		foreach ($shares as $share) {
-			$sharedPath = $share->getNode()->getPath();
+			try {
+				$sharedPath = $share->getNode()->getPath();
+			} catch (NotFoundException $e) {
+				// node is not found, ignoring
+				$this->logger->debug(
+					'Could not find the node linked to a share',
+					['app' => 'files', 'exception' => $e]);
+				continue;
+			}
 			if ($targetPath === $sharedPath || str_starts_with($targetPath, $sharedPath . '/')) {
 				$this->logger->debug(
 					'It is not allowed to move one mount point into a shared folder',

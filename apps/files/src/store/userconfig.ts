@@ -12,12 +12,17 @@ import { ref, set } from 'vue'
 import axios from '@nextcloud/axios'
 
 const initialUserConfig = loadState<UserConfig>('files', 'config', {
-	show_hidden: false,
 	crop_image_previews: true,
+	default_view: 'files',
+	folder_tree: true,
+	grid_view: false,
+	show_files_extensions: true,
+	show_hidden: false,
+	show_mime_column: true,
 	sort_favorites_first: true,
 	sort_folders_first: true,
-	grid_view: false,
 
+	show_dialog_deletion: false,
 	show_dialog_file_extension: true,
 })
 
@@ -29,7 +34,7 @@ export const useUserConfigStore = defineStore('userconfig', () => {
 	 * @param key The config key
 	 * @param value The new value
 	 */
-	function onUpdate(key: string, value: boolean): void {
+	function onUpdate<Key extends string>(key: Key, value: UserConfig[Key]): void {
 		set(userConfig.value, key, value)
 	}
 
@@ -38,7 +43,7 @@ export const useUserConfigStore = defineStore('userconfig', () => {
 	 * @param key The config key
 	 * @param value The new value
 	 */
-	async function update(key: string, value: boolean): Promise<void> {
+	async function update<Key extends string>(key: Key, value: UserConfig[Key]): Promise<void> {
 		// only update if a user is logged in (not the case for public shares)
 		if (getCurrentUser() !== null) {
 			await axios.put(generateUrl('/apps/files/api/v1/config/{key}', { key }), {

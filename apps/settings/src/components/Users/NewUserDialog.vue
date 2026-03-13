@@ -75,6 +75,7 @@
 					:create-option="(value) => ({ id: value, name: value, isCreating: true })"
 					@search="searchGroups"
 					@option:created="createGroup"
+					@option:deselected="removeGroup"
 					@option:selected="options => addGroup(options.at(-1))" />
 					<!-- If user is not admin, they are a subadmin.
 						Subadmins can't create users outside their groups
@@ -86,7 +87,7 @@
 					:input-label="t('settings', 'Admin of the following groups')"
 					:placeholder="t('settings', 'Set account as admin for …')"
 					:disabled="loading.groups || loading.all"
-					:options="availableGroups"
+					:options="availableSubAdminGroups"
 					:close-on-select="false"
 					:multiple="true"
 					label="name"
@@ -140,11 +141,11 @@
 
 <script>
 import { formatFileSize, parseFileSize } from '@nextcloud/files'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
-import NcPasswordField from '@nextcloud/vue/dist/Components/NcPasswordField.js'
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
+import NcPasswordField from '@nextcloud/vue/components/NcPasswordField'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
 
 import { searchGroups } from '../../service/groups.ts'
 import logger from '../../logger.ts'
@@ -215,6 +216,10 @@ export default {
 				: this.$store.getters.getSubAdminGroups
 
 			return groups.filter(group => group.id !== '__nc_internal_recent' && group.id !== 'disabled')
+		},
+
+		availableSubAdminGroups() {
+			return this.availableGroups.filter((group) => group.id !== 'admin')
 		},
 
 		languages() {
@@ -333,6 +338,18 @@ export default {
 				return
 			}
 			this.newUser.groups.push(group)
+		},
+
+		/**
+		 * Remove user from group
+		 *
+		 * @param {object} group Group object
+		 */
+		removeGroup(group) {
+			if (group.canRemove === false) {
+				return
+			}
+			this.newUser.groups = this.newUser.groups.filter((g) => g.id !== group.id)
 		},
 
 		/**

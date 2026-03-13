@@ -37,11 +37,11 @@
 <script>
 import path from 'path'
 
+import { getCurrentUser } from '@nextcloud/auth'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
-import { getCurrentUser } from '@nextcloud/auth'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import isMobile from '@nextcloud/vue/dist/Mixins/isMobile.js'
+import { useIsMobile } from '@nextcloud/vue/composables/useIsMobile'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 
 import { fetchVersions, deleteVersion, restoreVersion, setVersionLabel } from '../utils/versions.ts'
 import Version from '../components/Version.vue'
@@ -56,9 +56,13 @@ export default {
 		VersionLabelDialog,
 		NcLoadingIcon,
 	},
-	mixins: [
-		isMobile,
-	],
+
+	setup() {
+		return {
+			isMobile: useIsMobile(),
+		}
+	},
+
 	data() {
 		return {
 			fileInfo: null,

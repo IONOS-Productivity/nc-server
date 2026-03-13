@@ -45,7 +45,10 @@
 						disable-menu
 						disable-tooltip
 						:show-user-status="false" />
-					<div>{{ versionAuthor }}</div>
+					<div class="version__info__author_name"
+						:title="versionAuthor">
+						{{ versionAuthor }}
+					</div>
 				</div>
 			</div>
 		</template>
@@ -122,26 +125,24 @@ import { Permission, formatFileSize } from '@nextcloud/files'
 import { loadState } from '@nextcloud/initial-state'
 import { t } from '@nextcloud/l10n'
 import { joinPaths } from '@nextcloud/paths'
-import { getRootUrl, generateUrl } from '@nextcloud/router'
+import { getRootUrl } from '@nextcloud/router'
 import { defineComponent } from 'vue'
 
-import axios from '@nextcloud/axios'
 import moment from '@nextcloud/moment'
-import logger from '../utils/logger'
 
 import BackupRestore from 'vue-material-design-icons/BackupRestore.vue'
-import Delete from 'vue-material-design-icons/Delete.vue'
-import Download from 'vue-material-design-icons/Download.vue'
+import Delete from 'vue-material-design-icons/TrashCanOutline.vue'
+import Download from 'vue-material-design-icons/TrayArrowDown.vue'
 import FileCompare from 'vue-material-design-icons/FileCompare.vue'
 import ImageOffOutline from 'vue-material-design-icons/ImageOffOutline.vue'
-import Pencil from 'vue-material-design-icons/Pencil.vue'
+import Pencil from 'vue-material-design-icons/PencilOutline.vue'
 
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcActionLink from '@nextcloud/vue/dist/Components/NcActionLink.js'
-import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
-import NcDateTime from '@nextcloud/vue/dist/Components/NcDateTime.js'
-import NcListItem from '@nextcloud/vue/dist/Components/NcListItem.js'
-import Tooltip from '@nextcloud/vue/dist/Directives/Tooltip.js'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActionLink from '@nextcloud/vue/components/NcActionLink'
+import NcAvatar from '@nextcloud/vue/components/NcAvatar'
+import NcDateTime from '@nextcloud/vue/components/NcDateTime'
+import NcListItem from '@nextcloud/vue/components/NcListItem'
+import Tooltip from '@nextcloud/vue/directives/Tooltip'
 
 const hasPermission = (permissions: number, permission: number): boolean => (permissions & permission) !== 0
 
@@ -204,7 +205,6 @@ export default defineComponent({
 			previewLoaded: false,
 			previewErrored: false,
 			capabilities: loadState('core', 'capabilities', { files: { version_labeling: false, version_deletion: false } }),
-			versionAuthor: '' as string | null,
 		}
 	},
 
@@ -229,6 +229,18 @@ export default defineComponent({
 			}
 
 			return label
+		},
+
+		versionAuthor() {
+			if (!this.version.author || !this.version.authorName) {
+				return ''
+			}
+
+			if (this.version.author === getCurrentUser()?.uid) {
+				return t('files_versions', 'You')
+			}
+
+			return this.version.authorName ?? this.version.author
 		},
 
 		versionHumanExplicitDate(): string {
@@ -278,10 +290,6 @@ export default defineComponent({
 		},
 	},
 
-	created() {
-		this.fetchDisplayName()
-	},
-
 	methods: {
 		labelUpdate() {
 			this.$emit('label-update-request')
@@ -297,24 +305,6 @@ export default defineComponent({
 			await this.$nextTick()
 			await this.$nextTick()
 			this.$emit('delete', this.version)
-		},
-
-		async fetchDisplayName() {
-			this.versionAuthor = null
-			if (!this.version.author) {
-				return
-			}
-
-			if (this.version.author === getCurrentUser()?.uid) {
-				this.versionAuthor = t('files_versions', 'You')
-			} else {
-				try {
-					const { data } = await axios.post(generateUrl('/displaynames'), { users: [this.version.author] })
-					this.versionAuthor = data.users[this.version.author]
-				} catch (error) {
-					logger.warn('Could not load user display name', { error })
-				}
-			}
 		},
 
 		click() {
@@ -349,10 +339,17 @@ export default defineComponent({
 		gap: 0.5rem;
 		color: var(--color-main-text);
 		font-weight: 500;
+		overflow: hidden;
 
 		&__label {
 			font-weight: 700;
 			// Fix overflow on narrow screens
+			overflow: hidden;
+			text-overflow: ellipsis;
+			min-width: 110px;
+		}
+
+		&__author_name {
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
@@ -377,7 +374,7 @@ export default defineComponent({
 		// Useful to display no preview icon.
 		display: flex;
 		justify-content: center;
-		color: var(--color-text-light);
+		color: var(--color-main-text);
 	}
 }
 </style>

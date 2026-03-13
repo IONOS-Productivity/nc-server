@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -9,7 +10,6 @@ namespace OC\User;
 use OC;
 use OC\Authentication\Exceptions\PasswordlessTokenException;
 use OC\Authentication\Exceptions\PasswordLoginForbiddenException;
-use OC\Authentication\Exceptions\UserAgentForbidden;
 use OC\Authentication\Token\IProvider;
 use OC\Authentication\Token\IToken;
 use OC\Authentication\Token\PublicKeyToken;
@@ -320,7 +320,7 @@ class Session implements IUserSession, Emitter {
 			// disabled users can not log in
 			// injecting l10n does not work - there is a circular dependency between session and \OCP\L10N\IFactory
 			$message = \OCP\Util::getL10N('lib')->t('Account disabled');
-			throw new LoginException($message);
+			throw new DisabledUserException($message);
 		}
 
 		if ($regenerateSessionId) {
@@ -537,15 +537,11 @@ class Session implements IUserSession, Emitter {
 	 * @param IRequest $request
 	 * @param IThrottler $throttler
 	 * @return boolean if the login was successful
-	 * @throws UserAgentForbidden|LoginException
 	 */
 	public function tryBasicAuthLogin(IRequest $request,
 		IThrottler $throttler) {
 		if (!empty($request->server['PHP_AUTH_USER']) && !empty($request->server['PHP_AUTH_PW'])) {
 			try {
-				$userAgent = $request->server['HTTP_USER_AGENT'] ?? '';
-				$this->validateUserAgent($userAgent);
-
 				if ($this->logClientIn($request->server['PHP_AUTH_USER'], $request->server['PHP_AUTH_PW'], $request, $throttler)) {
 					/**
 					 * Add DAV authenticated. This should in an ideal world not be
@@ -570,28 +566,6 @@ class Session implements IUserSession, Emitter {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Validate the user agent and check if it is allowed to use the login flow.
-	 * Throws an exception if the user agent is not allowed.
-	 *
-	 * @param string $clientUserAgent
-	 * @throws UserAgentForbidden
-	 */
-	private function validateUserAgent(string $clientUserAgent): void {
-		$allowedAgents = $this->config->getSystemValue('core.login_flow_v2.allowed_user_agents', []);
-		if (empty($allowedAgents)) {
-			return;
-		}
-
-		foreach ($allowedAgents as $allowedAgent) {
-			if (preg_match($allowedAgent, $clientUserAgent) === 1) {
-				return;
-			}
-		}
-
-		throw new UserAgentForbidden('Client not allowed');
 	}
 
 	/**
@@ -994,6 +968,7 @@ class Session implements IUserSession, Emitter {
 		if ($webRoot === '') {
 			$webRoot = '/';
 		}
+		$domain = $this->config->getSystemValueString('cookie_domain');
 
 		$maxAge = $this->config->getSystemValueInt('remember_login_cookie_lifetime', 60 * 60 * 24 * 15);
 		\OC\Http\CookieHelper::setCookie(
@@ -1001,7 +976,7 @@ class Session implements IUserSession, Emitter {
 			$username,
 			$maxAge,
 			$webRoot,
-			'',
+			$domain,
 			$secureCookie,
 			true,
 			\OC\Http\CookieHelper::SAMESITE_LAX
@@ -1011,7 +986,7 @@ class Session implements IUserSession, Emitter {
 			$token,
 			$maxAge,
 			$webRoot,
-			'',
+			$domain,
 			$secureCookie,
 			true,
 			\OC\Http\CookieHelper::SAMESITE_LAX
@@ -1022,7 +997,7 @@ class Session implements IUserSession, Emitter {
 				$this->session->getId(),
 				$maxAge,
 				$webRoot,
-				'',
+				$domain,
 				$secureCookie,
 				true,
 				\OC\Http\CookieHelper::SAMESITE_LAX
@@ -1038,18 +1013,19 @@ class Session implements IUserSession, Emitter {
 	public function unsetMagicInCookie() {
 		//TODO: DI for cookies and IRequest
 		$secureCookie = OC::$server->getRequest()->getServerProtocol() === 'https';
+		$domain = $this->config->getSystemValueString('cookie_domain');
 
 		unset($_COOKIE['nc_username']); //TODO: DI
 		unset($_COOKIE['nc_token']);
 		unset($_COOKIE['nc_session_id']);
-		setcookie('nc_username', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT, '', $secureCookie, true);
-		setcookie('nc_token', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT, '', $secureCookie, true);
-		setcookie('nc_session_id', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT, '', $secureCookie, true);
+		setcookie('nc_username', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT, $domain, $secureCookie, true);
+		setcookie('nc_token', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT, $domain, $secureCookie, true);
+		setcookie('nc_session_id', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT, $domain, $secureCookie, true);
 		// old cookies might be stored under /webroot/ instead of /webroot
 		// and Firefox doesn't like it!
-		setcookie('nc_username', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT . '/', '', $secureCookie, true);
-		setcookie('nc_token', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT . '/', '', $secureCookie, true);
-		setcookie('nc_session_id', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT . '/', '', $secureCookie, true);
+		setcookie('nc_username', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT . '/', $domain, $secureCookie, true);
+		setcookie('nc_token', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT . '/', $domain, $secureCookie, true);
+		setcookie('nc_session_id', '', $this->timeFactory->getTime() - 3600, OC::$WEBROOT . '/', $domain, $secureCookie, true);
 	}
 
 	/**

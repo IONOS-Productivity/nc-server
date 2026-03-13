@@ -6,6 +6,8 @@
 import { showError } from '@nextcloud/dialogs'
 import rebuildNavigation from '../service/rebuild-navigation.js'
 
+const productName = window.OC.theme.productName
+
 export default {
 	computed: {
 		appGroups() {
@@ -96,7 +98,9 @@ export default {
 			return null
 		},
 		forceEnableButtonTooltip() {
-			const base = t('settings', 'This app is not marked as compatible with your Nextcloud version. If you continue you will still be able to install the app. Note that the app might not work as expected.')
+			const base = t('settings', 'This app is not marked as compatible with your {productName} version.', { productName })
+				+ ' '
+				+ t('settings', 'If you continue you will still be able to install the app. Note that the app might not work as expected.')
 			if (this.app.needsDownload) {
 				return base + ' ' + t('settings', 'The app will be downloaded from the App Store')
 			}
@@ -160,21 +164,35 @@ export default {
 		},
 		addGroupLimitation(groupArray) {
 			if (this.app?.app_api) {
-				return // not supported for app_api apps
+				return
 			}
 			const group = groupArray.pop()
 			const groups = this.app.groups.concat([]).concat([group.id])
+
+			if (this.store && this.store.updateAppGroups) {
+				this.store.updateAppGroups(this.app.id, groups)
+			}
+
 			this.$store.dispatch('enableApp', { appId: this.app.id, groups })
 		},
 		removeGroupLimitation(group) {
 			if (this.app?.app_api) {
-				return // not supported for app_api apps
+				return
 			}
 			const currentGroups = this.app.groups.concat([])
 			const index = currentGroups.indexOf(group.id)
 			if (index > -1) {
 				currentGroups.splice(index, 1)
 			}
+
+			if (this.store && this.store.updateAppGroups) {
+				this.store.updateAppGroups(this.app.id, currentGroups)
+			}
+
+			if (currentGroups.length === 0) {
+				this.groupCheckedAppsData = false
+			}
+
 			this.$store.dispatch('enableApp', { appId: this.app.id, groups: currentGroups })
 		},
 		forceEnable(appId) {
@@ -188,9 +206,9 @@ export default {
 					.catch((error) => { showError(error) })
 			}
 		},
-		enable(appId, deployOptions = []) {
+		enable(appId, daemon = null, deployOptions = {}) {
 			if (this.app?.app_api) {
-				this.appApiStore.enableApp(appId, deployOptions)
+				this.appApiStore.enableApp(appId, daemon, deployOptions)
 					.then(() => { rebuildNavigation() })
 					.catch((error) => { showError(error) })
 			} else {
@@ -235,11 +253,11 @@ export default {
 		},
 		update(appId) {
 			if (this.app?.app_api) {
-				this.appApiStore.updateApp(appId)
+				return this.appApiStore.updateApp(appId)
 					.then(() => { rebuildNavigation() })
 					.catch((error) => { showError(error) })
 			} else {
-				this.$store.dispatch('updateApp', { appId })
+				return this.$store.dispatch('updateApp', { appId })
 					.catch((error) => { showError(error) })
 					.then(() => {
 						rebuildNavigation()

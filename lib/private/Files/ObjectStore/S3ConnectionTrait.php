@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -13,6 +14,8 @@ use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\RejectedPromise;
+use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Files\ObjectStore\Events\BucketCreatedEvent;
 use OCP\Files\StorageNotAvailableException;
 use OCP\ICertificateManager;
 use OCP\Server;
@@ -32,6 +35,10 @@ trait S3ConnectionTrait {
 			throw new \Exception('Bucket has to be configured.');
 		}
 
+		if (isset($params['perBucket'][$params['bucket']])) {
+			$params = array_merge($params, $params['perBucket'][$params['bucket']]);
+		}
+
 		$this->id = 'amazon::' . $params['bucket'];
 
 		$this->test = isset($params['test']);
@@ -39,12 +46,14 @@ trait S3ConnectionTrait {
 		// Default to 5 like the S3 SDK does
 		$this->concurrency = $params['concurrency'] ?? 5;
 		$this->proxy = $params['proxy'] ?? false;
+		$this->connectTimeout = $params['connect_timeout'] ?? 5;
 		$this->timeout = $params['timeout'] ?? 15;
 		$this->storageClass = !empty($params['storageClass']) ? $params['storageClass'] : 'STANDARD';
 		$this->uploadPartSize = $params['uploadPartSize'] ?? 524288000;
 		$this->putSizeLimit = $params['putSizeLimit'] ?? 104857600;
 		$this->copySizeLimit = $params['copySizeLimit'] ?? 5242880000;
 		$this->useMultipartCopy = (bool)($params['useMultipartCopy'] ?? true);
+		$this->retriesMaxAttempts = $params['retriesMaxAttempts'] ?? 5;
 		$params['region'] = empty($params['region']) ? 'eu-west-1' : $params['region'];
 		$params['hostname'] = empty($params['hostname']) ? 's3.' . $params['region'] . '.amazonaws.com' : $params['hostname'];
 		$params['s3-accelerate'] = $params['hostname'] === 's3-accelerate.amazonaws.com' || $params['hostname'] === 's3-accelerate.dualstack.amazonaws.com';
@@ -102,13 +111,12 @@ trait S3ConnectionTrait {
 			'use_arn_region' => false,
 			'http' => [
 				'verify' => $this->getCertificateBundlePath(),
-				// Timeout for the connection to S3 server, not for the request.
-				'connect_timeout' => 5
+				'connect_timeout' => $this->connectTimeout,
 			],
 			'use_aws_shared_config_files' => false,
 			'retries' => [
 				'mode' => 'standard',
-				'max_attempts' => 5,
+				'max_attempts' => $this->retriesMaxAttempts,
 			],
 		];
 
@@ -116,6 +124,18 @@ trait S3ConnectionTrait {
 			$options['use_accelerate_endpoint'] = true;
 		} else {
 			$options['endpoint'] = $base_url;
+		}
+
+		if (isset($this->params['request_checksum_calculation'])) {
+			$options['request_checksum_calculation'] = $this->params['request_checksum_calculation'];
+		} else {
+			$options['request_checksum_calculation'] = 'when_required';
+		}
+
+		if (isset($this->params['response_checksum_validation'])) {
+			$options['response_checksum_validation'] = $this->params['response_checksum_validation'];
+		} else {
+			$options['response_checksum_validation'] = 'when_required';
 		}
 
 		if ($this->getProxy()) {
@@ -132,7 +152,7 @@ trait S3ConnectionTrait {
 				$logger->debug('Bucket "' . $this->bucket . '" This bucket name is not dns compatible, it may contain invalid characters.',
 					['app' => 'objectstore']);
 			}
-	
+
 			if ($this->params['verify_bucket_exists'] && !$this->connection->doesBucketExist($this->bucket)) {
 				try {
 					$logger->info('Bucket "' . $this->bucket . '" does not exist - creating it.', ['app' => 'objectstore']);
@@ -140,6 +160,13 @@ trait S3ConnectionTrait {
 						throw new StorageNotAvailableException('The bucket will not be created because the name is not dns compatible, please correct it: ' . $this->bucket);
 					}
 					$this->connection->createBucket(['Bucket' => $this->bucket]);
+					Server::get(IEventDispatcher::class)
+						->dispatchTyped(new BucketCreatedEvent(
+							$this->bucket,
+							$options['endpoint'],
+							$options['region'],
+							$options['version']
+						));
 					$this->testTimeout();
 				} catch (S3Exception $e) {
 					$logger->debug('Invalid remote storage.', [
@@ -189,10 +216,12 @@ trait S3ConnectionTrait {
 		return function () {
 			$key = empty($this->params['key']) ? null : $this->params['key'];
 			$secret = empty($this->params['secret']) ? null : $this->params['secret'];
+			$sessionToken = empty($this->params['session_token']) ? null : $this->params['session_token'];
 
 			if ($key && $secret) {
 				return Create::promiseFor(
-					new Credentials($key, $secret)
+					// a null sessionToken match the default signature of the constructor
+					new Credentials($key, $secret, $sessionToken)
 				);
 			}
 
@@ -203,13 +232,13 @@ trait S3ConnectionTrait {
 
 	protected function getCertificateBundlePath(): ?string {
 		if ((int)($this->params['use_nextcloud_bundle'] ?? '0')) {
+			/** @var ICertificateManager $certManager */
+			$certManager = Server::get(ICertificateManager::class);
 			// since we store the certificate bundles on the primary storage, we can't get the bundle while setting up the primary storage
 			if (!isset($this->params['primary_storage'])) {
-				/** @var ICertificateManager $certManager */
-				$certManager = Server::get(ICertificateManager::class);
 				return $certManager->getAbsoluteBundlePath();
 			} else {
-				return \OC::$SERVERROOT . '/resources/config/ca-bundle.crt';
+				return $certManager->getDefaultCertificatesBundlePath();
 			}
 		} else {
 			return null;

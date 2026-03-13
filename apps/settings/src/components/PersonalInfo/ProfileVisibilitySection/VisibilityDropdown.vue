@@ -23,7 +23,7 @@
 import { loadState } from '@nextcloud/initial-state'
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
 
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
 
 import { saveProfileParameterVisibility } from '../../../service/ProfileService.js'
 import { VISIBILITY_PROPERTY_ENUM } from '../../../constants/ProfileConstants.js'
@@ -149,9 +149,9 @@ export default {
 	}
 
 	label {
-		color: var(--color-text-lighter);
-		width: 150px;
+		color: var(--color-text-maxcontrast);
 		line-height: 50px;
+		width: 150px;
 	}
 
 	&__select {

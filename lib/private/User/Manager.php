@@ -53,11 +53,8 @@ use Psr\Log\LoggerInterface;
  * @package OC\User
  */
 class Manager extends PublicEmitter implements IUserManager {
-	/** @see \OC\Config\UserConfig::USER_MAX_LENGTH */
-	public const MAX_USERID_LENGTH = 64;
-
 	/**
-	 * @var \OCP\UserInterface[] $backends
+	 * @var UserInterface[] $backends
 	 */
 	private array $backends = [];
 
@@ -85,37 +82,24 @@ class Manager extends PublicEmitter implements IUserManager {
 
 	/**
 	 * Get the active backends
-	 * @return \OCP\UserInterface[]
+	 * @return UserInterface[]
 	 */
-	public function getBackends() {
+	public function getBackends(): array {
 		return $this->backends;
 	}
 
-	/**
-	 * register a user backend
-	 *
-	 * @param \OCP\UserInterface $backend
-	 */
-	public function registerBackend($backend) {
+	public function registerBackend(UserInterface $backend): void {
 		$this->backends[] = $backend;
 	}
 
-	/**
-	 * remove a user backend
-	 *
-	 * @param \OCP\UserInterface $backend
-	 */
-	public function removeBackend($backend) {
+	public function removeBackend(UserInterface $backend): void {
 		$this->cachedUsers = [];
 		if (($i = array_search($backend, $this->backends)) !== false) {
 			unset($this->backends[$i]);
 		}
 	}
 
-	/**
-	 * remove all user backends
-	 */
-	public function clearBackends() {
+	public function clearBackends(): void {
 		$this->cachedUsers = [];
 		$this->backends = [];
 	}
@@ -134,7 +118,7 @@ class Manager extends PublicEmitter implements IUserManager {
 			return $this->cachedUsers[$uid];
 		}
 
-		if (strlen($uid) > self::MAX_USERID_LENGTH) {
+		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
 			return null;
 		}
 
@@ -197,7 +181,7 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * @return bool
 	 */
 	public function userExists($uid) {
-		if (strlen($uid) > self::MAX_USERID_LENGTH) {
+		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
 			return false;
 		}
 
@@ -268,15 +252,6 @@ class Manager extends PublicEmitter implements IUserManager {
 		return false;
 	}
 
-	/**
-	 * Search by user id
-	 *
-	 * @param string $pattern
-	 * @param int $limit
-	 * @param int $offset
-	 * @return IUser[]
-	 * @deprecated 27.0.0, use searchDisplayName instead
-	 */
 	public function search($pattern, $limit = null, $offset = null) {
 		$users = [];
 		foreach ($this->backends as $backend) {
@@ -336,9 +311,9 @@ class Manager extends PublicEmitter implements IUserManager {
 				$users,
 				function (IUser $user) use ($search): bool {
 					try {
-						return mb_stripos($user->getUID(), $search) !== false ||
-						mb_stripos($user->getDisplayName(), $search) !== false ||
-						mb_stripos($user->getEMailAddress() ?? '', $search) !== false;
+						return mb_stripos($user->getUID(), $search) !== false
+						|| mb_stripos($user->getDisplayName(), $search) !== false
+						|| mb_stripos($user->getEMailAddress() ?? '', $search) !== false;
 					} catch (NoUserException $ex) {
 						$this->logger->error('Error while filtering disabled users', ['exception' => $ex, 'userUID' => $user->getUID()]);
 						return false;
@@ -605,7 +580,7 @@ class Manager extends PublicEmitter implements IUserManager {
 			->andWhere($queryBuilder->expr()->eq('configvalue', $queryBuilder->createNamedParameter('false'), IQueryBuilder::PARAM_STR));
 
 
-		$result = $queryBuilder->execute();
+		$result = $queryBuilder->executeQuery();
 		$count = $result->fetchOne();
 		$result->closeCursor();
 
@@ -631,7 +606,7 @@ class Manager extends PublicEmitter implements IUserManager {
 			->where($queryBuilder->expr()->eq('appid', $queryBuilder->createNamedParameter('login')))
 			->andWhere($queryBuilder->expr()->eq('configkey', $queryBuilder->createNamedParameter('lastLogin')));
 
-		$query = $queryBuilder->execute();
+		$query = $queryBuilder->executeQuery();
 
 		$result = (int)$query->fetchOne();
 		$query->closeCursor();
@@ -650,7 +625,7 @@ class Manager extends PublicEmitter implements IUserManager {
 	}
 
 	/**
-	 * Getting all userIds that have a listLogin value requires checking the
+	 * Getting all userIds that have a lastLogin value requires checking the
 	 * value in php because on oracle you cannot use a clob in a where clause,
 	 * preventing us from doing a not null or length(value) > 0 check.
 	 *
@@ -677,7 +652,7 @@ class Manager extends PublicEmitter implements IUserManager {
 		if ($offset !== null) {
 			$queryBuilder->setFirstResult($offset);
 		}
-		$query = $queryBuilder->execute();
+		$query = $queryBuilder->executeQuery();
 		$result = [];
 
 		while ($row = $query->fetch()) {
@@ -739,8 +714,9 @@ class Manager extends PublicEmitter implements IUserManager {
 		}
 
 		// User ID is too long
-		if (strlen($uid) > self::MAX_USERID_LENGTH) {
-			throw new \InvalidArgumentException($l->t('Login is too long'));
+		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
+			// TRANSLATORS User ID is too long
+			throw new \InvalidArgumentException($l->t('Username is too long'));
 		}
 
 		if (!$this->verifyUid($uid, $checkDataDirectory)) {
@@ -828,29 +804,29 @@ class Manager extends PublicEmitter implements IUserManager {
 		return $this->displayNameCache;
 	}
 
-	/**
-	 * Gets the list of users sorted by lastLogin, from most recent to least recent
-	 *
-	 * @param int $offset from which offset to fetch
-	 * @return \Iterator<IUser> list of user IDs
-	 * @since 30.0.0
-	 */
-	public function getSeenUsers(int $offset = 0): \Iterator {
-		$limit = 1000;
+	public function getSeenUsers(int $offset = 0, ?int $limit = null): \Iterator {
+		$maxBatchSize = 1000;
 
 		do {
-			$userIds = $this->getSeenUserIds($limit, $offset);
-			$offset += $limit;
+			if ($limit !== null) {
+				$batchSize = min($limit, $maxBatchSize);
+				$limit -= $batchSize;
+			} else {
+				$batchSize = $maxBatchSize;
+			}
+
+			$userIds = $this->getSeenUserIds($batchSize, $offset);
+			$offset += $batchSize;
 
 			foreach ($userIds as $userId) {
 				foreach ($this->backends as $backend) {
 					if ($backend->userExists($userId)) {
-						$user = $this->getUserObject($userId, $backend, false);
+						$user = new LazyUser($userId, $this, null, $backend);
 						yield $user;
 						break;
 					}
 				}
 			}
-		} while (count($userIds) === $limit);
+		} while (count($userIds) === $batchSize && $limit !== 0);
 	}
 }

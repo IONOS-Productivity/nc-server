@@ -26,7 +26,7 @@
 						<NcActionButton close-after-click
 							@click="onEdit">
 							<template #icon>
-								<IconEdit :size="20" />
+								<IconPencilOutline :size="20" />
 							</template>
 							{{ t('comments', 'Edit comment') }}
 						</NcActionButton>
@@ -34,7 +34,7 @@
 						<NcActionButton close-after-click
 							@click="onDeleteWithUndo">
 							<template #icon>
-								<IconDelete :size="20" />
+								<IconTrashCanOutline :size="20" />
 							</template>
 							{{ t('comments', 'Delete comment') }}
 						</NcActionButton>
@@ -95,7 +95,7 @@
 				:class="{'comment__message--expanded': expanded}"
 				:text="richContent.message"
 				:arguments="richContent.mentions"
-				@click="onExpand" />
+				@click.native="onExpand" />
 		</div>
 	</component>
 </template>
@@ -104,27 +104,27 @@
 import { getCurrentUser } from '@nextcloud/auth'
 import { translate as t } from '@nextcloud/l10n'
 
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
-import NcActionSeparator from '@nextcloud/vue/dist/Components/NcActionSeparator.js'
-import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcDateTime from '@nextcloud/vue/dist/Components/NcDateTime.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcUserBubble from '@nextcloud/vue/dist/Components/NcUserBubble.js'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionSeparator from '@nextcloud/vue/components/NcActionSeparator'
+import NcAvatar from '@nextcloud/vue/components/NcAvatar'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcDateTime from '@nextcloud/vue/components/NcDateTime'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcUserBubble from '@nextcloud/vue/components/NcUserBubble'
 
 import IconArrowRight from 'vue-material-design-icons/ArrowRight.vue'
 import IconClose from 'vue-material-design-icons/Close.vue'
-import IconDelete from 'vue-material-design-icons/Delete.vue'
-import IconEdit from 'vue-material-design-icons/Pencil.vue'
+import IconTrashCanOutline from 'vue-material-design-icons/TrashCanOutline.vue'
+import IconPencilOutline from 'vue-material-design-icons/PencilOutline.vue'
 
 import CommentMixin from '../mixins/CommentMixin.js'
 import { mapStores } from 'pinia'
 import { useDeletedCommentLimbo } from '../store/deletedCommentLimbo.js'
 
 // Dynamic loading
-const NcRichContenteditable = () => import('@nextcloud/vue/dist/Components/NcRichContenteditable.js')
-const NcRichText = () => import('@nextcloud/vue/dist/Components/NcRichText.js')
+const NcRichContenteditable = () => import('@nextcloud/vue/components/NcRichContenteditable')
+const NcRichText = () => import('@nextcloud/vue/components/NcRichText')
 
 export default {
 	name: 'Comment',
@@ -132,8 +132,8 @@ export default {
 	components: {
 		IconArrowRight,
 		IconClose,
-		IconDelete,
-		IconEdit,
+		IconTrashCanOutline,
+		IconPencilOutline,
 		NcActionButton,
 		NcActions,
 		NcActionSeparator,
@@ -320,6 +320,7 @@ $comment-padding: 10px;
 		display: flex;
 		flex-grow: 1;
 		flex-direction: column;
+		container-type: inline-size;
 	}
 
 	&__header {
@@ -364,7 +365,7 @@ $comment-padding: 10px;
 
 	&__message {
 		white-space: pre-wrap;
-		overflow-wrap: break-word;
+		word-break: normal;
 		max-height: 70px;
 		overflow: hidden;
 		margin-top: -6px;

@@ -20,6 +20,7 @@ use OCA\AdminAudit\AuditLogger;
 use OCA\AdminAudit\IAuditLogger;
 use OCA\AdminAudit\Listener\AppManagementEventListener;
 use OCA\AdminAudit\Listener\AuthEventListener;
+use OCA\AdminAudit\Listener\CacheEventListener;
 use OCA\AdminAudit\Listener\ConsoleEventListener;
 use OCA\AdminAudit\Listener\CriticalActionPerformedEventListener;
 use OCA\AdminAudit\Listener\FileEventListener;
@@ -27,6 +28,7 @@ use OCA\AdminAudit\Listener\GroupManagementEventListener;
 use OCA\AdminAudit\Listener\SecurityEventListener;
 use OCA\AdminAudit\Listener\SharingEventListener;
 use OCA\AdminAudit\Listener\UserManagementEventListener;
+use OCA\Files_Versions\Events\VersionRestoredEvent;
 use OCP\App\Events\AppDisableEvent;
 use OCP\App\Events\AppEnableEvent;
 use OCP\App\Events\AppUpdateEvent;
@@ -39,9 +41,10 @@ use OCP\Authentication\TwoFactorAuth\TwoFactorProviderChallengeFailed;
 use OCP\Authentication\TwoFactorAuth\TwoFactorProviderChallengePassed;
 use OCP\Console\ConsoleEvent;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Files\Cache\CacheEntryInsertedEvent;
+use OCP\Files\Cache\CacheEntryRemovedEvent;
 use OCP\Files\Events\Node\BeforeNodeDeletedEvent;
 use OCP\Files\Events\Node\BeforeNodeReadEvent;
-use OCP\Files\Events\Node\BeforeNodeRenamedEvent;
 use OCP\Files\Events\Node\NodeCopiedEvent;
 use OCP\Files\Events\Node\NodeCreatedEvent;
 use OCP\Files\Events\Node\NodeRenamedEvent;
@@ -110,6 +113,7 @@ class Application extends App implements IBootstrap {
 
 		// File events
 		$context->registerEventListener(BeforePreviewFetchedEvent::class, FileEventListener::class);
+		$context->registerEventListener(VersionRestoredEvent::class, FileEventListener::class);
 
 		// Security events
 		$context->registerEventListener(TwoFactorProviderChallengePassed::class, SecurityEventListener::class);
@@ -122,6 +126,10 @@ class Application extends App implements IBootstrap {
 
 		// Console events
 		$context->registerEventListener(ConsoleEvent::class, ConsoleEventListener::class);
+
+		// Cache events
+		$context->registerEventListener(CacheEntryInsertedEvent::class, CacheEventListener::class);
+		$context->registerEventListener(CacheEntryRemovedEvent::class, CacheEventListener::class);
 	}
 
 	public function boot(IBootContext $context): void {
@@ -169,13 +177,6 @@ class Application extends App implements IBootstrap {
 		$fileActions = new Files($logger);
 
 		$eventDispatcher->addListener(
-			BeforeNodeRenamedEvent::class,
-			function (BeforeNodeRenamedEvent $event) use ($fileActions): void {
-				$fileActions->beforeRename($event);
-			}
-		);
-
-		$eventDispatcher->addListener(
 			NodeRenamedEvent::class,
 			function (NodeRenamedEvent $event) use ($fileActions): void {
 				$fileActions->afterRename($event);
@@ -220,7 +221,6 @@ class Application extends App implements IBootstrap {
 
 	private function versionsHooks(IAuditLogger $logger): void {
 		$versionsActions = new Versions($logger);
-		Util::connectHook('\OCP\Versions', 'rollback', $versionsActions, 'rollback');
 		Util::connectHook('\OCP\Versions', 'delete', $versionsActions, 'delete');
 	}
 

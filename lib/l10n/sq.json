@@ -52,6 +52,7 @@
     "Address" : "Adresa",
     "Profile picture" : "Foto profili",
     "About" : "Rreth ",
+    "Organization" : "Organizate",
     "Additional settings" : "Konfigurime shtesë",
     "You need to enter details of an existing account." : "Duhet të futni detajet e një llogarie ekzistuese.",
     "Oracle connection could not be established" : "S’u vendos dot lidhje me Oracle",
@@ -134,10 +135,10 @@
     "Storage connection error. %s" : "Gabim lidhje te depozita. %s",
     "Storage is temporarily not available" : "Hapsira ruajtëse nuk është në dispozicion përkohësisht",
     "Storage connection timeout. %s" : "Mbarim kohe lidhjeje për depozitën. %s",
+    "Images" : "Imazhe ",
     "Text" : "Tekst",
     "Summary" : "Përmbledhje",
     "Translate" : "Përkthe",
-    "Result" : "Rezultatet",
-    "File is currently busy, please try again later" : "Kartela tani është e zënë, ju lutemi, riprovoni më vonë."
+    "Result" : "Rezultatet"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

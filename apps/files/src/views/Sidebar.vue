@@ -51,7 +51,7 @@
 			<NcActionButton :close-after-click="true"
 				@click="toggleStarred(!fileInfo.isFavourited)">
 				<template #icon>
-					<NcIconSvgWrapper :path="fileInfo.isFavourited ? mdiStarOutline : mdiStar" />
+					<NcIconSvgWrapper :path="fileInfo.isFavourited ? mdiStar : mdiStarOutline" />
 				</template>
 				{{ fileInfo.isFavourited ? t('files', 'Remove from favorites') : t('files', 'Add to favorites') }}
 			</NcActionButton>
@@ -59,8 +59,10 @@
 			And inject themselves here. -->
 			<NcActionButton v-if="isSystemTagsEnabled"
 				:close-after-click="true"
-				icon="icon-tag"
 				@click="toggleTags">
+				<template #icon>
+					<NcIconSvgWrapper :path="mdiTagMultipleOutline" />
+				</template>
 				{{ t('files', 'Tags') }}
 			</NcActionButton>
 		</template>
@@ -93,6 +95,8 @@
 	</NcAppSidebar>
 </template>
 <script lang="ts">
+import type { INode } from '@nextcloud/files'
+
 import { davRemoteURL, davRootPath, File, Folder, formatFileSize } from '@nextcloud/files'
 import { defineComponent } from 'vue'
 import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
@@ -101,18 +105,18 @@ import { fetchNode } from '../services/WebdavClient.ts'
 import { generateUrl } from '@nextcloud/router'
 import { getCapabilities } from '@nextcloud/capabilities'
 import { getCurrentUser } from '@nextcloud/auth'
-import { mdiStar, mdiStarOutline } from '@mdi/js'
+import { mdiStar, mdiStarOutline, mdiTagMultipleOutline } from '@mdi/js'
 import { ShareType } from '@nextcloud/sharing'
 import { showError } from '@nextcloud/dialogs'
 import $ from 'jquery'
 import axios from '@nextcloud/axios'
 
-import NcAppSidebar from '@nextcloud/vue/dist/Components/NcAppSidebar.js'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcDateTime from '@nextcloud/vue/dist/Components/NcDateTime.js'
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
-import NcUserBubble from '@nextcloud/vue/dist/Components/NcUserBubble.js'
+import NcAppSidebar from '@nextcloud/vue/components/NcAppSidebar'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcDateTime from '@nextcloud/vue/components/NcDateTime'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcUserBubble from '@nextcloud/vue/components/NcUserBubble'
 
 import FileInfo from '../services/FileInfo.js'
 import LegacyView from '../components/LegacyView.vue'
@@ -144,6 +148,7 @@ export default defineComponent({
 
 			mdiStar,
 			mdiStarOutline,
+			mdiTagMultipleOutline,
 		}
 	},
 
@@ -156,7 +161,7 @@ export default defineComponent({
 			error: null,
 			loading: true,
 			fileInfo: null,
-			node: null,
+			node: null as INode | null,
 			isFullScreen: false,
 			hasLowHeight: false,
 		}
@@ -320,12 +325,14 @@ export default defineComponent({
 	},
 	created() {
 		subscribe('files:node:deleted', this.onNodeDeleted)
+		subscribe('files:node:updated', this.onNodeUpdated)
 
 		window.addEventListener('resize', this.handleWindowResize)
 		this.handleWindowResize()
 	},
 	beforeDestroy() {
 		unsubscribe('file:node:deleted', this.onNodeDeleted)
+		unsubscribe('file:node:deleted', this.onNodeUpdated)
 		window.removeEventListener('resize', this.handleWindowResize)
 	},
 
@@ -541,6 +548,35 @@ export default defineComponent({
 		onNodeDeleted(node) {
 			if (this.fileInfo && node && this.fileInfo.id === node.fileid) {
 				this.close()
+			}
+		},
+
+		/**
+		 * Handle if the current node was updated
+		 * @param {import('@nextcloud/files').Node} node The deleted node
+		 */
+		async onNodeUpdated(node) {
+			if (this.fileInfo && node && this.fileInfo.id === node.fileid && node.path !== this.file) {
+				this.loading = true
+				this.fileInfo = null
+				this.Sidebar.file = node.path
+				this.node = await fetchNode(this.file)
+				this.fileInfo = FileInfo(this.node)
+				// adding this as fallback because other apps expect it
+				this.fileInfo.dir = this.file.split('/').slice(0, -1).join('/')
+
+				// DEPRECATED legacy views
+				// TODO: remove
+				this.views.forEach(view => {
+					view.setFileInfo(this.fileInfo)
+				})
+
+				this.$nextTick(() => {
+					if (this.$refs.tabs) {
+						this.$refs.tabs.updateTabs()
+					}
+					this.loading = false
+				})
 			}
 		},
 

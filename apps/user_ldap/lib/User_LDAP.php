@@ -70,8 +70,9 @@ class User_LDAP extends BackendUtility implements IUserBackend, UserInterface, I
 	public function loginName2UserName($loginName, bool $forceLdapRefetch = false) {
 		$cacheKey = 'loginName2UserName-' . $loginName;
 		$username = $this->access->connection->getFromCache($cacheKey);
+		$knownDn = $username ? $this->access->username2dn($username) : false;
 
-		$ignoreCache = ($username === false && $forceLdapRefetch);
+		$ignoreCache = (($username === false || $knownDn === false) && $forceLdapRefetch);
 		if ($username !== null && !$ignoreCache) {
 			return $username;
 		}
@@ -119,8 +120,8 @@ class User_LDAP extends BackendUtility implements IUserBackend, UserInterface, I
 		$attrs = $this->access->userManager->getAttributes();
 		$users = $this->access->fetchUsersByLoginName($loginName, $attrs);
 		if (count($users) < 1) {
-			throw new NotOnLDAP('No user available for the given login name on ' .
-				$this->access->connection->ldapHost . ':' . $this->access->connection->ldapPort);
+			throw new NotOnLDAP('No user available for the given login name on '
+				. $this->access->connection->ldapHost . ':' . $this->access->connection->ldapPort);
 		}
 		return $users[0];
 	}
@@ -138,12 +139,22 @@ class User_LDAP extends BackendUtility implements IUserBackend, UserInterface, I
 			return false;
 		}
 		$dn = $this->access->username2dn($username);
+		if ($dn === false) {
+			$this->logger->warning(
+				'LDAP Login: Found user {user}, but no assigned DN',
+				[
+					'app' => 'user_ldap',
+					'user' => $username,
+				]
+			);
+			return false;
+		}
 		$user = $this->access->userManager->get($dn);
 
 		if (!$user instanceof User) {
 			$this->logger->warning(
-				'LDAP Login: Could not get user object for DN ' . $dn .
-				'. Maybe the LDAP entry has no set display name attribute?',
+				'LDAP Login: Could not get user object for DN ' . $dn
+				. '. Maybe the LDAP entry has no set display name attribute?',
 				['app' => 'user_ldap']
 			);
 			return false;
@@ -177,8 +188,8 @@ class User_LDAP extends BackendUtility implements IUserBackend, UserInterface, I
 		$user = $this->access->userManager->get($uid);
 
 		if (!$user instanceof User) {
-			throw new \Exception('LDAP setPassword: Could not get user object for uid ' . $uid .
-				'. Maybe the LDAP entry has no set display name attribute?');
+			throw new \Exception('LDAP setPassword: Could not get user object for uid ' . $uid
+				. '. Maybe the LDAP entry has no set display name attribute?');
 		}
 		if ($user->getUsername() !== false && $this->access->setPassword($user->getDN(), $password)) {
 			$ldapDefaultPPolicyDN = $this->access->connection->ldapDefaultPPolicyDN;

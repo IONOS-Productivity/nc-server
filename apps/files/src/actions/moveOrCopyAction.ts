@@ -16,8 +16,8 @@ import { openConflictPicker, hasConflict } from '@nextcloud/upload'
 import { basename, join } from 'path'
 import Vue from 'vue'
 
-import CopyIconSvg from '@mdi/svg/svg/folder-multiple.svg?raw'
-import FolderMoveSvg from '@mdi/svg/svg/folder-move.svg?raw'
+import CopyIconSvg from '@mdi/svg/svg/folder-multiple-outline.svg?raw'
+import FolderMoveSvg from '@mdi/svg/svg/folder-move-outline.svg?raw'
 
 import { MoveCopyAction, canCopy, canMove, getQueue } from './moveOrCopyActionUtils'
 import { getContents } from '../services/Files'
@@ -158,7 +158,6 @@ export const handleCopyMoveNodeTo = async (node: Node, destination: Folder, meth
 							}
 						} catch (error) {
 							// User cancelled
-							showError(t('files', 'Move cancelled'))
 							return
 						}
 					}
@@ -222,6 +221,10 @@ async function openFilePickerForAction(
 			// We don't want to show the current nodes in the file picker
 			return !fileIDs.includes(n.fileid)
 		})
+		.setCanPick((n) => {
+			const hasCreatePermissions = (n.permissions & Permission.CREATE) === Permission.CREATE
+			return hasCreatePermissions
+		})
 		.setMimeTypeFilter([])
 		.setMultiSelect(false)
 		.startAt(dir)
@@ -237,7 +240,6 @@ async function openFilePickerForAction(
 					label: target ? t('files', 'Copy to {target}', { target }, undefined, { escape: false, sanitize: false }) : t('files', 'Copy'),
 					type: 'primary',
 					icon: CopyIconSvg,
-					disabled: selection.some((node) => (node.permissions & Permission.CREATE) === 0),
 					async callback(destination: Node[]) {
 						resolve({
 							destination: destination[0] as Folder,
@@ -330,7 +332,6 @@ export const action = new FileAction({
 			return false
 		}
 		if (result === false) {
-			showInfo(t('files', 'Cancelled move or copy of "{filename}".', { filename: node.displayname }))
 			return null
 		}
 
@@ -352,10 +353,6 @@ export const action = new FileAction({
 		const result = await openFilePickerForAction(action, dir, nodes)
 		// Handle cancellation silently
 		if (result === false) {
-			showInfo(nodes.length === 1
-				? t('files', 'Cancelled move or copy of "{filename}".', { filename: nodes[0].displayname })
-				: t('files', 'Cancelled move or copy operation'),
-			)
 			return nodes.map(() => null)
 		}
 

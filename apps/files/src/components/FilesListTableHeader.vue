@@ -24,6 +24,14 @@
 		<!-- Actions -->
 		<th class="files-list__row-actions" />
 
+		<!-- Mime -->
+		<th v-if="isMimeAvailable"
+			class="files-list__column files-list__row-mime"
+			:class="{ 'files-list__column--sortable': isMimeAvailable }"
+			:aria-sort="ariaSortForMode('mime')">
+			<FilesListTableHeaderButton :name="t('files', 'File type')" mode="mime" />
+		</th>
+
 		<!-- Size -->
 		<th v-if="isSizeAvailable"
 			class="files-list__column files-list__row-size"
@@ -58,10 +66,10 @@ import type { Node } from '@nextcloud/files'
 import type { PropType } from 'vue'
 import type { FileSource } from '../types.ts'
 
-import { defineComponent } from 'vue'
 import { translate as t } from '@nextcloud/l10n'
-import { useHotKey } from '@nextcloud/vue/dist/Composables/useHotKey.js'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import { useHotKey } from '@nextcloud/vue/composables/useHotKey'
+import { defineComponent } from 'vue'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 
 import { useFilesStore } from '../store/files.ts'
 import { useNavigation } from '../composables/useNavigation'
@@ -83,6 +91,10 @@ export default defineComponent({
 	],
 
 	props: {
+		isMimeAvailable: {
+			type: Boolean,
+			default: false,
+		},
 		isMtimeAvailable: {
 			type: Boolean,
 			default: false,
@@ -171,7 +183,7 @@ export default defineComponent({
 	},
 
 	methods: {
-		ariaSortForMode(mode: string): ARIAMixin['ariaSort'] {
+		ariaSortForMode(mode: string): 'ascending'|'descending'|null {
 			if (this.sortingMode === mode) {
 				return this.isAscSorting ? 'ascending' : 'descending'
 			}

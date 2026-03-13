@@ -102,7 +102,7 @@ class Client implements IClient {
 		// $this->certificateManager->getAbsoluteBundlePath() tries to instantiate
 		// a view
 		if (!$this->config->getSystemValueBool('installed', false)) {
-			return \OC::$SERVERROOT . '/resources/config/ca-bundle.crt';
+			return $this->certificateManager->getDefaultCertificatesBundlePath();
 		}
 
 		return $this->certificateManager->getAbsoluteBundlePath();
@@ -149,8 +149,8 @@ class Client implements IClient {
 	}
 
 	private function isLocalAddressAllowed(array $options) : bool {
-		if (($options['nextcloud']['allow_local_address'] ?? false) ||
-			$this->config->getSystemValueBool('allow_local_remote_servers', false)) {
+		if (($options['nextcloud']['allow_local_address'] ?? false)
+			|| $this->config->getSystemValueBool('allow_local_remote_servers', false)) {
 			return true;
 		}
 

@@ -32,7 +32,7 @@
 					{{ t('core', 'Search everywhere') }}
 				</template>
 				<template #icon>
-					<NcIconSvgWrapper :path="mdiCloudSearch" />
+					<NcIconSvgWrapper :path="mdiCloudSearchOutline" />
 				</template>
 			</NcButton>
 		</div>
@@ -41,15 +41,15 @@
 
 <script lang="ts" setup>
 import type { ComponentPublicInstance } from 'vue'
-import { mdiCloudSearch, mdiClose } from '@mdi/js'
+import { mdiCloudSearchOutline, mdiClose } from '@mdi/js'
 import { translate as t } from '@nextcloud/l10n'
-import { useIsMobile } from '@nextcloud/vue/dist/Composables/useIsMobile.js'
+import { useIsMobile } from '@nextcloud/vue/composables/useIsMobile'
+import { useElementSize } from '@vueuse/core'
 import { computed, ref, watchEffect } from 'vue'
 
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
-import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
-import { useElementSize } from '@vueuse/core'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcInputField from '@nextcloud/vue/components/NcInputField'
 
 const props = defineProps<{
 	query: string,

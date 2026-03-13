@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -7,6 +8,8 @@
  */
 namespace OCA\DAV\Tests\unit\Connector\Sabre\RequestTest;
 
+use OCP\IUserSession;
+use OCP\Server;
 use Sabre\DAV\Auth\Backend\BackendInterface;
 use Sabre\HTTP\RequestInterface;
 use Sabre\HTTP\ResponseInterface;
@@ -53,7 +56,7 @@ class Auth implements BackendInterface {
 	 * @return array
 	 */
 	public function check(RequestInterface $request, ResponseInterface $response) {
-		$userSession = \OC::$server->getUserSession();
+		$userSession = Server::get(IUserSession::class);
 		$result = $userSession->login($this->user, $this->password);
 		if ($result) {
 			//we need to pass the user name, which may differ from login name

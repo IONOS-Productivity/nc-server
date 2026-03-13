@@ -6,16 +6,13 @@ OC.L10N.register(
     "View file" : "Види датотека",
     "View folder" : "Види папка",
     "Set file reminders" : "Постави потсетник на датотека",
-    "Set reminder for \"{fileName}\"" : "Постави потсетник за \"{fileName}\"",
-    "Set reminder at custom date & time" : "Постави потсетник на прилагоден датум & време",
-    "Clear reminder" : "Острани потсетник",
     "Please choose a valid date & time" : "Внесете валиден датум & време",
     "Reminder set for \"{fileName}\"" : "Поставен потсетник за \"{fileName}\"",
     "Failed to set reminder" : "Неуспешно поставување на потсетник",
     "Failed to clear reminder" : "Неуспешно остранување на потсетник",
     "Cancel" : "Откажи",
+    "Clear reminder" : "Отстрани потсетник",
     "Set reminder" : "Постави потсетник",
-    "Set custom reminder" : "Постави прилагоден потсетник",
     "Later today" : "Денес покасно",
     "Set reminder for later today" : "Постави потсетник за денес покасно",
     "Tomorrow" : "Утре",
@@ -23,6 +20,9 @@ OC.L10N.register(
     "This weekend" : "Овој викенд",
     "Set reminder for this weekend" : "Постави потсетник за овој викенд",
     "Next week" : "Следна недела",
-    "Set reminder for next week" : "Постави потсетник за наредната недела"
+    "Set reminder for next week" : "Постави потсетник за наредната недела",
+    "Set reminder for \"{fileName}\"" : "Постави потсетник за \"{fileName}\"",
+    "Set reminder at custom date & time" : "Постави потсетник на прилагоден датум & време",
+    "Set custom reminder" : "Постави прилагоден потсетник"
 },
 "nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;");

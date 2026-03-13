@@ -1,4 +1,3 @@
-SPDX-License-Identifier: MPL-2.0
 SPDX-License-Identifier: MIT
 SPDX-License-Identifier: ISC
 SPDX-License-Identifier: GPL-3.0-or-later
@@ -33,11 +32,9 @@ SPDX-FileCopyrightText: Stefan Thomas <justmoon@members.fsf.org> (http://www.jus
 SPDX-FileCopyrightText: Sindre Sorhus
 SPDX-FileCopyrightText: Rubén Norte <ruben.norte@softonic.com>
 SPDX-FileCopyrightText: Roman Shtylman <shtylman@gmail.com>
-SPDX-FileCopyrightText: Roeland Jago Douma
 SPDX-FileCopyrightText: Rob Cresswell <robcresswell@pm.me>
 SPDX-FileCopyrightText: Richie Bendall
 SPDX-FileCopyrightText: Raynos <raynos2@gmail.com>
-SPDX-FileCopyrightText: Philipp Kewisch
 SPDX-FileCopyrightText: Perry Mitchell <perry@perrymitchell.net>
 SPDX-FileCopyrightText: Paul Vorbach <paul@vorba.ch> (http://paul.vorba.ch)
 SPDX-FileCopyrightText: Paul Vorbach <paul@vorb.de> (http://vorb.de)
@@ -57,7 +54,6 @@ SPDX-FileCopyrightText: Jordan Harband <ljharb@gmail.com>
 SPDX-FileCopyrightText: Jordan Harband
 SPDX-FileCopyrightText: Jonas Schade <derzade@gmail.com>
 SPDX-FileCopyrightText: John-David Dalton <john.david.dalton@gmail.com>
-SPDX-FileCopyrightText: John Molakvoæ (skjnldsv) <skjnldsv@protonmail.com>
 SPDX-FileCopyrightText: John Hiesey
 SPDX-FileCopyrightText: Jeff Sagal <sagalbot@gmail.com>
 SPDX-FileCopyrightText: James Halliday
@@ -78,7 +74,6 @@ SPDX-FileCopyrightText: Dylan Piercey <pierceydylan@gmail.com>
 SPDX-FileCopyrightText: Dr.-Ing. Mario Heiderich, Cure53 <mario@cure53.de> (https://cure53.de/)
 SPDX-FileCopyrightText: David Clark
 SPDX-FileCopyrightText: Christopher Jeffrey
-SPDX-FileCopyrightText: Christoph Wurst <christoph@winzerhof-wurst.at>
 SPDX-FileCopyrightText: Christoph Wurst
 SPDX-FileCopyrightText: Borys Serebrov
 SPDX-FileCopyrightText: Ben Drucker
@@ -95,13 +90,16 @@ SPDX-FileCopyrightText: @nextcloud/dialogs developers
 
 This file is generated from multiple sources. Included packages:
 - @babel/runtime
-	- version: 7.26.10
+	- version: 7.28.3
 	- license: MIT
 - @floating-ui/core
-	- version: 1.6.5
+	- version: 1.7.3
+	- license: MIT
+- @floating-ui/dom
+	- version: 1.7.4
 	- license: MIT
 - @floating-ui/utils
-	- version: 0.2.5
+	- version: 0.2.10
 	- license: MIT
 - @linusborg/vue-simple-portal
 	- version: 0.1.5
@@ -122,79 +120,118 @@ This file is generated from multiple sources. Included packages:
 	- version: 7.4.47
 	- license: Apache-2.0
 - @nextcloud/auth
-	- version: 2.5.1
+	- version: 2.5.3
 	- license: GPL-3.0-or-later
 - @nextcloud/axios
-	- version: 2.5.1
+	- version: 2.5.2
 	- license: GPL-3.0-or-later
 - @nextcloud/browser-storage
-	- version: 0.4.0
+	- version: 0.5.0
 	- license: GPL-3.0-or-later
 - @nextcloud/capabilities
-	- version: 1.2.0
+	- version: 1.2.1
 	- license: GPL-3.0-or-later
+- @nextcloud/paths
+	- version: 3.0.0
+	- license: GPL-3.0-or-later
+- @nextcloud/vue
+	- version: 9.3.1
+	- license: AGPL-3.0-or-later
+- @vueuse/core
+	- version: 14.1.0
+	- license: MIT
+- @vueuse/shared
+	- version: 14.1.0
+	- license: MIT
+- vue-router
+	- version: 4.6.4
+	- license: MIT
+- vue
+	- version: 3.5.25
+	- license: MIT
 - @nextcloud/dialogs
-	- version: 6.3.0
+	- version: 7.2.0
 	- license: AGPL-3.0-or-later
 - semver
-	- version: 7.6.3
+	- version: 7.7.2
 	- license: ISC
 - @nextcloud/event-bus
-	- version: 3.3.2
+	- version: 3.3.3
+	- license: GPL-3.0-or-later
+- @nextcloud/paths
+	- version: 3.0.0
 	- license: GPL-3.0-or-later
 - @nextcloud/files
-	- version: 3.10.2
+	- version: 3.12.2
 	- license: AGPL-3.0-or-later
+- @nextcloud/initial-state
+	- version: 3.0.0
+	- license: GPL-3.0-or-later
+- @nextcloud/l10n
+	- version: 3.4.1
+	- license: GPL-3.0-or-later
+- @nextcloud/logger
+	- version: 3.0.3
+	- license: GPL-3.0-or-later
+- @nextcloud/moment
+	- version: 1.3.5
+	- license: GPL-3.0-or-later
+- @nextcloud/dialogs
+	- version: 6.4.2
+	- license: AGPL-3.0-or-later
+- @nextcloud/paths
+	- version: 3.0.0
+	- license: GPL-3.0-or-later
+- @nextcloud/password-confirmation
+	- version: 5.3.2
+	- license: MIT
+- @nextcloud/router
+	- version: 3.1.0
+	- license: GPL-3.0-or-later
+- @nextcloud/sharing
+	- version: 0.3.0
+	- license: GPL-3.0-or-later
+- @nextcloud/dialogs
+	- version: 6.4.2
+	- license: AGPL-3.0-or-later
+- @nextcloud/paths
+	- version: 3.0.0
+	- license: GPL-3.0-or-later
+- eventemitter3
+	- version: 5.0.1
+	- license: MIT
+- p-queue
+	- version: 9.1.0
+	- license: MIT
+- @nextcloud/upload
+	- version: 1.11.1
+	- license: AGPL-3.0-or-later
+- @nextcloud/vue-select
+	- version: 3.26.0
+	- license: MIT
 - @nextcloud/initial-state
 	- version: 2.2.0
 	- license: GPL-3.0-or-later
-- @nextcloud/l10n
-	- version: 3.2.0
-	- license: GPL-3.0-or-later
-- @nextcloud/logger
-	- version: 3.0.2
-	- license: GPL-3.0-or-later
-- @nextcloud/moment
-	- version: 1.3.4
-	- license: GPL-3.0-or-later
-- @nextcloud/password-confirmation
-	- version: 5.3.1
-	- license: MIT
-- @nextcloud/paths
-	- version: 2.2.1
-	- license: GPL-3.0-or-later
-- @nextcloud/router
-	- version: 3.0.1
-	- license: GPL-3.0-or-later
-- @nextcloud/sharing
-	- version: 0.2.4
-	- license: GPL-3.0-or-later
-- eventemitter3
-	- version: 5.0.1
-	- license: MIT
-- p-queue
-	- version: 8.1.0
-	- license: MIT
-- @nextcloud/upload
-	- version: 1.10.0
-	- license: AGPL-3.0-or-later
-- @nextcloud/vue-select
-	- version: 3.25.1
-	- license: MIT
-- eventemitter3
-	- version: 5.0.1
-	- license: MIT
-- p-queue
-	- version: 8.1.0
-	- license: MIT
 - @nextcloud/vue
-	- version: 8.27.0
+	- version: 8.35.3
 	- license: AGPL-3.0-or-later
 - @ungap/structured-clone
-	- version: 1.2.0
+	- version: 1.3.0
 	- license: ISC
 - @vue/devtools-api
-	- version: 6.6.3
+	- version: 6.6.4
+	- license: MIT
+- @vue/reactivity
+	- version: 3.5.25
+	- license: MIT
+- @vue/runtime-core
+	- version: 3.5.25
+	- license: MIT
+- @vue/runtime-dom
+	- version: 3.5.25
+	- license: MIT
+- @vue/shared
+	- version: 3.5.25
 	- license: MIT
 - @vueuse/components
 	- version: 11.3.0
@@ -212,10 +249,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 4.5.0
 	- license: Apache-2.0
 - axios
-	- version: 1.9.0
-	- license: MIT
-- bail
-	- version: 2.0.2
+	- version: 1.13.4
 	- license: MIT
 - balanced-match
 	- version: 1.0.2
@@ -230,7 +264,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.0.5
 	- license: MIT
 - brace-expansion
-	- version: 2.0.1
+	- version: 2.0.2
 	- license: MIT
 - buffer
 	- version: 5.7.1
@@ -241,8 +275,14 @@ This file is generated from multiple sources. Included packages:
 - byte-length
 	- version: 1.0.2
 	- license: MIT
+- call-bind-apply-helpers
+	- version: 1.0.2
+	- license: MIT
 - call-bind
-	- version: 1.0.7
+	- version: 1.0.8
+	- license: MIT
+- call-bound
+	- version: 1.0.4
 	- license: MIT
 - camelcase
 	- version: 8.0.0
@@ -251,7 +291,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 4.3.1
 	- license: MIT
 - char-regex
-	- version: 2.0.1
+	- version: 2.0.2
 	- license: MIT
 - charenc
 	- version: 0.0.2
@@ -272,7 +312,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.2.0
 	- license: MIT
 - decode-named-character-reference
-	- version: 1.1.0
+	- version: 1.2.0
 	- license: MIT
 - define-data-property
 	- version: 1.1.4
@@ -281,16 +321,22 @@ This file is generated from multiple sources. Included packages:
 	- version: 1.1.0
 	- license: MIT
 - dompurify
-	- version: 3.2.6
+	- version: 3.3.1
 	- license: (MPL-2.0 OR Apache-2.0)
+- dunder-proto
+	- version: 1.0.1
+	- license: MIT
 - emoji-mart-vue-fast
-	- version: 15.0.4
+	- version: 15.0.5
 	- license: BSD-3-Clause
 - es-define-property
-	- version: 1.0.0
+	- version: 1.0.1
 	- license: MIT
 - es-errors
 	- version: 1.3.0
+	- license: MIT
+- es-object-atoms
+	- version: 1.1.1
 	- license: MIT
 - escape-html
 	- version: 1.0.3
@@ -301,9 +347,6 @@ This file is generated from multiple sources. Included packages:
 - extend
 	- version: 3.0.2
 	- license: MIT
-- fast-xml-parser
-	- version: 4.5.3
-	- license: MIT
 - filter-obj
 	- version: 5.1.0
 	- license: MIT
@@ -311,19 +354,22 @@ This file is generated from multiple sources. Included packages:
 	- version: 1.0.0-beta.19
 	- license: MIT
 - focus-trap
-	- version: 7.6.5
+	- version: 7.8.0
 	- license: MIT
 - for-each
-	- version: 0.3.3
+	- version: 0.3.5
 	- license: MIT
 - function-bind
 	- version: 1.1.2
 	- license: MIT
 - get-intrinsic
-	- version: 1.2.4
+	- version: 1.3.0
+	- license: MIT
+- get-proto
+	- version: 1.0.1
 	- license: MIT
 - gopd
-	- version: 1.0.1
+	- version: 1.2.0
 	- license: MIT
 - handlebars
 	- version: 4.7.8
@@ -331,11 +377,8 @@ This file is generated from multiple sources. Included packages:
 - has-property-descriptors
 	- version: 1.0.2
 	- license: MIT
-- has-proto
-	- version: 1.0.3
-	- license: MIT
 - has-symbols
-	- version: 1.0.3
+	- version: 1.1.0
 	- license: MIT
 - has-tostringtag
 	- version: 1.0.2
@@ -358,9 +401,6 @@ This file is generated from multiple sources. Included packages:
 - https-browserify
 	- version: 1.0.0
 	- license: MIT
-- ical.js
-	- version: 2.1.0
-	- license: MPL-2.0
 - ieee754
 	- version: 1.2.1
 	- license: BSD-3-Clause
@@ -374,7 +414,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 4.0.1
 	- license: MIT
 - is-arguments
-	- version: 1.1.1
+	- version: 1.2.0
 	- license: MIT
 - is-buffer
 	- version: 1.1.6
@@ -383,16 +423,16 @@ This file is generated from multiple sources. Included packages:
 	- version: 1.2.7
 	- license: MIT
 - is-generator-function
-	- version: 1.0.10
+	- version: 1.1.0
 	- license: MIT
-- is-plain-obj
-	- version: 4.1.0
+- is-regex
+	- version: 1.2.1
 	- license: MIT
 - is-retry-allowed
 	- version: 2.2.0
 	- license: MIT
 - is-typed-array
-	- version: 1.1.13
+	- version: 1.1.15
 	- license: MIT
 - jquery
 	- version: 3.7.1
@@ -401,10 +441,13 @@ This file is generated from multiple sources. Included packages:
 	- version: 3.0.0
 	- license: MIT
 - lodash
-	- version: 4.17.21
+	- version: 4.17.23
 	- license: MIT
 - marked
-	- version: 15.0.12
+	- version: 16.4.2
+	- license: MIT
+- math-intrinsics
+	- version: 1.1.0
 	- license: MIT
 - md5
 	- version: 2.3.0
@@ -416,7 +459,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 5.0.0
 	- license: MIT
 - mdast-util-find-and-replace
-	- version: 3.0.1
+	- version: 3.0.2
 	- license: MIT
 - mdast-util-from-markdown
 	- version: 2.0.2
@@ -425,7 +468,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.0.0
 	- license: MIT
 - mdast-util-to-hast
-	- version: 13.2.0
+	- version: 13.2.1
 	- license: MIT
 - mdast-util-to-string
 	- version: 4.0.0
@@ -449,7 +492,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.0.1
 	- license: MIT
 - micromark-util-character
-	- version: 2.1.0
+	- version: 2.1.1
 	- license: MIT
 - micromark-util-chunked
 	- version: 2.0.1
@@ -467,7 +510,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.0.1
 	- license: MIT
 - micromark-util-encode
-	- version: 2.0.0
+	- version: 2.0.1
 	- license: MIT
 - micromark-util-html-tag-name
 	- version: 2.0.1
@@ -479,7 +522,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.0.1
 	- license: MIT
 - micromark-util-sanitize-uri
-	- version: 2.0.0
+	- version: 2.0.1
 	- license: MIT
 - micromark-util-subtokenize
 	- version: 2.1.0
@@ -500,7 +543,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 6.0.3
 	- license: MIT
 - object-inspect
-	- version: 1.13.2
+	- version: 1.13.4
 	- license: MIT
 - p-cancelable
 	- version: 4.0.1
@@ -509,7 +552,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 5.0.1
 	- license: MIT
 - p-queue
-	- version: 7.4.1
+	- version: 8.1.1
 	- license: MIT
 - path-posix
 	- version: 1.0.0
@@ -527,7 +570,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.3.1
 	- license: MIT
 - possible-typed-array-names
-	- version: 1.0.0
+	- version: 1.1.0
 	- license: MIT
 - process
 	- version: 0.11.10
@@ -539,10 +582,10 @@ This file is generated from multiple sources. Included packages:
 	- version: 1.4.1
 	- license: MIT
 - qs
-	- version: 6.13.0
+	- version: 6.14.1
 	- license: BSD-3-Clause
 - query-string
-	- version: 9.2.0
+	- version: 9.3.1
 	- license: MIT
 - querystringify
 	- version: 2.2.0
@@ -560,7 +603,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 11.0.0
 	- license: MIT
 - remark-rehype
-	- version: 11.1.0
+	- version: 11.1.2
 	- license: MIT
 - remark-unlink-protocols
 	- version: 1.0.0
@@ -571,11 +614,23 @@ This file is generated from multiple sources. Included packages:
 - safe-buffer
 	- version: 5.2.1
 	- license: MIT
+- safe-regex-test
+	- version: 1.1.0
+	- license: MIT
 - set-function-length
 	- version: 1.2.2
 	- license: MIT
+- side-channel-list
+	- version: 1.0.0
+	- license: MIT
+- side-channel-map
+	- version: 1.0.1
+	- license: MIT
+- side-channel-weakmap
+	- version: 1.0.2
+	- license: MIT
 - side-channel
-	- version: 1.0.6
+	- version: 1.1.0
 	- license: MIT
 - space-separated-tokens
 	- version: 2.0.2
@@ -604,9 +659,6 @@ This file is generated from multiple sources. Included packages:
 - striptags
 	- version: 3.2.0
 	- license: MIT
-- strnum
-	- version: 1.1.2
-	- license: MIT
 - style-loader
 	- version: 4.0.0
 	- license: MIT
@@ -614,7 +666,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 0.4.4
 	- license: MIT
 - tabbable
-	- version: 6.2.0
+	- version: 6.4.0
 	- license: MIT
 - toastify-js
 	- version: 1.12.0
@@ -626,7 +678,7 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.2.0
 	- license: MIT
 - typescript-event-target
-	- version: 1.1.1
+	- version: 1.1.2
 	- license: MIT
 - unified
 	- version: 11.0.5
@@ -668,13 +720,13 @@ This file is generated from multiple sources. Included packages:
 	- version: 2.1.3
 	- license: MIT
 - vfile-message
-	- version: 4.0.2
+	- version: 4.0.3
 	- license: MIT
 - vfile
-	- version: 6.0.2
+	- version: 6.0.3
 	- license: MIT
 - vue-color
-	- version: 2.8.1
+	- version: 2.8.2
 	- license: MIT
 - vue-frag
 	- version: 1.4.3
@@ -697,11 +749,17 @@ This file is generated from multiple sources. Included packages:
 - web-namespaces
 	- version: 2.0.1
 	- license: MIT
+- fast-xml-parser
+	- version: 4.5.3
+	- license: MIT
+- strnum
+	- version: 1.1.2
+	- license: MIT
 - webdav
 	- version: 5.8.0
 	- license: MIT
 - which-typed-array
-	- version: 1.1.15
+	- version: 1.1.19
 	- license: MIT
 - xtend
 	- version: 4.0.2

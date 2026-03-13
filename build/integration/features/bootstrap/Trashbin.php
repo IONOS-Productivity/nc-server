@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2017 ownCloud GmbH
@@ -96,7 +97,7 @@ trait Trashbin {
 			$elementsSimplified = $this->simplifyArray($elementRows);
 			foreach ($elementsSimplified as $expectedElement) {
 				$expectedElement = ltrim($expectedElement, '/');
-				if (array_search($expectedElement, $trashContent) === false) {
+				if (array_search($expectedElement, $trashContent, true) === false) {
 					Assert::fail("$expectedElement" . ' is not in trash listing');
 				}
 			}

@@ -11,16 +11,15 @@ namespace OCP\Files\Config\Event;
 
 use OCP\EventDispatcher\Event;
 use OCP\Files\Config\ICachedMountInfo;
-use OCP\Files\Mount\IMountPoint;
 
 /**
  * Event emitted when a user mount was removed.
  *
- * @since 30.0.12
+ * @since 32.0.0
  */
 class UserMountRemovedEvent extends Event {
 	public function __construct(
-		public readonly IMountPoint|ICachedMountInfo $mountPoint,
+		public readonly ICachedMountInfo $mountPoint,
 	) {
 		parent::__construct();
 	}

@@ -54,13 +54,6 @@
 /apps/files_external/3rdparty/irodsphp/prods/tutorials
 /apps/files_external/3rdparty/irodsphp/prods/test*
 /apps/files_external/tests/config.*.php
-# IONOS: this should not be upsteamed!
-!/apps-external/viewer
-!/apps-external/user_oidc
-!/apps-external/serverinfo
-!/apps-external/groupquota
-!/apps-external/files_downloadlimit
-!/apps-custom/*
 
 # apps modules
 /apps/*/node_modules
@@ -144,7 +137,6 @@ nbproject
 # nodejs
 /build/bin
 /build/lib/
-/build/jsdocs/
 /build/integration/output/
 /build/integration/phpserver.log
 /npm-debug.log
@@ -160,6 +152,7 @@ Vagrantfile
 # Tests - auto-generated files
 /data-autotest
 /results.sarif
+/tests/.phpunit.cache
 /tests/.phpunit.result.cache
 /tests/coverage*
 /tests/css

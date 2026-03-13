@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2018-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -6,6 +7,14 @@
  */
 
 namespace Test\Files\Cache;
+
+use OC\Files\Cache\CacheEntry;
+use OC\Files\Cache\Watcher;
+use OC\Files\Storage\Storage;
+use OC\Files\Storage\Temporary;
+use OCP\Files\Cache\IWatcher;
+use OCP\Files\Storage\IStorage;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Class WatcherTest
@@ -16,7 +25,7 @@ namespace Test\Files\Cache;
  */
 class WatcherTest extends \Test\TestCase {
 	/**
-	 * @var \OC\Files\Storage\Storage[] $storages
+	 * @var Storage[] $storages
 	 */
 	private $storages = [];
 
@@ -44,7 +53,7 @@ class WatcherTest extends \Test\TestCase {
 		$storage = $this->getTestStorage();
 		$cache = $storage->getCache();
 		$updater = $storage->getWatcher();
-		$updater->setPolicy(\OC\Files\Cache\Watcher::CHECK_ONCE);
+		$updater->setPolicy(Watcher::CHECK_ONCE);
 
 		//set the mtime to the past so it can detect an mtime change
 		$cache->put('', ['storage_mtime' => 10]);
@@ -85,7 +94,7 @@ class WatcherTest extends \Test\TestCase {
 		$storage = $this->getTestStorage();
 		$cache = $storage->getCache();
 		$updater = $storage->getWatcher();
-		$updater->setPolicy(\OC\Files\Cache\Watcher::CHECK_ONCE);
+		$updater->setPolicy(Watcher::CHECK_ONCE);
 
 		//set the mtime to the past so it can detect an mtime change
 		$cache->put('', ['storage_mtime' => 10]);
@@ -102,7 +111,7 @@ class WatcherTest extends \Test\TestCase {
 		$storage = $this->getTestStorage();
 		$cache = $storage->getCache();
 		$updater = $storage->getWatcher();
-		$updater->setPolicy(\OC\Files\Cache\Watcher::CHECK_ONCE);
+		$updater->setPolicy(Watcher::CHECK_ONCE);
 
 		//set the mtime to the past so it can detect an mtime change
 		$cache->put('foo.txt', ['storage_mtime' => 10]);
@@ -124,7 +133,7 @@ class WatcherTest extends \Test\TestCase {
 		//set the mtime to the past so it can detect an mtime change
 		$cache->put('foo.txt', ['storage_mtime' => 10]);
 
-		$updater->setPolicy(\OC\Files\Cache\Watcher::CHECK_NEVER);
+		$updater->setPolicy(Watcher::CHECK_NEVER);
 
 		$storage->file_put_contents('foo.txt', 'q');
 		$this->assertFalse($updater->checkUpdate('foo.txt'));
@@ -142,7 +151,7 @@ class WatcherTest extends \Test\TestCase {
 		//set the mtime to the past so it can detect an mtime change
 		$cache->put('foo.txt', ['storage_mtime' => 10]);
 
-		$updater->setPolicy(\OC\Files\Cache\Watcher::CHECK_ONCE);
+		$updater->setPolicy(Watcher::CHECK_ONCE);
 
 		$storage->file_put_contents('foo.txt', 'q');
 		$this->assertTrue($updater->checkUpdate('foo.txt'));
@@ -160,7 +169,7 @@ class WatcherTest extends \Test\TestCase {
 		//set the mtime to the past so it can detect an mtime change
 		$cache->put('foo.txt', ['storage_mtime' => 10]);
 
-		$updater->setPolicy(\OC\Files\Cache\Watcher::CHECK_ALWAYS);
+		$updater->setPolicy(Watcher::CHECK_ALWAYS);
 
 		$storage->file_put_contents('foo.txt', 'q');
 		$this->assertTrue($updater->checkUpdate('foo.txt'));
@@ -172,10 +181,10 @@ class WatcherTest extends \Test\TestCase {
 
 	/**
 	 * @param bool $scan
-	 * @return \OC\Files\Storage\Storage
+	 * @return Storage
 	 */
 	private function getTestStorage($scan = true) {
-		$storage = new \OC\Files\Storage\Temporary([]);
+		$storage = new Temporary([]);
 		$textData = "dummy file data\n";
 		$imgData = file_get_contents(\OC::$SERVERROOT . '/core/img/logo/logo.png');
 		$storage->mkdir('folder');
@@ -190,5 +199,44 @@ class WatcherTest extends \Test\TestCase {
 		}
 		$this->storages[] = $storage;
 		return $storage;
+	}
+
+	public static function checkFilterProvider(): array {
+		return [
+			[null, [
+				'' => true,
+				'foo' => true,
+				'foo.txt' => true,
+			]],
+			['/^.+$/', [
+				'' => false,
+				'foo' => true,
+				'foo.txt' => true,
+			]],
+			['/^.+\..+$/', [
+				'' => false,
+				'foo' => false,
+				'foo.txt' => true,
+			]]
+		];
+	}
+
+	#[DataProvider('checkFilterProvider')]
+	public function testCheckFilter($filter, $paths) {
+		$storage = $this->createMock(IStorage::class);
+		$storage->method('hasUpdated')
+			->willReturn(true);
+		$watcher = new Watcher($storage);
+		$watcher->setPolicy(IWatcher::CHECK_ALWAYS);
+
+		$watcher->setCheckFilter($filter);
+
+		$entry = new CacheEntry([
+			'storage_mtime' => 0,
+		]);
+
+		foreach ($paths as $patch => $shouldUpdate) {
+			$this->assertEquals($shouldUpdate, $watcher->needsUpdate($patch, $entry));
+		}
 	}
 }

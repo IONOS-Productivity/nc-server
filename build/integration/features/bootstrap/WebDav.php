@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -262,7 +263,11 @@ trait WebDav {
 			'Accept' => 'application/zip'
 		];
 
-		$this->response = $client->request('GET', $fullUrl, $options);
+		try {
+			$this->response = $client->request('GET', $fullUrl, $options);
+		} catch (\GuzzleHttp\Exception\ClientException $e) {
+			$this->response = $e->getResponse();
+		}
 	}
 
 	/**
@@ -433,7 +438,7 @@ trait WebDav {
 		}
 
 		foreach ($table->getRows() as $row) {
-			$key = array_search($row[0], $foundTypes);
+			$key = array_search($row[0], $foundTypes, true);
 			if ($key === false) {
 				throw new \Exception('Expected type ' . $row[0] . ' not found');
 			}

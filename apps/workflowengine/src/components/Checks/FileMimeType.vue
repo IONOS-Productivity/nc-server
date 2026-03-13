@@ -38,8 +38,8 @@
 </template>
 
 <script>
-import NcEllipsisedOption from '@nextcloud/vue/dist/Components/NcEllipsisedOption.js'
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
+import NcEllipsisedOption from '@nextcloud/vue/components/NcEllipsisedOption'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
 import { imagePath } from '@nextcloud/router'
 
 export default {
@@ -109,7 +109,7 @@ export default {
 			}
 			return {
 				icon: 'icon-settings-dark',
-				label: t('workflowengine', 'Custom mimetype'),
+				label: t('workflowengine', 'Custom MIME type'),
 				id: this.newValue,
 			}
 		},

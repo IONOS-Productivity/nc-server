@@ -51,7 +51,9 @@
 			class="files-list__row-mtime"
 			data-cy-files-list-row-mtime
 			@click="openDetailsIfAvailable">
-			<NcDateTime v-if="source.mtime" :timestamp="source.mtime" :ignore-seconds="true" />
+			<NcDateTime v-if="mtime"
+				ignore-seconds
+				:timestamp="mtime" />
 		</td>
 
 		<!-- Actions -->
@@ -66,7 +68,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import NcDateTime from '@nextcloud/vue/dist/Components/NcDateTime.js'
+import NcDateTime from '@nextcloud/vue/components/NcDateTime'
 
 import { useNavigation } from '../composables/useNavigation.ts'
 import { useRouteParameters } from '../composables/useRouteParameters.ts'

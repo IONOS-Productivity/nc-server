@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -19,6 +20,7 @@ trait BasicStructure {
 	use Avatar;
 	use Download;
 	use Mail;
+	use Theming;
 
 	/** @var string */
 	private $currentUser = '';
@@ -114,18 +116,27 @@ trait BasicStructure {
 	}
 
 	/**
-	 * Parses the xml answer to get ocs response which doesn't match with
+	 * Parses the xml or json answer to get ocs response which doesn't match with
 	 * http one in v1 of the api.
 	 *
 	 * @param ResponseInterface $response
 	 * @return string
 	 */
-	public function getOCSResponse($response) {
-		$body = simplexml_load_string((string)$response->getBody());
-		if ($body === false) {
-			throw new \RuntimeException('Could not parse OCS response, body is not valid XML');
+	public function getOCSResponseCode($response): int {
+		if ($response === null) {
+			throw new \RuntimeException('No response available');
 		}
-		return $body->meta[0]->statuscode;
+
+		$body = (string)$response->getBody();
+		if (str_starts_with($body, '<')) {
+			$body = simplexml_load_string($body);
+			if ($body === false) {
+				throw new \RuntimeException('Could not parse OCS response, body is not valid XML');
+			}
+			return (int)$body->meta[0]->statuscode;
+		}
+
+		return json_decode($body, true)['ocs']['meta']['statuscode'];
 	}
 
 	/**
@@ -255,7 +266,7 @@ trait BasicStructure {
 	 * @param int $statusCode
 	 */
 	public function theOCSStatusCodeShouldBe($statusCode) {
-		Assert::assertEquals($statusCode, $this->getOCSResponse($this->response));
+		Assert::assertEquals($statusCode, $this->getOCSResponseCode($this->response));
 	}
 
 	/**
