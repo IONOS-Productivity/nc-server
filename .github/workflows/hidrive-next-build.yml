@@ -81,6 +81,10 @@ jobs:
       - name: Print PHP install
         run: php -i && php -m
 
+      - name: POC Drop Fontawesome mapping
+        run: |
+          echo "export default {_dummy: { file: 'wrench.svg', fa_icon: 'fas-wrench' }}" > custom-npms/nc-mdi-svg/iconMappings.ts
+
       - name: Build Nextcloud
         run: make -f IONOS/Makefile build_nextcloud FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
 
