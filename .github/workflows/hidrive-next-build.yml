@@ -291,12 +291,17 @@ jobs:
           # Enable command echo
           set -x
 
-          # The 'ionos-dev' branch will trigger remote "dev" branch workflow
-          GITLAB_BRANCH="dev"
+          # Branch to GitLab Trigger Mapping (see HDNEXT-1373):
+          # | ref_name     | GITLAB_REF | BUILD_TYPE |
+          # |--------------|------------|------------|
+          # | ionos-dev    | main       | dev        |
+          # | ionos-stable | main       | stable     |
 
-          # set ARTIFACTORY_STAGE_PREFIX=stable on ionos-stable branch
+          BUILD_TYPE="dev"
+
+          # Override build type for stable branch
           if [ ${{ github.ref_name }} == "ionos-stable" ]; then
-              GITLAB_BRANCH="stable"
+              BUILD_TYPE="stable"
           fi
 
           # Call webhook
@@ -307,11 +312,12 @@ jobs:
           --fail-with-body \
           -o response.json \
           --form token=${{ secrets.GITLAB_TOKEN }} \
-          --form ref="${GITLAB_BRANCH}" \
+          --form ref="main" \
           --form "variables[GITHUB_SHA]=${{ github.sha }}" \
           --form "variables[ARTIFACTORY_LAST_BUILD_PATH]=${{ needs.upload-to-artifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
           --form "variables[NC_VERSION]=${{ needs.hidrive-next-build.outputs.NC_VERSION }}" \
           --form "variables[BUILD_ID]=${{ github.run_id }}" \
+          --form "variables[BUILD_TYPE]=${BUILD_TYPE}" \
           "${{ secrets.GITLAB_TRIGGER_URL }}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
 
           # Disable command echo
