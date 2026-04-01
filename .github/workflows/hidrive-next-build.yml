@@ -350,6 +350,10 @@ jobs:
               BUILD_TYPE="stable"
           fi
 
+          # Construct source build URL for traceability
+          SOURCE_BUILD_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Source Build URL: $SOURCE_BUILD_URL"
+
           # Call webhook
           curl \
           --silent \
@@ -364,6 +368,7 @@ jobs:
           --form "variables[NC_VERSION]=${{ needs.hidrive-next-build.outputs.NC_VERSION }}" \
           --form "variables[BUILD_ID]=${{ github.run_id }}" \
           --form "variables[BUILD_TYPE]=${BUILD_TYPE}" \
+          --form "variables[SOURCE_BUILD_URL]=${SOURCE_BUILD_URL}" \
           "${{ secrets.GITLAB_TRIGGER_URL }}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
 
           # Disable command echo
