@@ -1,16 +1,11 @@
 name: HiDrive Next Build
 
-<<<<<<< HEAD
-# The EasyCloud source is packaged as a container image.
-# This is a workaround because releases can not be created without tags 
-=======
 # SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
 # SPDX-FileCopyrightText: 2024 STRATO AG
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # The HiDrive Next source is packaged as a container image.
 # This is a workaround because releases can not be created without tags
->>>>>>> 7eb9541530c (IONOS(ci): use HiDrive Next in hidrive-next-build.yml)
 # and we want to be able to create snapshots from branches.
 
 on:
@@ -58,8 +53,6 @@ jobs:
         with:
           submodules: true
 
-<<<<<<< HEAD
-=======
       - name: Set up node with version from package.json's engines
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
@@ -121,7 +114,6 @@ jobs:
       - name: Add config partials
         run: make -f IONOS/Makefile add_config_partials
 
->>>>>>> f1a2f4a0508 (IONOS(ci): build custom css during build process)
       - name: Zip dependencies
         run: |
           buildDate=$(date +%s)
