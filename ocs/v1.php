@@ -12,24 +12,16 @@ require_once __DIR__ . '/../lib/versioncheck.php';
 require_once __DIR__ . '/../lib/base.php';
 
 use OC\OCS\ApiHelper;
-use OC\Route\Router;
-use OC\SystemConfig;
-use OC\User\LoginException;
-use OCP\App\IAppManager;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\OCSController;
-use OCP\IConfig;
-use OCP\IRequest;
-use OCP\IUserSession;
 use OCP\Security\Bruteforce\MaxDelayReached;
-use OCP\Server;
 use OCP\Util;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 if (Util::needUpgrade()
-	|| Server::get(IConfig::class)->getSystemValueBool('maintenance')) {
+	|| \OC::$server->getConfig()->getSystemValueBool('maintenance')) {
 	// since the behavior of apps or remotes are unpredictable during
 	// an upgrade, return a 503 directly
 	ApiHelper::respond(503, 'Service unavailable', ['X-Nextcloud-Maintenance-Mode' => '1'], 503);
@@ -41,24 +33,20 @@ if (Util::needUpgrade()
  * Try the appframework routes
  */
 try {
-	$appManager = Server::get(IAppManager::class);
-	$appManager->loadApps(['session']);
-	$appManager->loadApps(['authentication']);
-	$appManager->loadApps(['extended_authentication']);
+	OC_App::loadApps(['session']);
+	OC_App::loadApps(['authentication']);
+	OC_App::loadApps(['extended_authentication']);
 
 	// load all apps to get all api routes properly setup
 	// FIXME: this should ideally appear after handleLogin but will cause
 	// side effects in existing apps
-	$appManager->loadApps();
+	OC_App::loadApps();
 
-	$request = Server::get(IRequest::class);
-	$request->throwDecodingExceptionIfAny();
-
-	if (!Server::get(IUserSession::class)->isLoggedIn()) {
-		OC::handleLogin($request);
+	if (!\OC::$server->getUserSession()->isLoggedIn()) {
+		OC::handleLogin(\OC::$server->getRequest());
 	}
 
-	Server::get(Router::class)->match('/ocsapp' . $request->getRawPathInfo());
+	OC::$server->get(\OC\Route\Router::class)->match('/ocsapp' . \OC::$server->getRequest()->getRawPathInfo());
 } catch (MaxDelayReached $ex) {
 	ApiHelper::respond(Http::STATUS_TOO_MANY_REQUESTS, $ex->getMessage());
 } catch (ResourceNotFoundException $e) {
@@ -68,14 +56,16 @@ try {
 } catch (MethodNotAllowedException $e) {
 	ApiHelper::setContentType();
 	http_response_code(405);
-} catch (LoginException $e) {
+} catch (\OC\User\LoginException $e) {
 	ApiHelper::respond(OCSController::RESPOND_UNAUTHORISED, 'Unauthorised');
+} catch (OC\Authentication\Exceptions\UserAgentForbidden $ex) {
+	ApiHelper::respond(403, $ex->getMessage());
 } catch (\Exception $e) {
-	Server::get(LoggerInterface::class)->error($e->getMessage(), ['exception' => $e]);
+	\OCP\Server::get(LoggerInterface::class)->error($e->getMessage(), ['exception' => $e]);
 
 	$txt = 'Internal Server Error' . "\n";
 	try {
-		if (Server::get(SystemConfig::class)->getValue('debug', false)) {
+		if (\OC::$server->getSystemConfig()->getValue('debug', false)) {
 			$txt .= $e->getMessage();
 		}
 	} catch (\Throwable $e) {

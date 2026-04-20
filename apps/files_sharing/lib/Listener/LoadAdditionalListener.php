@@ -8,11 +8,12 @@ declare(strict_types=1);
  */
 namespace OCA\Files_Sharing\Listener;
 
+use OC\InitialStateService;
 use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\Files_Sharing\AppInfo\Application;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
-use OCP\Server;
+use OCP\IConfig;
 use OCP\Share\IManager;
 use OCP\Util;
 
@@ -27,9 +28,18 @@ class LoadAdditionalListener implements IEventListener {
 		Util::addScript(Application::APP_ID, 'additionalScripts', 'files');
 		Util::addStyle(Application::APP_ID, 'icons');
 
-		$shareManager = Server::get(IManager::class);
+		$shareManager = \OC::$server->get(IManager::class);
 		if ($shareManager->shareApiEnabled() && class_exists('\OCA\Files\App')) {
 			Util::addInitScript(Application::APP_ID, 'init');
 		}
+
+		$this->provideInitialStates();
+	}
+
+	private function provideInitialStates(): void {
+		$initialState = \OC::$server->get(InitialStateService::class);
+		$config = \OC::$server->get(IConfig::class);
+		$defaultAcceptSystemConfig = $config->getSystemValueBool('sharing.enable_share_accept');
+		$initialState->provideInitialState(Application::APP_ID, 'accept_default', $defaultAcceptSystemConfig);
 	}
 }

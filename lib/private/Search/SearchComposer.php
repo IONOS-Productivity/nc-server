@@ -10,14 +10,11 @@ namespace OC\Search;
 
 use InvalidArgumentException;
 use OC\AppFramework\Bootstrap\Coordinator;
-use OC\Core\AppInfo\Application;
-use OC\Core\AppInfo\ConfigLexicon;
 use OC\Core\ResponseDefinitions;
 use OCP\IAppConfig;
 use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\Search\FilterDefinition;
-use OCP\Search\IExternalProvider;
 use OCP\Search\IFilter;
 use OCP\Search\IFilteringProvider;
 use OCP\Search\IInAppSearch;
@@ -181,7 +178,6 @@ class SearchComposer {
 				if ($order === null) {
 					return;
 				}
-				$isExternalProvider = $provider instanceof IExternalProvider ? $provider->isExternalProvider() : false;
 				$triggers = [$provider->getId()];
 				if ($provider instanceof IFilteringProvider) {
 					$triggers += $provider->getAlternateIds();
@@ -196,7 +192,6 @@ class SearchComposer {
 					'name' => $provider->getName(),
 					'icon' => $this->fetchIcon($appId, $provider->getId()),
 					'order' => $order,
-					'isExternalProvider' => $isExternalProvider,
 					'triggers' => array_values($triggers),
 					'filters' => $this->getFiltersType($filters, $provider->getId()),
 					'inAppSearch' => $provider instanceof IInAppSearch,
@@ -315,12 +310,6 @@ class SearchComposer {
 		if (!$this->filterSupportedByProvider($filterDefinition, $providerId)) {
 			// FIXME Use dedicated exception and handle it
 			throw new UnsupportedFilter($name, $providerId);
-		}
-
-		$minSearchLength = $this->appConfig->getValueInt(Application::APP_ID, ConfigLexicon::UNIFIED_SEARCH_MIN_SEARCH_LENGTH);
-		if ($filterDefinition->name() === 'term' && mb_strlen(trim($value)) < $minSearchLength) {
-			// Ignore term values that are not long enough
-			return null;
 		}
 
 		return FilterFactory::get($filterDefinition->type(), $value);

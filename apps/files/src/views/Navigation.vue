@@ -7,7 +7,7 @@
 		class="files-navigation"
 		:aria-label="t('files', 'Files')">
 		<template #search>
-			<FilesNavigationSearch />
+			<NcAppNavigationSearch v-model="searchQuery" :label="t('files', 'Filter file names …')" />
 		</template>
 		<template #default>
 			<NcAppNavigationList class="files-navigation__list"
@@ -25,7 +25,7 @@
 		<template #footer>
 			<ul class="app-navigation-entry__settings">
 				<!-- User storage usage statistics -->
-				<NavigationQuota />
+				<SidebarQuota />
 
 				<!-- Files settings modal toggle-->
 				<NcAppNavigationItem :name="t('files', 'Files settings')"
@@ -39,24 +39,24 @@
 </template>
 
 <script lang="ts">
-import type { View } from '@nextcloud/files'
+import { getNavigation, type View } from '@nextcloud/files'
 import type { ViewConfig } from '../types.ts'
 
-import { emit, subscribe } from '@nextcloud/event-bus'
-import { getNavigation } from '@nextcloud/files'
-import { t, getCanonicalLocale, getLanguage } from '@nextcloud/l10n'
 import { defineComponent } from 'vue'
+import { emit, subscribe } from '@nextcloud/event-bus'
+import { translate as t, getCanonicalLocale, getLanguage } from '@nextcloud/l10n'
 
-import IconCog from 'vue-material-design-icons/CogOutline.vue'
-import NcAppNavigation from '@nextcloud/vue/components/NcAppNavigation'
-import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
-import NcAppNavigationList from '@nextcloud/vue/components/NcAppNavigationList'
-import NavigationQuota from '../components/NavigationQuota.vue'
+import IconCog from 'vue-material-design-icons/Cog.vue'
+import NcAppNavigation from '@nextcloud/vue/dist/Components/NcAppNavigation.js'
+import NcAppNavigationItem from '@nextcloud/vue/dist/Components/NcAppNavigationItem.js'
+import NcAppNavigationList from '@nextcloud/vue/dist/Components/NcAppNavigationList.js'
+import NcAppNavigationSearch from '@nextcloud/vue/dist/Components/NcAppNavigationSearch.js'
+import SidebarQuota from '../components/SidebarQuota.vue'
 import SettingsModal from './Settings.vue'
 import FilesNavigationItem from '../components/FilesNavigationItem.vue'
-import FilesNavigationSearch from '../components/FilesNavigationSearch.vue'
 
 import { useNavigation } from '../composables/useNavigation'
+import { useFilenameFilter } from '../composables/useFilenameFilter'
 import { useFiltersStore } from '../store/filters.ts'
 import { useViewConfigStore } from '../store/viewConfig.ts'
 import logger from '../logger.ts'
@@ -75,22 +75,24 @@ export default defineComponent({
 	components: {
 		IconCog,
 		FilesNavigationItem,
-		FilesNavigationSearch,
 
-		NavigationQuota,
 		NcAppNavigation,
 		NcAppNavigationItem,
 		NcAppNavigationList,
+		NcAppNavigationSearch,
 		SettingsModal,
+		SidebarQuota,
 	},
 
 	setup() {
 		const filtersStore = useFiltersStore()
 		const viewConfigStore = useViewConfigStore()
 		const { currentView, views } = useNavigation()
+		const { searchQuery } = useFilenameFilter()
 
 		return {
 			currentView,
+			searchQuery,
 			t,
 			views,
 

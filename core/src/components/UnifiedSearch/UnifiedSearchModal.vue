@@ -5,7 +5,6 @@
 <template>
 	<NcDialog id="unified-search"
 		ref="unifiedSearchModal"
-		class="unified-search-modal-root"
 		content-classes="unified-search-modal__content"
 		dialog-classes="unified-search-modal"
 		:name="t('core', 'Unified search')"
@@ -27,7 +26,7 @@
 				:label="t('core', 'Search apps, files, tags, messages') + '...'"
 				@update:value="debouncedFind" />
 			<div class="unified-search-modal__filters" data-cy-unified-search-filters>
-				<NcActions :open.sync="providerActionMenuIsOpen" :menu-name="t('core', 'Places')" data-cy-unified-search-filter="places">
+				<NcActions :menu-name="t('core', 'Places')" :open.sync="providerActionMenuIsOpen" data-cy-unified-search-filter="places">
 					<template #icon>
 						<IconListBox :size="20" />
 					</template>
@@ -43,7 +42,7 @@
 						{{ provider.name }}
 					</NcActionButton>
 				</NcActions>
-				<NcActions :open.sync="dateActionMenuIsOpen" :menu-name="t('core', 'Date')" data-cy-unified-search-filter="date">
+				<NcActions :menu-name="t('core', 'Date')" :open.sync="dateActionMenuIsOpen" data-cy-unified-search-filter="date">
 					<template #icon>
 						<IconCalendarRange :size="20" />
 					</template>
@@ -67,6 +66,7 @@
 					</NcActionButton>
 				</NcActions>
 				<SearchableList :label-text="t('core', 'Search people')"
+					v-if="peopleSearchEnabled"
 					:search-list="userContacts"
 					:empty-content-text="t('core', 'Not found')"
 					data-cy-unified-search-filter="people"
@@ -87,13 +87,6 @@
 						<IconFilter :size="20" />
 					</template>
 				</NcButton>
-				<NcCheckboxRadioSwitch v-if="hasExternalResources"
-					v-model="searchExternalResources"
-					type="switch"
-					class="unified-search-modal__search-external-resources"
-					:class="{'unified-search-modal__search-external-resources--aligned': localSearch}">
-					{{ t('core', 'Search connected services') }}
-				</NcCheckboxRadioSwitch>
 			</div>
 			<div class="unified-search-modal__filters-applied">
 				<FilterChip v-for="filter in filters"
@@ -127,8 +120,7 @@
 			<h3 class="hidden-visually">
 				{{ t('core', 'Results') }}
 			</h3>
-			<!-- Filtered results section -->
-			<div v-for="providerResult in filteredResults" :key="providerResult.id" class="result">
+			<div v-for="providerResult in results" :key="providerResult.id" class="result">
 				<h4 :id="`unified-search-result-${providerResult.id}`" class="result-title">
 					{{ providerResult.name }}
 				</h4>
@@ -138,7 +130,7 @@
 						v-bind="result" />
 				</ul>
 				<div class="result-footer">
-					<NcButton v-if="providerResult.results.length === providerResult.limit" type="tertiary-no-background" @click="loadMoreResultsForProvider(providerResult)">
+					<NcButton type="tertiary-no-background" @click="loadMoreResultsForProvider(providerResult)">
 						{{ t('core', 'Load more results') }}
 						<template #icon>
 							<IconDotsHorizontal :size="20" />
@@ -152,43 +144,13 @@
 					</NcButton>
 				</div>
 			</div>
-			<!-- Unfiltered results section -->
-			<template v-if="unfilteredResults.length > 0">
-				<div class="unified-search-modal__unfiltered-header">
-					<span class="unified-search-modal__unfiltered-label">{{ t('core', 'Partial matches') }}</span>
-				</div>
-				<div v-for="providerResult in unfilteredResults" :key="`unfiltered-${providerResult.id}`" class="result result--unfiltered">
-					<h4 :id="`unified-search-result-unfiltered-${providerResult.id}`" class="result-title">
-						{{ providerResult.name }}
-					</h4>
-					<ul class="result-items" :aria-labelledby="`unified-search-result-unfiltered-${providerResult.id}`">
-						<SearchResult v-for="(result, index) in providerResult.results"
-							:key="index"
-							v-bind="result" />
-					</ul>
-					<div class="result-footer">
-						<NcButton v-if="providerResult.results.length === providerResult.limit" variant="tertiary-no-background" @click="loadMoreResultsForProvider(providerResult)">
-							{{ t('core', 'Load more results') }}
-							<template #icon>
-								<IconDotsHorizontal :size="20" />
-							</template>
-						</NcButton>
-						<NcButton v-if="providerResult.inAppSearch" alignment="end-reverse" variant="tertiary-no-background">
-							{{ t('core', 'Search in') }} {{ providerResult.name }}
-							<template #icon>
-								<IconArrowRight :size="20" />
-							</template>
-						</NcButton>
-					</div>
-				</div>
-			</template>
 		</div>
 	</NcDialog>
 </template>
 
 <script lang="ts">
 import { subscribe } from '@nextcloud/event-bus'
-import { getCanonicalLocale, t } from '@nextcloud/l10n'
+import { translate as t } from '@nextcloud/l10n'
 import { useBrowserLocation } from '@vueuse/core'
 import { defineComponent } from 'vue'
 import { getProviders, search as unifiedSearch, getContacts } from '../../services/UnifiedSearchService.js'
@@ -198,21 +160,19 @@ import debounce from 'debounce'
 import { unifiedSearchLogger } from '../../logger'
 
 import IconArrowRight from 'vue-material-design-icons/ArrowRight.vue'
-import IconAccountGroup from 'vue-material-design-icons/AccountGroupOutline.vue'
-import IconCalendarRange from 'vue-material-design-icons/CalendarRangeOutline.vue'
+import IconAccountGroup from 'vue-material-design-icons/AccountGroup.vue'
+import IconCalendarRange from 'vue-material-design-icons/CalendarRange.vue'
 import IconDotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue'
 import IconFilter from 'vue-material-design-icons/Filter.vue'
 import IconListBox from 'vue-material-design-icons/ListBox.vue'
 import IconMagnify from 'vue-material-design-icons/Magnify.vue'
-import NcActions from '@nextcloud/vue/components/NcActions'
-import NcActionButton from '@nextcloud/vue/components/NcActionButton'
-import NcAvatar from '@nextcloud/vue/components/NcAvatar'
-import NcButton from '@nextcloud/vue/components/NcButton'
-import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
-import NcInputField from '@nextcloud/vue/components/NcInputField'
-import NcDialog from '@nextcloud/vue/components/NcDialog'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
-import { loadState } from '@nextcloud/initial-state'
+import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
+import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
+import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
+import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
+import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
+import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
 
 import CustomDateRangeModal from './CustomDateRangeModal.vue'
 import FilterChip from './SearchFilterChip.vue'
@@ -239,7 +199,6 @@ export default defineComponent({
 		NcEmptyContent,
 		NcDialog,
 		NcInputField,
-		NcCheckboxRadioSwitch,
 		SearchableList,
 		SearchResult,
 	},
@@ -268,6 +227,14 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
+
+		/**
+		 * Show people search filter
+		 */
+		peopleSearchEnabled: {
+			type: Boolean,
+			default: false,
+		}
 	},
 
 	emits: ['update:open', 'update:query'],
@@ -292,13 +259,7 @@ export default defineComponent({
 			providerActionMenuIsOpen: false,
 			dateActionMenuIsOpen: false,
 			providerResultLimit: 5,
-			dateFilter: {
-				id: 'date',
-				type: 'date',
-				text: '',
-				startFrom: null as Date | null,
-				endAt: null as Date | null,
-			},
+			dateFilter: { id: 'date', type: 'date', text: '', startFrom: null, endAt: null },
 			personFilter: { id: 'person', type: 'person', name: '' },
 			filteredProviders: [],
 			searching: false,
@@ -312,8 +273,6 @@ export default defineComponent({
 			showDateRangeModal: false,
 			internalIsVisible: this.open,
 			initialized: false,
-			searchExternalResources: false,
-			minSearchLength: loadState('unified-search', 'min-search-length', 1),
 		}
 	},
 
@@ -326,10 +285,6 @@ export default defineComponent({
 			return !this.isEmptySearch && this.results.length === 0
 		},
 
-		isSearchQueryTooShort() {
-			return this.searchQuery.length < this.minSearchLength
-		},
-
 		showEmptyContentInfo() {
 			return this.isEmptySearch || this.hasNoResults
 		},
@@ -338,16 +293,9 @@ export default defineComponent({
 			if (this.searching && this.hasNoResults) {
 				return t('core', 'Searching …')
 			}
-
-			if (this.isSearchQueryTooShort) {
-				switch (this.minSearchLength) {
-				case 1:
-					return t('core', 'Start typing to search')
-				default:
-					return t('core', 'Minimum search length is {minSearchLength} characters', { minSearchLength: this.minSearchLength })
-				}
+			if (this.isEmptySearch) {
+				return t('core', 'Start typing to search')
 			}
-
 			return t('core', 'No matching results')
 		},
 
@@ -361,54 +309,6 @@ export default defineComponent({
 
 		debouncedFilterContacts() {
 			return debounce(this.filterContacts, 300)
-		},
-
-		hasExternalResources() {
-			return this.providers.some(provider => provider.isExternalProvider)
-		},
-
-		hasContentFilters() {
-			return this.filters.some((filter) => filter.type === 'date' || filter.type === 'person')
-		},
-
-		filteredResults() {
-			const isInFolderAtRoot = (result) => {
-				if (result.id !== 'in-folder') {
-					return false
-				}
-				const path = result.extraParams?.path
-				return !path || path === '/' || path === ''
-			}
-
-			if (!this.hasContentFilters) {
-				return this.results.filter((result) => !isInFolderAtRoot(result))
-			}
-			return this.results.filter((result) => result.supportsActiveFilters === true && !isInFolderAtRoot(result))
-		},
-
-		filteredResultUrls() {
-			const urls = new Set()
-			this.filteredResults.forEach((provider) => {
-				provider.results.forEach((entry) => {
-					if (entry.resourceUrl) {
-						urls.add(entry.resourceUrl)
-					}
-				})
-			})
-			return urls
-		},
-
-		unfilteredResults() {
-			if (!this.hasContentFilters) {
-				return []
-			}
-			return this.results
-				.filter((result) => result.supportsActiveFilters === false)
-				.map((provider) => ({
-					...provider,
-					results: provider.results.filter((entry) => !this.filteredResultUrls.has(entry.resourceUrl)),
-				}))
-				.filter((provider) => provider.results.length > 0)
 		},
 	},
 
@@ -438,20 +338,8 @@ export default defineComponent({
 		query: {
 			immediate: true,
 			handler() {
-				this.searchQuery = this.query
+				this.searchQuery = this.query.trim()
 			},
-		},
-
-		searchQuery: {
-			handler() {
-				this.$emit('update:query', this.searchQuery)
-			},
-		},
-
-		searchExternalResources() {
-			if (this.searchQuery) {
-				this.find(this.searchQuery)
-			}
 		},
 	},
 
@@ -482,8 +370,8 @@ export default defineComponent({
 				this.$refs.searchInput?.focus()
 			})
 		},
-		find(query: string, providersToSearchOverride = null) {
-			if (this.isSearchQueryTooShort) {
+		find(query: string) {
+			if (query.length === 0) {
 				this.results = []
 				this.searching = false
 				return
@@ -497,7 +385,7 @@ export default defineComponent({
 
 			this.searching = true
 			const newResults = []
-			const providersToSearch = providersToSearchOverride || (this.filteredProviders.length > 0 ? this.filteredProviders : this.providers)
+			const providersToSearch = this.filteredProviders.length > 0 ? this.filteredProviders : this.providers
 			const searchProvider = (provider) => {
 				const params = {
 					type: provider.searchFrom ?? provider.id,
@@ -508,30 +396,20 @@ export default defineComponent({
 
 				// This block of filter checks should be dynamic somehow and should be handled in
 				// nextcloud/search lib
-				const contentFilterTypes = this.filters
-					.filter((f) => f.type !== 'provider')
-					.map((f) => f.type)
-				const supportsActiveFilters = contentFilterTypes.length === 0
-					|| contentFilterTypes.every((type) => this.providerIsCompatibleWithFilters(provider, [type]))
-
-				const baseProvider = provider.searchFrom
-					? this.providers.find((p) => p.id === provider.searchFrom) ?? provider
-					: provider
-
-				const activeFilters = this.filters.filter((filter) => {
+				const activeFilters = this.filters.filter(filter => {
 					return filter.type !== 'provider' && this.providerIsCompatibleWithFilters(provider, [filter.type])
 				})
 
-				activeFilters.forEach((filter) => {
+				activeFilters.forEach(filter => {
 					switch (filter.type) {
 					case 'date':
-						if (baseProvider.filters?.since && baseProvider.filters?.until) {
+						if (provider.filters?.since && provider.filters?.until) {
 							params.since = this.dateFilter.startFrom
 							params.until = this.dateFilter.endAt
 						}
 						break
 					case 'person':
-						if (baseProvider.filters?.person) {
+						if (provider.filters?.person) {
 							params.person = this.personFilter.user
 						}
 						break
@@ -543,22 +421,12 @@ export default defineComponent({
 					unifiedSearchLogger.debug('Limiting search to', params.limit)
 				}
 
-				const shouldSkipSearch = !this.searchExternalResources && provider.isExternalProvider
-				const wasManuallySelected = this.filteredProviders.some(filteredProvider => filteredProvider.id === provider.id)
-				// if the provider is an external resource and the user has not manually selected it, skip the search
-				if (shouldSkipSearch && !wasManuallySelected) {
-					this.searching = false
-					return
-				}
-
 				const request = unifiedSearch(params).request
 
 				request().then((response) => {
 					newResults.push({
 						...provider,
 						results: response.data.ocs.data.entries,
-						limit: params.limit ?? 5,
-						supportsActiveFilters,
 					})
 
 					unifiedSearchLogger.debug('Unified search results:', { results: this.results, newResults })
@@ -639,12 +507,24 @@ export default defineComponent({
 				this.filters[existingPersonFilter].name = person.displayName
 			}
 
+			this.providers.forEach(async (provider, index) => {
+				this.providers[index].disabled = !(await this.providerIsCompatibleWithFilters(provider, ['person']))
+			})
+
 			this.debouncedFind(this.searchQuery)
 			unifiedSearchLogger.debug('Person filter applied', { person })
 		},
 		async loadMoreResultsForProvider(provider) {
 			this.providerResultLimit += 5
-			this.find(this.searchQuery, [provider])
+			// Remove all other providers from filteredProviders except the current "loadmore" provider
+			this.filteredProviders = this.filteredProviders.filter(filteredProvider => filteredProvider.id === provider.id)
+			// Plugin filters may have extra parameters, so we need to keep them
+			// See method handlePluginFilter for more details
+			if (this.filteredProviders.length > 0 && this.filteredProviders[0].isPluginFilter) {
+				provider = this.filteredProviders[0]
+			}
+			this.addProviderFilter(provider, true)
+			this.find(this.searchQuery)
 		},
 		addProviderFilter(providerFilter, loadMoreResultsForProvider = false) {
 			unifiedSearchLogger.debug('Applying provider filter', { providerFilter, loadMoreResultsForProvider })
@@ -692,6 +572,7 @@ export default defineComponent({
 				for (let i = 0; i < this.filters.length; i++) {
 					if (this.filters[i].id === filter.id) {
 						this.filters.splice(i, 1)
+						this.enableAllProviders()
 						break
 					}
 				}
@@ -730,6 +611,9 @@ export default defineComponent({
 				this.filters.push(this.dateFilter)
 			}
 
+			this.providers.forEach(async (provider, index) => {
+				this.providers[index].disabled = !(await this.providerIsCompatibleWithFilters(provider, ['since', 'until']))
+			})
 			this.debouncedFind(this.searchQuery)
 		},
 		applyQuickDateRange(range) {
@@ -778,22 +662,13 @@ export default defineComponent({
 			this.updateDateFilter()
 
 		},
-
 		setCustomDateRange(event) {
 			unifiedSearchLogger.debug('Custom date range', { range: event })
 			this.dateFilter.startFrom = event.startFrom
 			this.dateFilter.endAt = event.endAt
-			this.dateFilter.text = t(
-				'core',
-				'Between {startDate} and {endDate}',
-				{
-					startDate: this.dateFilter.startFrom!.toLocaleDateString([getCanonicalLocale()]),
-					endDate: this.dateFilter.endAt!.toLocaleDateString([getCanonicalLocale()]),
-				},
-			)
+			this.dateFilter.text = t('core', `Between ${this.dateFilter.startFrom.toLocaleDateString()} and ${this.dateFilter.endAt.toLocaleDateString()}`)
 			this.updateDateFilter()
 		},
-
 		handlePluginFilter(addFilterEvent) {
 			unifiedSearchLogger.debug('Handling plugin filter', { addFilterEvent })
 			for (let i = 0; i < this.filteredProviders.length; i++) {
@@ -830,20 +705,8 @@ export default defineComponent({
 
 			return flattenedArray
 		},
-		providerIsCompatibleWithFilters(provider, filterIds) {
-			const baseProvider = provider.searchFrom
-				? this.providers.find((p) => p.id === provider.searchFrom) ?? provider
-				: provider
-			return filterIds.every((filterId) => {
-				switch (filterId) {
-				case 'date':
-					return baseProvider.filters?.since !== undefined && baseProvider.filters?.until !== undefined
-				case 'person':
-					return baseProvider.filters?.person !== undefined
-				default:
-					return baseProvider.filters?.[filterId] !== undefined
-				}
-			})
+		async providerIsCompatibleWithFilters(provider, filterIds) {
+			return filterIds.every(filterId => provider.filters?.[filterId] !== undefined)
 		},
 		async enableAllProviders() {
 			this.providers.forEach(async (_, index) => {
@@ -855,12 +718,13 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.unified-search-modal-root :deep(.modal-container) {
-	box-sizing: border-box;
-	height: min(80vh, 800px);
-}
-
 :deep(.unified-search-modal .unified-search-modal__content) {
+	--dialog-height: min(80vh, 800px);
+	box-sizing: border-box;
+	height: var(--dialog-height);
+	max-height: var(--dialog-height);
+	min-height: var(--dialog-height);
+
 	display: flex;
 	flex-direction: column;
 	// No padding to prevent scrollbar misplacement
@@ -886,21 +750,6 @@ export default defineComponent({
 		gap: 4px;
 		justify-content: start;
 		padding-top: 4px;
-	}
-
-	&__search-external-resources {
-		:deep(span.checkbox-content) {
-			padding-top: 0;
-			padding-bottom: 0;
-		}
-
-		:deep(.checkbox-content__icon) {
-			margin: auto !important;
-		}
-
-		&--aligned {
-			margin-inline-start: auto;
-		}
 	}
 
 	&__filters-applied {
@@ -934,26 +783,8 @@ export default defineComponent({
 				align-items: center;
 				display: flex;
 			}
-
-			&--unfiltered {
-				opacity: 0.7;
-			}
 		}
 
-	}
-
-	&__unfiltered-header {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		margin-block: 16px 8px;
-		padding-block: 12px 0;
-		border-top: 1px solid var(--color-border);
-	}
-
-	&__unfiltered-label {
-		font-weight: bold;
-		color: var(--color-text-maxcontrast);
 	}
 }
 

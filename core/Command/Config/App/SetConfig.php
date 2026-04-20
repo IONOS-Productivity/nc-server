@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace OC\Core\Command\Config\App;
 
 use OC\AppConfig;
+use OCP\Exceptions\AppConfigIncorrectTypeException;
 use OCP\Exceptions\AppConfigUnknownKeyException;
 use OCP\IAppConfig;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -160,6 +161,7 @@ class SetConfig extends Base {
 			}
 
 			$value = (string)$input->getOption('value');
+
 			switch ($type) {
 				case IAppConfig::VALUE_MIXED:
 					$updated = $this->appConfig->setValueMixed($appName, $configName, $value, $lazy, $sensitive);
@@ -170,19 +172,34 @@ class SetConfig extends Base {
 					break;
 
 				case IAppConfig::VALUE_INT:
-					$updated = $this->appConfig->setValueInt($appName, $configName, $this->configManager->convertToInt($value), $lazy, $sensitive);
+					if ($value !== ((string)((int)$value))) {
+						throw new AppConfigIncorrectTypeException('Value is not an integer');
+					}
+					$updated = $this->appConfig->setValueInt($appName, $configName, (int)$value, $lazy, $sensitive);
 					break;
 
 				case IAppConfig::VALUE_FLOAT:
-					$updated = $this->appConfig->setValueFloat($appName, $configName, $this->configManager->convertToFloat($value), $lazy, $sensitive);
+					if ($value !== ((string)((float)$value))) {
+						throw new AppConfigIncorrectTypeException('Value is not a float');
+					}
+					$updated = $this->appConfig->setValueFloat($appName, $configName, (float)$value, $lazy, $sensitive);
 					break;
 
 				case IAppConfig::VALUE_BOOL:
-					$updated = $this->appConfig->setValueBool($appName, $configName, $this->configManager->convertToBool($value), $lazy);
+					if (in_array(strtolower($value), ['true', '1', 'on', 'yes'])) {
+						$valueBool = true;
+					} elseif (in_array(strtolower($value), ['false', '0', 'off', 'no'])) {
+						$valueBool = false;
+					} else {
+						throw new AppConfigIncorrectTypeException('Value is not a boolean, please use \'true\' or \'false\'');
+					}
+					$updated = $this->appConfig->setValueBool($appName, $configName, $valueBool, $lazy);
 					break;
 
 				case IAppConfig::VALUE_ARRAY:
-					$updated = $this->appConfig->setValueArray($appName, $configName, $this->configManager->convertToArray($value), $lazy, $sensitive);
+					$valueArray = json_decode($value, true, flags: JSON_THROW_ON_ERROR);
+					$valueArray = (is_array($valueArray)) ? $valueArray : throw new AppConfigIncorrectTypeException('Value is not an array');
+					$updated = $this->appConfig->setValueArray($appName, $configName, $valueArray, $lazy, $sensitive);
 					break;
 			}
 		}
@@ -199,11 +216,6 @@ class SetConfig extends Base {
 					$current['lazy'] ? 'lazy cache' : 'fast cache'
 				)
 			);
-			$keyDetails = $this->appConfig->getKeyDetails($appName, $configName);
-			if (($keyDetails['note'] ?? '') !== '') {
-				$output->writeln('<comment>Note:</comment> ' . $keyDetails['note']);
-			}
-
 		} else {
 			$output->writeln('<info>Config value were not updated</info>');
 		}

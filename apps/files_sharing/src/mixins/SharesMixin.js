@@ -4,7 +4,7 @@
  */
 
 import { getCurrentUser } from '@nextcloud/auth'
-import { showError, showSuccess } from '@nextcloud/dialogs'
+import { DialogBuilder, showError, showSuccess } from '@nextcloud/dialogs'
 import { ShareType } from '@nextcloud/sharing'
 import { emit } from '@nextcloud/event-bus'
 
@@ -54,9 +54,6 @@ export default {
 			loading: false,
 			saving: false,
 			open: false,
-
-			/** @type {boolean | undefined} */
-			passwordProtectedState: undefined,
 
 			// concurrency management queue
 			// we want one queue per share
@@ -167,22 +164,16 @@ export default {
 		 */
 		isPasswordProtected: {
 			get() {
-				if (this.config.enforcePasswordForPublicLink) {
-					return true
-				}
-				if (this.passwordProtectedState !== undefined) {
-					return this.passwordProtectedState
-				}
-				return typeof this.share.newPassword === 'string'
-					|| typeof this.share.password === 'string'
+				return this.config.enforcePasswordForPublicLink
+							|| !!this.share.password
 			},
 			async set(enabled) {
 				if (enabled) {
-					this.passwordProtectedState = true
-					this.$set(this.share, 'newPassword', await GeneratePassword(true))
+					this.share.password = await GeneratePassword(true)
+					this.$set(this.share, 'newPassword', this.share.password)
 				} else {
-					this.passwordProtectedState = false
-					this.$set(this.share, 'newPassword', '')
+					this.share.password = ''
+					this.$delete(this.share, 'newPassword')
 				}
 			},
 		},
@@ -214,11 +205,6 @@ export default {
 		checkShare(share) {
 			if (share.password) {
 				if (typeof share.password !== 'string' || share.password.trim() === '') {
-					return false
-				}
-			}
-			if (share.newPassword) {
-				if (typeof share.newPassword !== 'string') {
 					return false
 				}
 			}
@@ -279,14 +265,49 @@ export default {
 		},
 
 		/**
+		 * Display delete share confirmation dialog
+		 * @returns {Promise<boolean>}
+		 */
+		async askDeleteConfirmation() {
+			let confirmed = false
+			await new DialogBuilder()
+				.setName(t('files_sharing', 'Confirm deletion'))
+				.setText(t('files_sharing', 'You are about to delete this share'))
+				.setButtons([
+					{
+						label: t('core', 'Cancel'),
+					},
+					{
+						label: t('files_sharing', 'Delete share'),
+						type: 'error',
+						callback: () => {
+							confirmed = true
+						},
+					},
+				])
+				.build()
+				.show()
+
+			return confirmed
+		},
+		/**
 		 * Delete share button handler
 		 */
 		async onDelete() {
+			console.debug('Deleting share', this.share.id)
+			this.open = false
+			const deletionConfirmed = await this.askDeleteConfirmation()
+
+			if (!deletionConfirmed) {
+				console.debug('Deletion aborted', this.share.id)
+				return
+			}
+
 			try {
 				this.loading = true
 				this.open = false
 				await this.deleteShare(this.share.id)
-				logger.debug('Share deleted', { shareId: this.share.id })
+				console.debug('Share deleted', this.share.id)
 				const message = this.share.itemType === 'file'
 					? t('files_sharing', 'File "{path}" has been unshared', { path: this.share.path })
 					: t('files_sharing', 'Folder "{path}" has been unshared', { path: this.share.path })
@@ -317,14 +338,7 @@ export default {
 				const properties = {}
 				// force value to string because that is what our
 				// share api controller accepts
-				for (const name of propertyNames) {
-					if (name === 'password') {
-						if (this.share.newPassword !== undefined) {
-							properties[name] = this.share.newPassword
-						}
-						continue
-					}
-
+				propertyNames.forEach(name => {
 					if (this.share[name] === null || this.share[name] === undefined) {
 						properties[name] = ''
 					} else if ((typeof this.share[name]) === 'object') {
@@ -332,7 +346,7 @@ export default {
 					} else {
 						properties[name] = this.share[name].toString()
 					}
-				}
+				})
 
 				return this.updateQueue.add(async () => {
 					this.saving = true
@@ -340,9 +354,8 @@ export default {
 					try {
 						const updatedShare = await this.updateShare(this.share.id, properties)
 
-						if (propertyNames.includes('password')) {
+						if (propertyNames.indexOf('password') >= 0) {
 							// reset password state after sync
-							this.share.password = this.share.newPassword || undefined
 							this.$delete(this.share, 'newPassword')
 
 							// updates password expiration time after sync
@@ -350,18 +363,14 @@ export default {
 						}
 
 						// clear any previous errors
-						for (const property of propertyNames) {
-							this.$delete(this.errors, property)
-						}
+						this.$delete(this.errors, propertyNames[0])
 						showSuccess(this.updateSuccessMessage(propertyNames))
 					} catch (error) {
 						logger.error('Could not update share', { error, share: this.share, propertyNames })
 
 						const { message } = error
 						if (message && message !== '') {
-							for (const property of propertyNames) {
-								this.onSyncError(property, message)
-							}
+							this.onSyncError(propertyNames[0], message)
 							showError(message)
 						} else {
 							// We do not have information what happened, but we should still inform the user
@@ -410,13 +419,6 @@ export default {
 		 * @param {string} message the error message
 		 */
 		onSyncError(property, message) {
-			if (property === 'password' && this.share.newPassword !== undefined) {
-				if (this.share.newPassword === this.share.password) {
-					this.share.password = ''
-				}
-				this.$delete(this.share, 'newPassword')
-			}
-
 			// re-open menu if closed
 			this.open = true
 			switch (property) {

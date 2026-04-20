@@ -1,5 +1,4 @@
 <?php
-
 /**
  * SPDX-FileCopyrightText: 2021 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -31,25 +30,25 @@ use Test\TestCase;
  * Unit tests for \OC\Core\Service\LoginFlowV2Service
  */
 class LoginFlowV2ServiceUnitTest extends TestCase {
-	/** @var IConfig */
+	/** @var \OCP\IConfig */
 	private $config;
 
-	/** @var ICrypto */
+	/** @var \OCP\Security\ICrypto */
 	private $crypto;
 
 	/** @var LoggerInterface|MockObject */
 	private $logger;
 
-	/** @var LoginFlowV2Mapper */
+	/** @var \OC\Core\Db\LoginFlowV2Mapper */
 	private $mapper;
 
-	/** @var ISecureRandom */
+	/** @var \OCP\Security\ISecureRandom */
 	private $secureRandom;
 
-	/** @var LoginFlowV2Service */
+	/** @var \OC\Core\Service\LoginFlowV2Service */
 	private $subjectUnderTest;
 
-	/** @var ITimeFactory */
+	/** @var \OCP\AppFramework\Utility\ITimeFactory */
 	private $timeFactory;
 
 	/** @var \OC\Authentication\Token\IProvider */
@@ -67,13 +66,26 @@ class LoginFlowV2ServiceUnitTest extends TestCase {
 	 * Code was moved to separate function to keep setUp function small and clear.
 	 */
 	private function setupSubjectUnderTest(): void {
-		$this->config = $this->createMock(IConfig::class);
-		$this->crypto = $this->createMock(ICrypto::class);
-		$this->mapper = $this->createMock(LoginFlowV2Mapper::class);
-		$this->logger = $this->createMock(LoggerInterface::class);
-		$this->tokenProvider = $this->createMock(IProvider::class);
-		$this->secureRandom = $this->createMock(ISecureRandom::class);
-		$this->timeFactory = $this->createMock(ITimeFactory::class);
+		$this->config = $this->getMockBuilder(IConfig::class)
+			->disableOriginalConstructor()->getMock();
+
+		$this->crypto = $this->getMockBuilder(ICrypto::class)
+			->disableOriginalConstructor()->getMock();
+
+		$this->mapper = $this->getMockBuilder(LoginFlowV2Mapper::class)
+			->disableOriginalConstructor()->getMock();
+
+		$this->logger = $this->getMockBuilder(LoggerInterface::class)
+			->disableOriginalConstructor()->getMock();
+
+		$this->tokenProvider = $this->getMockBuilder(IProvider::class)
+			->disableOriginalConstructor()->getMock();
+
+		$this->secureRandom = $this->getMockBuilder(ISecureRandom::class)
+			->disableOriginalConstructor()->getMock();
+
+		$this->timeFactory = $this->getMockBuilder(ITimeFactory::class)
+			->disableOriginalConstructor()->getMock();
 
 		$this->subjectUnderTest = new LoginFlowV2Service(
 			$this->mapper,
