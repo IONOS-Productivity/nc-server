@@ -16,6 +16,7 @@ use OCA\FilesReminders\Service\ReminderService;
 use OCP\Files\Folder;
 use OCP\IUser;
 use OCP\IUserSession;
+use Sabre\DAV\ICollection;
 use Sabre\DAV\INode;
 use Sabre\DAV\PropFind;
 use Sabre\DAV\Server;
@@ -32,7 +33,20 @@ class PropFindPlugin extends ServerPlugin {
 	}
 
 	public function initialize(Server $server): void {
+		$server->on('preloadCollection', $this->preloadCollection(...));
 		$server->on('propFind', [$this, 'propFind']);
+	}
+
+	private function preloadCollection(
+		PropFind $propFind,
+		ICollection $collection,
+	): void {
+		if ($collection instanceof Directory && $propFind->getStatus(
+			static::REMINDER_DUE_DATE_PROPERTY
+		) !== null) {
+			$folder = $collection->getNode();
+			$this->cacheFolder($folder);
+		}
 	}
 
 	public function propFind(PropFind $propFind, INode $node) {

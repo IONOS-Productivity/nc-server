@@ -129,5 +129,19 @@ export default {
 			}
 			return t('settings', 'Never')
 		},
+
+		userGroups() {
+			const allGroups = this.$store.getters.getGroups
+			return this.user.groups
+				.map((id) => allGroups.find((g) => g.id === id))
+				.filter((group) => group !== undefined)
+		},
+
+		userSubAdminGroups() {
+			const allGroups = this.$store.getters.getGroups
+			return this.user.subadmin
+				.map((id) => allGroups.find((g) => g.id === id))
+				.filter((group) => group !== undefined)
+		},
 	},
 }

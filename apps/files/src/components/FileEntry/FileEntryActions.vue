@@ -25,15 +25,16 @@
 			:open="openedMenu"
 			@close="onMenuClose"
 			@closed="onMenuClosed">
-			<!-- Default actions list-->
-			<NcActionButton v-for="action, index in enabledMenuActions"
+			<!-- Non-destructive actions list -->
+			<!-- Please keep this block in sync with the destructive actions block below -->
+			<NcActionButton v-for="action, index in renderedNonDestructiveActions"
 				:key="action.id"
 				:ref="`action-${action.id}`"
 				class="files-list__row-action"
 				:class="{
 					[`files-list__row-action-${action.id}`]: true,
 					'files-list__row-action--inline': index < enabledInlineActions.length,
-					'files-list__row-action--menu': isValidMenu(action)
+					'files-list__row-action--menu': isValidMenu(action),
 				}"
 				:close-after-click="!isValidMenu(action)"
 				:data-cy-files-list-row-action="action.id"
@@ -49,6 +50,35 @@
 				</template>
 				{{ actionDisplayName(action) }}
 			</NcActionButton>
+
+			<!-- Destructive actions list -->
+			<template v-if="renderedDestructiveActions.length > 0">
+				<NcActionSeparator />
+				<NcActionButton v-for="action, index in renderedDestructiveActions"
+					:key="action.id"
+					:ref="`action-${action.id}`"
+					class="files-list__row-action"
+					:class="{
+						[`files-list__row-action-${action.id}`]: true,
+						'files-list__row-action--inline': index < enabledInlineActions.length,
+						'files-list__row-action--menu': isValidMenu(action),
+						'files-list__row-action--destructive': true,
+					}"
+					:close-after-click="!isValidMenu(action)"
+					:data-cy-files-list-row-action="action.id"
+					:is-menu="isValidMenu(action)"
+					:aria-label="action.title?.([source], currentView)"
+					:title="action.title?.([source], currentView)"
+					@click="onActionClick(action)">
+					<template #icon>
+						<NcLoadingIcon v-if="isLoadingAction(action)" />
+						<NcIconSvgWrapper v-else
+							class="files-list__row-action-icon"
+							:svg="action.iconSvgInline([source], currentView)" />
+					</template>
+					{{ actionDisplayName(action) }}
+				</NcActionButton>
+			</template>
 
 			<!-- Submenu actions list-->
 			<template v-if="openedSubmenu && enabledSubmenuActions[openedSubmenu?.id]">
@@ -68,10 +98,11 @@
 					class="files-list__row-action--submenu"
 					close-after-click
 					:data-cy-files-list-row-action="action.id"
+					:aria-label="action.title?.([source], currentView)"
 					:title="action.title?.([source], currentView)"
 					@click="onActionClick(action)">
 					<template #icon>
-						<NcLoadingIcon v-if="isLoadingAction(action)" :size="18" />
+						<NcLoadingIcon v-if="isLoadingAction(action)" />
 						<NcIconSvgWrapper v-else :svg="action.iconSvgInline([source], currentView)" />
 					</template>
 					{{ actionDisplayName(action) }}
@@ -87,16 +118,16 @@ import type { FileAction, Node } from '@nextcloud/files'
 
 import { DefaultType, NodeStatus } from '@nextcloud/files'
 import { defineComponent, inject } from 'vue'
-import { translate as t } from '@nextcloud/l10n'
-import { useHotKey } from '@nextcloud/vue/dist/Composables/useHotKey.js'
+import { t } from '@nextcloud/l10n'
+import { useHotKey } from '@nextcloud/vue/composables/useHotKey'
 
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
 import CustomElementRender from '../CustomElementRender.vue'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
-import NcActionSeparator from '@nextcloud/vue/dist/Components/NcActionSeparator.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionSeparator from '@nextcloud/vue/components/NcActionSeparator'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 
 import { executeAction } from '../../utils/actionUtils.ts'
 import { useActiveStore } from '../../store/active.ts'
@@ -211,6 +242,14 @@ export default defineComponent({
 			return actions.filter(action => !(action.parent && topActionsIds.includes(action.parent)))
 		},
 
+		renderedNonDestructiveActions() {
+			return this.enabledMenuActions.filter(action => !action.destructive)
+		},
+
+		renderedDestructiveActions() {
+			return this.enabledMenuActions.filter(action => action.destructive)
+		},
+
 		openedMenu: {
 			get() {
 				return this.opened
@@ -281,7 +320,7 @@ export default defineComponent({
 			}
 
 			// Make sure we set the node as active
-			this.activeStore.setActiveNode(this.source)
+			this.activeStore.activeNode = this.source
 
 			// Execute the action
 			await executeAction(action)
@@ -310,12 +349,8 @@ export default defineComponent({
 		},
 
 		onMenuClosed() {
-			// TODO: remove timeout once https://github.com/nextcloud-libraries/nextcloud-vue/pull/6683 is merged
-			// and updated on server.
-			setTimeout(() => {
-				// We reset the actions menu state when the menu is finally closed
-				this.openedMenu = false
-			}, 100)
+			// We reset the actions menu state when the menu is finally closed
+			this.openedMenu = false
 		},
 	},
 })
@@ -353,5 +388,12 @@ main.app-content[style*="mouse-pos-x"] .v-popper__popper {
 		max-height: var(--max-icon-size) !important;
 		max-width: var(--max-icon-size) !important;
 	}
+
+	&.files-list__row-action--destructive {
+		::deep(button) {
+			color: var(--color-text-error) !important;
+		}
+	}
 }
+
 </style>

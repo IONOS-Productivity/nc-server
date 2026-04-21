@@ -29,7 +29,7 @@ import { t } from '@nextcloud/l10n'
 import { updateSystemTagsAdminRestriction } from '../services/api.js'
 import logger from '../logger.ts'
 
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 
 export default {
 	name: 'SystemTagsCreationControl',

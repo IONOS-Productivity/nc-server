@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -14,7 +15,9 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Config\IUserMountCache;
 use OCP\IConfig;
+use OCP\IDBConnection;
 use OCP\IUser;
+use OCP\Server;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
 use Test\Traits\MountProviderTrait;
@@ -30,10 +33,8 @@ class ScanFilesTest extends TestCase {
 	use UserTrait;
 	use MountProviderTrait;
 
-	/** @var ScanFiles */
-	private $scanFiles;
-	/** @var IUserMountCache */
-	private $mountCache;
+	private ScanFiles $scanFiles;
+	private IUserMountCache $mountCache;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -41,10 +42,10 @@ class ScanFilesTest extends TestCase {
 		$config = $this->createMock(IConfig::class);
 		$dispatcher = $this->createMock(IEventDispatcher::class);
 		$logger = $this->createMock(LoggerInterface::class);
-		$connection = \OC::$server->getDatabaseConnection();
-		$this->mountCache = \OC::$server->getUserMountCache();
+		$connection = Server::get(IDBConnection::class);
+		$this->mountCache = Server::get(IUserMountCache::class);
 
-		$this->scanFiles = $this->getMockBuilder('\OCA\Files\BackgroundJob\ScanFiles')
+		$this->scanFiles = $this->getMockBuilder(ScanFiles::class)
 			->setConstructorArgs([
 				$config,
 				$dispatcher,
@@ -52,12 +53,12 @@ class ScanFilesTest extends TestCase {
 				$connection,
 				$this->createMock(ITimeFactory::class)
 			])
-			->setMethods(['runScanner'])
+			->onlyMethods(['runScanner'])
 			->getMock();
 	}
 
-	private function runJob() {
-		$this->invokePrivate($this->scanFiles, 'run', [[]]);
+	private function runJob(): void {
+		self::invokePrivate($this->scanFiles, 'run', [[]]);
 	}
 
 	private function getUser(string $userId): IUser {

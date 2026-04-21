@@ -18,6 +18,7 @@ const modules = require('./webpack.modules.js')
 
 const appVersion = readFileSync('./version.php').toString().match(/OC_Version.+\[([0-9]{2})/)?.[1] ?? 'unknown'
 const isDev = process.env.NODE_ENV === 'development'
+const isTesting = process.env.TESTING === "true"
 
 const formatOutputFromModules = (modules) => {
 	// merge all configs into one object, and use AppID to generate the fileNames
@@ -235,7 +236,6 @@ const config = {
 		alias: {
 			// make sure to use the handlebar runtime when importing
 			handlebars: 'handlebars/runtime',
-			vue$: path.resolve('./node_modules/vue'),
 		},
 		extensions: ['*', '.ts', '.js', '.vue'],
 		extensionAlias: {

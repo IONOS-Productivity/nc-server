@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -9,6 +10,8 @@ namespace OCA\Files_Sharing\Tests;
 use OC\Files\Filesystem;
 use OC\Files\View;
 use OCP\Constants;
+use OCP\Files\IRootFolder;
+use OCP\Server;
 use OCP\Share\IShare;
 
 /**
@@ -33,8 +36,8 @@ class EtagPropagationTest extends PropagationTestCase {
 		$this->fileIds[self::TEST_FILES_SHARING_API_USER3] = [];
 		$this->fileIds[self::TEST_FILES_SHARING_API_USER4] = [];
 
-		$rootFolder = \OC::$server->getRootFolder();
-		$shareManager = \OC::$server->getShareManager();
+		$rootFolder = Server::get(IRootFolder::class);
+		$shareManager = Server::get(\OCP\Share\IManager::class);
 
 		$this->rootView = new View('');
 		$this->loginAsUser(self::TEST_FILES_SHARING_API_USER1);
@@ -264,7 +267,7 @@ class EtagPropagationTest extends PropagationTestCase {
 		$this->assertInstanceOf('\OC\Files\FileInfo', $folderInfo);
 
 		$node = \OC::$server->getUserFolder(self::TEST_FILES_SHARING_API_USER1)->get('/sub1/sub2/folder');
-		$shareManager = \OC::$server->getShareManager();
+		$shareManager = Server::get(\OCP\Share\IManager::class);
 		$shares = $shareManager->getSharesBy(self::TEST_FILES_SHARING_API_USER1, IShare::TYPE_USER, $node, true);
 
 		foreach ($shares as $share) {
@@ -287,7 +290,7 @@ class EtagPropagationTest extends PropagationTestCase {
 		$this->assertInstanceOf('\OC\Files\FileInfo', $folderInfo);
 
 		$node = \OC::$server->getUserFolder(self::TEST_FILES_SHARING_API_USER1)->get('/sub1/sub2/folder/inside');
-		$shareManager = \OC::$server->getShareManager();
+		$shareManager = Server::get(\OCP\Share\IManager::class);
 		$shares = $shareManager->getSharesBy(self::TEST_FILES_SHARING_API_USER1, IShare::TYPE_USER, $node, true);
 
 		foreach ($shares as $share) {

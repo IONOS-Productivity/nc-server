@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -40,7 +41,8 @@ class MailPlugin implements ISearchPlugin {
 		private KnownUserService $knownUserService,
 		private IUserSession $userSession,
 		private IMailer $mailer,
-		private mixed $shareWithGroupOnlyExcludeGroupsList = [],
+		private mixed $shareWithGroupOnlyExcludeGroupsList,
+		private int $shareType,
 	) {
 		$this->shareeEnumeration = $this->config->getAppValue('core', 'shareapi_allow_share_dialog_user_enumeration', 'yes') === 'yes';
 		$this->shareWithGroupOnly = $this->config->getAppValue('core', 'shareapi_only_share_with_group_members', 'no') === 'yes';
@@ -138,7 +140,7 @@ class MailPlugin implements ISearchPlugin {
 								continue;
 							}
 
-							if (!$this->isCurrentUser($cloud) && !$searchResult->hasResult($userType, $cloud->getUser())) {
+							if ($this->shareType === IShare::TYPE_USER && !$this->isCurrentUser($cloud) && !$searchResult->hasResult($userType, $cloud->getUser())) {
 								$singleResult = [[
 									'label' => $displayName,
 									'uuid' => $contact['UID'] ?? $emailAddress,
@@ -158,6 +160,9 @@ class MailPlugin implements ISearchPlugin {
 
 						if ($this->shareeEnumeration) {
 							try {
+								if (!isset($contact['CLOUD'])) {
+									continue;
+								}
 								$cloud = $this->cloudIdManager->resolveCloudId($contact['CLOUD'][0] ?? '');
 							} catch (\InvalidArgumentException $e) {
 								continue;
@@ -179,19 +184,25 @@ class MailPlugin implements ISearchPlugin {
 								}
 							}
 							if ($addToWide && !$this->isCurrentUser($cloud) && !$searchResult->hasResult($userType, $cloud->getUser())) {
-								$userResults['wide'][] = [
-									'label' => $displayName,
-									'uuid' => $contact['UID'] ?? $emailAddress,
-									'name' => $contact['FN'] ?? $displayName,
-									'value' => [
-										'shareType' => IShare::TYPE_USER,
-										'shareWith' => $cloud->getUser(),
-									],
-									'shareWithDisplayNameUnique' => !empty($emailAddress) ? $emailAddress : $cloud->getUser()
-								];
+								if ($this->shareType === IShare::TYPE_USER) {
+									$userResults['wide'][] = [
+										'label' => $displayName,
+										'uuid' => $contact['UID'] ?? $emailAddress,
+										'name' => $contact['FN'] ?? $displayName,
+										'value' => [
+											'shareType' => IShare::TYPE_USER,
+											'shareWith' => $cloud->getUser(),
+										],
+										'shareWithDisplayNameUnique' => !empty($emailAddress) ? $emailAddress : $cloud->getUser()
+									];
+								}
 								continue;
 							}
 						}
+						continue;
+					}
+
+					if ($this->shareType !== IShare::TYPE_EMAIL) {
 						continue;
 					}
 
@@ -228,14 +239,15 @@ class MailPlugin implements ISearchPlugin {
 
 		$reachedEnd = true;
 		if ($this->shareeEnumeration) {
-			$reachedEnd = (count($result['wide']) < $offset + $limit) &&
-				(count($userResults['wide']) < $offset + $limit);
+			$reachedEnd = (count($result['wide']) < $offset + $limit)
+				&& (count($userResults['wide']) < $offset + $limit);
 
 			$result['wide'] = array_slice($result['wide'], $offset, $limit);
 			$userResults['wide'] = array_slice($userResults['wide'], $offset, $limit);
 		}
 
-		if (!$searchResult->hasExactIdMatch($emailType) && $this->mailer->validateMailAddress($search)) {
+		if ($this->shareType === IShare::TYPE_EMAIL
+				&& !$searchResult->hasExactIdMatch($emailType) && $this->mailer->validateMailAddress($search)) {
 			$result['exact'][] = [
 				'label' => $search,
 				'uuid' => $search,
@@ -246,10 +258,12 @@ class MailPlugin implements ISearchPlugin {
 			];
 		}
 
-		if (!empty($userResults['wide'])) {
+		if ($this->shareType === IShare::TYPE_USER && !empty($userResults['wide'])) {
 			$searchResult->addResultSet($userType, $userResults['wide'], []);
 		}
-		$searchResult->addResultSet($emailType, $result['wide'], $result['exact']);
+		if ($this->shareType === IShare::TYPE_EMAIL) {
+			$searchResult->addResultSet($emailType, $result['wide'], $result['exact']);
+		}
 
 		return !$reachedEnd;
 	}

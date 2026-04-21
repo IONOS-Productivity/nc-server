@@ -137,13 +137,8 @@ class WebpackSPDXPlugin {
 				.filter((s) => !!s)
 				.map((s) => s.split('?', 2)[0])
 
-			// Skip assets without modules, these are emitted by webpack plugins
-			if (sources.length === 0) {
-				logger.warn(`Skipping ${asset} because it does not contain any source information`)
-				continue
-			}
-
-			/** packages used by the current asset
+			/**
+			 * packages used by the current asset
 			 * @type {Set<string>}
 			 */
 			const packages = new Set()
@@ -198,12 +193,39 @@ class WebpackSPDXPlugin {
 				output += `- ${pkg.name}\n\t- version: ${pkg.version}\n\t- license: ${license}\n`
 			}
 			output = `\n\n${output}`
+
+			if (sources.length === 0) {
+				logger.info(`Checking content of asset ${asset}`)
+				const sources = [...modules].map((module) => module.identifier())
+				for (const source of sources) {
+					const match = source.match(/asset\/inline\|data:image\/svg\+xml,(.+)/)
+					if (match) {
+						const content = decodeURI(match[1])
+						// REUSE-IgnoreStart
+						const [, license] = content.match(/SPDX-License-Identifier:\s*([^\s]+)/) ?? []
+						const [, author] = content.match(/SPDX-FileCopyrightText:\s*([^-]+)/) ?? []
+						// REUSE-IgnoreEnd
+						if (author && license) {
+							authors.add(author)
+							licenses.add(license)
+						}
+					}
+				}
+				if (authors.size === 0) {
+					logger.warn(`Asset ${asset} does not contain any source information`)
+					continue
+				}
+				output = ''
+			}
+
+			// REUSE-IgnoreStart
 			for (const author of [...authors].sort()) {
 				output = `SPDX-FileCopyrightText: ${author}\n${output}`
 			}
 			for (const license of [...licenses].sort()) {
 				output = `SPDX-License-Identifier: ${license}\n${output}`
 			}
+			// REUSE-IgnoreEnd
 
 			compilation.emitAsset(
 				asset.split('?', 2)[0] + '.license',

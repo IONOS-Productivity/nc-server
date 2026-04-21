@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2015 ownCloud, Inc.
@@ -20,6 +21,8 @@ use OCP\AppFramework\Services\IInitialState;
 use OCP\Files\AppData\IAppDataFactory;
 use OCP\Http\Client\IClientService;
 use OCP\IConfig;
+use OCP\IGroup;
+use OCP\IGroupManager;
 use OCP\IL10N;
 use OCP\INavigationManager;
 use OCP\IRequest;
@@ -37,39 +40,24 @@ use Test\TestCase;
  * @group DB
  */
 class AppSettingsControllerTest extends TestCase {
-	/** @var AppSettingsController */
-	private $appSettingsController;
-	/** @var IRequest|MockObject */
-	private $request;
-	/** @var IL10N|MockObject */
-	private $l10n;
-	/** @var IConfig|MockObject */
-	private $config;
-	/** @var INavigationManager|MockObject */
-	private $navigationManager;
+	private IRequest&MockObject $request;
+	private IL10N&MockObject $l10n;
+	private IConfig&MockObject $config;
+	private INavigationManager&MockObject $navigationManager;
 	private AppManager&MockObject $appManager;
-	/** @var CategoryFetcher|MockObject */
-	private $categoryFetcher;
-	/** @var AppFetcher|MockObject */
-	private $appFetcher;
-	/** @var IFactory|MockObject */
-	private $l10nFactory;
-	/** @var BundleFetcher|MockObject */
-	private $bundleFetcher;
-	/** @var Installer|MockObject */
-	private $installer;
-	/** @var IURLGenerator|MockObject */
-	private $urlGenerator;
-	/** @var LoggerInterface|MockObject */
-	private $logger;
-	/** @var IInitialState|MockObject */
-	private $initialState;
-	/** @var IAppDataFactory|MockObject */
-	private $appDataFactory;
-	/** @var AppDiscoverFetcher|MockObject */
-	private $discoverFetcher;
-	/** @var IClientService|MockObject */
-	private $clientService;
+	private CategoryFetcher&MockObject $categoryFetcher;
+	private AppFetcher&MockObject $appFetcher;
+	private IFactory&MockObject $l10nFactory;
+	private IGroupManager&MockObject $groupManager;
+	private BundleFetcher&MockObject $bundleFetcher;
+	private Installer&MockObject $installer;
+	private IURLGenerator&MockObject $urlGenerator;
+	private LoggerInterface&MockObject $logger;
+	private IInitialState&MockObject $initialState;
+	private IAppDataFactory&MockObject $appDataFactory;
+	private AppDiscoverFetcher&MockObject $discoverFetcher;
+	private IClientService&MockObject $clientService;
+	private AppSettingsController $appSettingsController;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -86,6 +74,7 @@ class AppSettingsControllerTest extends TestCase {
 		$this->categoryFetcher = $this->createMock(CategoryFetcher::class);
 		$this->appFetcher = $this->createMock(AppFetcher::class);
 		$this->l10nFactory = $this->createMock(IFactory::class);
+		$this->groupManager = $this->createMock(IGroupManager::class);
 		$this->bundleFetcher = $this->createMock(BundleFetcher::class);
 		$this->installer = $this->createMock(Installer::class);
 		$this->urlGenerator = $this->createMock(IURLGenerator::class);
@@ -105,6 +94,7 @@ class AppSettingsControllerTest extends TestCase {
 			$this->categoryFetcher,
 			$this->appFetcher,
 			$this->l10nFactory,
+			$this->groupManager,
 			$this->bundleFetcher,
 			$this->installer,
 			$this->urlGenerator,
@@ -184,6 +174,13 @@ class AppSettingsControllerTest extends TestCase {
 			->expects($this->once())
 			->method('setActiveEntry')
 			->with('core_apps');
+		$this->groupManager->expects($this->once())
+			->method('search')
+			->with($this->equalTo(''), $this->equalTo(5))
+			->willReturn([
+				$this->createMock(IGroup::class),
+				$this->createMock(IGroup::class),
+			]);
 
 		$this->initialState
 			->expects($this->exactly(4))
@@ -217,6 +214,13 @@ class AppSettingsControllerTest extends TestCase {
 			->expects($this->once())
 			->method('setActiveEntry')
 			->with('core_apps');
+		$this->groupManager->expects($this->once())
+			->method('search')
+			->with($this->equalTo(''), $this->equalTo(5))
+			->willReturn([
+				$this->createMock(IGroup::class),
+				$this->createMock(IGroup::class),
+			]);
 
 		$this->initialState
 			->expects($this->exactly(4))

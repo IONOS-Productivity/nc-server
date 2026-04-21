@@ -10,10 +10,13 @@ declare(strict_types=1);
 
 namespace Test\BackgroundJob;
 
+use OC\BackgroundJob\JobList;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\IJob;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
+use OCP\IDBConnection;
+use OCP\Server;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
 
@@ -27,35 +30,35 @@ class JobListTest extends TestCase {
 	/** @var \OC\BackgroundJob\JobList */
 	protected $instance;
 
-	/** @var \OCP\IDBConnection */
+	/** @var IDBConnection */
 	protected $connection;
 
-	/** @var \OCP\IConfig|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var IConfig|\PHPUnit\Framework\MockObject\MockObject */
 	protected $config;
 
-	/** @var \OCP\AppFramework\Utility\ITimeFactory|\PHPUnit\Framework\MockObject\MockObject */
+	/** @var ITimeFactory|\PHPUnit\Framework\MockObject\MockObject */
 	protected $timeFactory;
 	private bool $ran = false;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->connection = \OC::$server->getDatabaseConnection();
+		$this->connection = Server::get(IDBConnection::class);
 		$this->clearJobsList();
 		$this->config = $this->createMock(IConfig::class);
 		$this->timeFactory = $this->createMock(ITimeFactory::class);
-		$this->instance = new \OC\BackgroundJob\JobList(
+		$this->instance = new JobList(
 			$this->connection,
 			$this->config,
 			$this->timeFactory,
-			\OC::$server->get(LoggerInterface::class),
+			Server::get(LoggerInterface::class),
 		);
 	}
 
 	protected function clearJobsList() {
 		$query = $this->connection->getQueryBuilder();
 		$query->delete('jobs');
-		$query->execute();
+		$query->executeStatement();
 	}
 
 	protected function getAllSorted() {
@@ -73,7 +76,7 @@ class JobListTest extends TestCase {
 		return $jobs;
 	}
 
-	public function argumentProvider() {
+	public static function argumentProvider(): array {
 		return [
 			[null],
 			[false],
@@ -87,9 +90,9 @@ class JobListTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider argumentProvider
 	 * @param $argument
 	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('argumentProvider')]
 	public function testAddRemove($argument): void {
 		$existingJobs = $this->getAllSorted();
 		$job = new TestJob();
@@ -108,10 +111,28 @@ class JobListTest extends TestCase {
 		$this->assertEquals($existingJobs, $jobs);
 	}
 
+	public function testAddAcceptsArgumentUnderMaxLength(): void {
+		$argument = str_repeat('a', $this->instance::MAX_ARGUMENT_JSON_LENGTH - 100);
+		$job = new TestJob();
+		$this->assertFalse($this->instance->has($job, $argument));
+		$this->instance->add($job, $argument);
+
+		$this->assertTrue($this->instance->has($job, $argument));
+	}
+
+	public function testAddRejectsArgumentAboveMaxLength(): void {
+		$argument = str_repeat('a', $this->instance::MAX_ARGUMENT_JSON_LENGTH + 100);
+
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Background job arguments can\'t exceed ' . $this->instance::MAX_ARGUMENT_JSON_LENGTH . ' characters (json encoded)');
+
+		$this->instance->add(new TestJob(), $argument);
+	}
+
 	/**
-	 * @dataProvider argumentProvider
 	 * @param $argument
 	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('argumentProvider')]
 	public function testRemoveDifferentArgument($argument): void {
 		$existingJobs = $this->getAllSorted();
 		$job = new TestJob();
@@ -130,9 +151,9 @@ class JobListTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider argumentProvider
 	 * @param $argument
 	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('argumentProvider')]
 	public function testHas($argument): void {
 		$job = new TestJob();
 		$this->assertFalse($this->instance->has($job, $argument));
@@ -146,9 +167,9 @@ class JobListTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider argumentProvider
 	 * @param $argument
 	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('argumentProvider')]
 	public function testHasDifferentArgument($argument): void {
 		$job = new TestJob();
 		$this->instance->add($job, $argument);
@@ -238,9 +259,9 @@ class JobListTest extends TestCase {
 	}
 
 	/**
-	 * @dataProvider argumentProvider
 	 * @param $argument
 	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('argumentProvider')]
 	public function testGetById($argument): void {
 		$job = new TestJob();
 		$this->instance->add($job, $argument);
@@ -277,10 +298,10 @@ class JobListTest extends TestCase {
 			->method('getTime')
 			->willReturn(123456789);
 
-		$job = new TestJob($this->timeFactory, $this, function () {
+		$job = new TestJob($this->timeFactory, $this, function (): void {
 		});
 
-		$job2 = new TestJob($this->timeFactory, $this, function () {
+		$job2 = new TestJob($this->timeFactory, $this, function (): void {
 		});
 
 		$this->instance->add($job, 1);
@@ -310,10 +331,10 @@ class JobListTest extends TestCase {
 				return time();
 			});
 
-		$job = new TestParallelAwareJob($this->timeFactory, $this, function () {
+		$job = new TestParallelAwareJob($this->timeFactory, $this, function (): void {
 		});
 
-		$job2 = new TestParallelAwareJob($this->timeFactory, $this, function () {
+		$job2 = new TestParallelAwareJob($this->timeFactory, $this, function (): void {
 		});
 
 		$this->instance->add($job, 1);

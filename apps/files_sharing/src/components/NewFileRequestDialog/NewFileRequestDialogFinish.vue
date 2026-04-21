@@ -16,7 +16,7 @@
 			:label="t('files_sharing', 'Share link')"
 			:readonly="true"
 			:show-trailing-button="true"
-			:trailing-button-label="t('files_sharing', 'Copy to clipboard')"
+			:trailing-button-label="t('files_sharing', 'Copy')"
 			data-cy-file-request-dialog-fieldset="link"
 			@click="copyShareLink"
 			@trailing-button-click="copyShareLink">
@@ -67,11 +67,11 @@ import { generateUrl, getBaseUrl } from '@nextcloud/router'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { n, t } from '@nextcloud/l10n'
 
-import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
-import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
-import NcChip from '@nextcloud/vue/dist/Components/NcChip.js'
+import NcAvatar from '@nextcloud/vue/components/NcAvatar'
+import NcInputField from '@nextcloud/vue/components/NcInputField'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcChip from '@nextcloud/vue/components/NcChip'
 
 import IconCheck from 'vue-material-design-icons/Check.vue'
 import IconClipboard from 'vue-material-design-icons/ClipboardText.vue'
@@ -140,7 +140,7 @@ export default defineComponent({
 
 			await navigator.clipboard.writeText(this.shareLink)
 
-			showSuccess(t('files_sharing', 'Link copied to clipboard'))
+			showSuccess(t('files_sharing', 'Link copied'))
 			this.isCopied = true
 			event.target?.select?.()
 

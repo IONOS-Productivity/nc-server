@@ -33,9 +33,9 @@ import { subscribe } from '@nextcloud/event-bus'
 import { translate } from '@nextcloud/l10n'
 import axios from '@nextcloud/axios'
 
-import ChartPie from 'vue-material-design-icons/ChartPie.vue'
-import NcAppNavigationItem from '@nextcloud/vue/dist/Components/NcAppNavigationItem.js'
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js'
+import ChartPie from 'vue-material-design-icons/ChartPieOutline.vue'
+import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar'
 
 import logger from '../logger.ts'
 
@@ -58,7 +58,7 @@ export default {
 	computed: {
 		storageStatsTitle() {
 			const usedQuotaByte = formatFileSize(this.storageStats?.used, false, false)
-			const quotaByte = formatFileSize(this.storageStats?.quota, false, false)
+			const quotaByte = formatFileSize(this.storageStats?.total, false, false)
 
 			// If no quota set
 			if (this.storageStats?.quota < 0) {
@@ -80,12 +80,6 @@ export default {
 	},
 
 	beforeMount() {
-		/**
-		 * Update storage stats every minute
-		 * TODO: remove when all views are migrated to Vue
-		 */
-		setInterval(this.throttleUpdateStorageStats, 60 * 1000)
-
 		subscribe('files:node:created', this.throttleUpdateStorageStats)
 		subscribe('files:node:deleted', this.throttleUpdateStorageStats)
 		subscribe('files:node:moved', this.throttleUpdateStorageStats)

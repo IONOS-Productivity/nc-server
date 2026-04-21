@@ -94,15 +94,15 @@ import { showError } from '@nextcloud/dialogs'
 import moment from '@nextcloud/moment'
 import { getLocale } from '@nextcloud/l10n'
 import { imagePath } from '@nextcloud/router'
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcActionCaption from '@nextcloud/vue/dist/Components/NcActionCaption.js'
-import NcActionInput from '@nextcloud/vue/dist/Components/NcActionInput.js'
-import NcActionLink from '@nextcloud/vue/dist/Components/NcActionLink.js'
-import NcActionSeparator from '@nextcloud/vue/dist/Components/NcActionSeparator.js'
-import NcActionText from '@nextcloud/vue/dist/Components/NcActionText.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActionCaption from '@nextcloud/vue/components/NcActionCaption'
+import NcActionInput from '@nextcloud/vue/components/NcActionInput'
+import NcActionLink from '@nextcloud/vue/components/NcActionLink'
+import NcActionSeparator from '@nextcloud/vue/components/NcActionSeparator'
+import NcActionText from '@nextcloud/vue/components/NcActionText'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import * as network from './services/weatherStatusService.js'
 import crosshairsSvg from '@mdi/svg/svg/crosshairs.svg?raw'
 import mapMarkerSvg from '@mdi/svg/svg/map-marker.svg?raw'
@@ -236,6 +236,296 @@ const weatherOptions = {
 		text: (temperature, unit, later = false) => later
 			? t('weather_status', '{temperature} {unit} heavy rainfall showers later today', { temperature, unit })
 			: t('weather_status', '{temperature} {unit} heavy rainfall showers', { temperature, unit }),
+	},
+	clearsky_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} clear sky and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} clear sky and polar twilight', { temperature, unit }),
+	},
+	fair_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} fair weather and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} fair weather and polar twilight', { temperature, unit }),
+	},
+	partlycloudy_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} partly cloudy and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} partly cloudy and polar twilight', { temperature, unit }),
+	},
+	lightrainandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light rain and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light rain and thunder', { temperature, unit }),
+	},
+	rainandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} rain and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} rain and thunder', { temperature, unit }),
+	},
+	heavyrainandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy rain and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy rain and thunder', { temperature, unit }),
+	},
+	lightrainshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light rainfall showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light rainfall showers and thunder', { temperature, unit }),
+	},
+	lightrainshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light rainfall showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light rainfall showers and thunder', { temperature, unit }),
+	},
+	lightrainshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light rainfall showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light rainfall showers, thunder and polar twilight', { temperature, unit }),
+	},
+	rainshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} rainfall showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} rainfall showers and thunder', { temperature, unit }),
+	},
+	rainshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} rainfall showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} rainfall showers and thunder', { temperature, unit }),
+	},
+	rainshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} rainfall showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} rainfall showers, thunder and polar twilight', { temperature, unit }),
+	},
+	heavyrainshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy rainfall showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy rainfall showers and thunder', { temperature, unit }),
+	},
+	heavyrainshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy rainfall showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy rainfall showers and thunder', { temperature, unit }),
+	},
+	heavyrainshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy rainfall showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy rainfall showers, thunder and polar twilight', { temperature, unit }),
+	},
+	lightrainshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light rainfall showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light rainfall showers and polar twilight', { temperature, unit }),
+	},
+	rainshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} rainfall showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} rainfall showers and polar twilight', { temperature, unit }),
+	},
+	heavyrainshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy rainfall showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy rainfall showers and polar twilight', { temperature, unit }),
+	},
+	lightsleet: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet', { temperature, unit }),
+	},
+	sleet: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet', { temperature, unit }),
+	},
+	heavysleet: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet', { temperature, unit }),
+	},
+	lightsleetandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet and thunder', { temperature, unit }),
+	},
+	sleetandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet and thunder', { temperature, unit }),
+	},
+	heavysleetandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet and thunder', { temperature, unit }),
+	},
+	lightsleetshowers_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet showers', { temperature, unit }),
+	},
+	lightsleetshowers_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet showers', { temperature, unit }),
+	},
+	lightsleetshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet showers and polar twilight', { temperature, unit }),
+	},
+	sleetshowers_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet showers', { temperature, unit }),
+	},
+	sleetshowers_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet showers', { temperature, unit }),
+	},
+	sleetshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet showers and polar twilight', { temperature, unit }),
+	},
+	heavysleetshowers_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet showers', { temperature, unit }),
+	},
+	heavysleetshowers_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet showers', { temperature, unit }),
+	},
+	heavysleetshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet showers and polar twilight', { temperature, unit }),
+	},
+	lightssleetshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet showers and thunder', { temperature, unit }),
+	},
+	lightssleetshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet showers and thunder', { temperature, unit }),
+	},
+	lightssleetshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light sleet showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light sleet showers, thunder and polar twilight', { temperature, unit }),
+	},
+	sleetshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet showers and thunder', { temperature, unit }),
+	},
+	sleetshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet showers and thunder', { temperature, unit }),
+	},
+	sleetshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} sleet showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} sleet showers, thunder and polar twilight', { temperature, unit }),
+	},
+	heavysleetshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet showers and thunder', { temperature, unit }),
+	},
+	heavysleetshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet showers and thunder', { temperature, unit }),
+	},
+	heavysleetshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy sleet showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy sleet showers, thunder and polar twilight', { temperature, unit }),
+	},
+	lightsnow: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow', { temperature, unit }),
+	},
+	heavysnow: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow', { temperature, unit }),
+	},
+	lightsnowandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow and thunder', { temperature, unit }),
+	},
+	heavysnowandthunder: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow and thunder', { temperature, unit }),
+	},
+	lightsnowshowers_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow showers', { temperature, unit }),
+	},
+	lightsnowshowers_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow showers', { temperature, unit }),
+	},
+	lightsnowshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow showers and polar twilight', { temperature, unit }),
+	},
+	heavysnowshowers_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow showers', { temperature, unit }),
+	},
+	heavysnowshowers_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow showers later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow showers', { temperature, unit }),
+	},
+	heavysnowshowers_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow showers and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow showers and polar twilight', { temperature, unit }),
+	},
+	lightssnowshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow showers and thunder', { temperature, unit }),
+	},
+	lightssnowshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow showers and thunder', { temperature, unit }),
+	},
+	lightssnowshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} light snow showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} light snow showers, thunder and polar twilight', { temperature, unit }),
+	},
+	heavysnowshowersandthunder_day: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow showers and thunder', { temperature, unit }),
+	},
+	heavysnowshowersandthunder_night: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow showers and thunder later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow showers and thunder', { temperature, unit }),
+	},
+	heavysnowshowersandthunder_polartwilight: {
+		text: (temperature, unit, later = false) => later
+			? t('weather_status', '{temperature} {unit} heavy snow showers, thunder and polar twilight later today', { temperature, unit })
+			: t('weather_status', '{temperature} {unit} heavy snow showers, thunder and polar twilight', { temperature, unit }),
 	},
 }
 
@@ -563,6 +853,10 @@ export default {
 </script>
 
 <style lang="scss">
+.icon-weather-status {
+	background-image: url('../img/app-dark.svg');
+}
+
 .weather-action-image-container {
 	width: var(--default-clickable-area);
 	height: var(--default-clickable-area);

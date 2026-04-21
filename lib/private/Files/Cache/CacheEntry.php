@@ -65,8 +65,8 @@ class CacheEntry implements ICacheEntry {
 	}
 
 
-	public function getMimeType() {
-		return $this->data['mimetype'];
+	public function getMimeType(): string {
+		return $this->data['mimetype'] ?? 'application/octet-stream';
 	}
 
 
@@ -108,6 +108,10 @@ class CacheEntry implements ICacheEntry {
 
 	public function getUploadTime(): ?int {
 		return $this->data['upload_time'] ?? null;
+	}
+
+	public function getParentId(): int {
+		return $this->data['parent'];
 	}
 
 	public function getData() {

@@ -251,29 +251,29 @@ class PreviewManager implements IPreview {
 	 * List of enabled default providers
 	 *
 	 * The following providers are enabled by default:
-	 *  - OC\Preview\PNG
-	 *  - OC\Preview\JPEG
-	 *  - OC\Preview\GIF
 	 *  - OC\Preview\BMP
-	 *  - OC\Preview\XBitmap
+	 *  - OC\Preview\GIF
+	 *  - OC\Preview\JPEG
 	 *  - OC\Preview\MarkDown
-	 *  - OC\Preview\MP3
+	 *  - OC\Preview\PNG
 	 *  - OC\Preview\TXT
+	 *  - OC\Preview\XBitmap
 	 *
 	 * The following providers are disabled by default due to performance or privacy concerns:
 	 *  - OC\Preview\Font
 	 *  - OC\Preview\HEIC
 	 *  - OC\Preview\Illustrator
-	 *  - OC\Preview\Movie
-	 *  - OC\Preview\MSOfficeDoc
+	 *  - OC\Preview\MP3
 	 *  - OC\Preview\MSOffice2003
 	 *  - OC\Preview\MSOffice2007
+	 *  - OC\Preview\MSOfficeDoc
+	 *  - OC\Preview\Movie
 	 *  - OC\Preview\OpenDocument
 	 *  - OC\Preview\PDF
 	 *  - OC\Preview\Photoshop
 	 *  - OC\Preview\Postscript
-	 *  - OC\Preview\StarOffice
 	 *  - OC\Preview\SVG
+	 *  - OC\Preview\StarOffice
 	 *  - OC\Preview\TIFF
 	 *
 	 * @return array
@@ -295,7 +295,6 @@ class PreviewManager implements IPreview {
 
 		$this->defaultProviders = $this->config->getSystemValue('enabledPreviewProviders', array_merge([
 			Preview\MarkDown::class,
-			Preview\MP3::class,
 			Preview\TXT::class,
 			Preview\OpenDocument::class,
 		], $imageProviders));
@@ -373,14 +372,11 @@ class PreviewManager implements IPreview {
 
 		$this->registerCoreProvidersOffice();
 
-		// Video requires avconv or ffmpeg
+		// Video requires ffmpeg
 		if (in_array(Preview\Movie::class, $this->getEnabledDefaultProvider())) {
 			$movieBinary = $this->config->getSystemValue('preview_ffmpeg_path', null);
 			if (!is_string($movieBinary)) {
-				$movieBinary = $this->binaryFinder->findBinaryPath('avconv');
-				if (!is_string($movieBinary)) {
-					$movieBinary = $this->binaryFinder->findBinaryPath('ffmpeg');
-				}
+				$movieBinary = $this->binaryFinder->findBinaryPath('ffmpeg');
 			}
 
 

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace OC\Core\Controller;
 
 use OC\Core\Db\LoginFlowV2;
+use OC\Core\Exception\LoginFlowV2ClientForbiddenException;
 use OC\Core\Exception\LoginFlowV2NotFoundException;
 use OC\Core\Exception\LoginFlowV2ClientForbiddenException;
 use OC\Core\ResponseDefinitions;
@@ -35,6 +36,7 @@ use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserSession;
 use OCP\Security\ISecureRandom;
+use OCP\Server;
 
 /**
  * @psalm-import-type CoreLoginFlowV2Credentials from ResponseDefinitions
@@ -205,7 +207,7 @@ class ClientFlowLoginV2Controller extends Controller {
 		$this->session->remove(self::STATE_NAME);
 
 		try {
-			$token = \OC::$server->get(\OC\Authentication\Token\IProvider::class)->getToken($password);
+			$token = Server::get(\OC\Authentication\Token\IProvider::class)->getToken($password);
 			if ($token->getLoginName() !== $user) {
 				throw new InvalidTokenException('login name does not match');
 			}
@@ -292,7 +294,7 @@ class ClientFlowLoginV2Controller extends Controller {
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT)]
 	public function init(): JSONResponse {
 		// Get client user agent
-		$userAgent = $this->request->getHeader('USER_AGENT');
+		$userAgent = $this->request->getHeader('user-agent');
 
 		$tokens = $this->loginFlowV2Service->createTokens($userAgent);
 

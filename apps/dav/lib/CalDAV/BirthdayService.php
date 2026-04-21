@@ -187,9 +187,9 @@ class BirthdayService {
 			$originalYear = (int)$dateParts['year'];
 		}
 
-		$leapDay = ((int)$dateParts['month'] === 2
-				&& (int)$dateParts['date'] === 29);
-		if ($dateParts['year'] === null || $originalYear < 1970) {
+		$leapDay = ((int)$dateParts['month'] === 2 && (int)$dateParts['date'] === 29);
+
+		if ($dateParts['year'] === null) {
 			$birthday = ($leapDay ? '1972-' : '1970-')
 				. $dateParts['month'] . '-' . $dateParts['date'];
 		}
@@ -295,8 +295,8 @@ class BirthdayService {
 		}
 
 		return (
-			$newCalendarData->VEVENT->DTSTART->getValue() !== $existingBirthday->VEVENT->DTSTART->getValue() ||
-			$newCalendarData->VEVENT->SUMMARY->getValue() !== $existingBirthday->VEVENT->SUMMARY->getValue()
+			$newCalendarData->VEVENT->DTSTART->getValue() !== $existingBirthday->VEVENT->DTSTART->getValue()
+			|| $newCalendarData->VEVENT->SUMMARY->getValue() !== $existingBirthday->VEVENT->SUMMARY->getValue()
 		);
 	}
 

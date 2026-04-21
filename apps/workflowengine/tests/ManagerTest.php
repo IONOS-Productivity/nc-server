@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -11,6 +12,7 @@ use OCA\WorkflowEngine\Entity\File;
 use OCA\WorkflowEngine\Helper\ScopeContext;
 use OCA\WorkflowEngine\Manager;
 use OCP\AppFramework\QueryException;
+use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Events\Node\NodeCreatedEvent;
 use OCP\Files\IRootFolder;
@@ -24,6 +26,7 @@ use OCP\IServerContainer;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\Server;
 use OCP\SystemTag\ISystemTagManager;
 use OCP\WorkflowEngine\Events\RegisterEntitiesEvent;
 use OCP\WorkflowEngine\ICheck;
@@ -31,9 +34,40 @@ use OCP\WorkflowEngine\IEntity;
 use OCP\WorkflowEngine\IEntityEvent;
 use OCP\WorkflowEngine\IManager;
 use OCP\WorkflowEngine\IOperation;
+use OCP\WorkflowEngine\IRuleMatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
+
+class TestAdminOp implements IOperation {
+	public function getDisplayName(): string {
+		return 'Admin';
+	}
+
+	public function getDescription(): string {
+		return '';
+	}
+
+	public function getIcon(): string {
+		return '';
+	}
+
+	public function isAvailableForScope(int $scope): bool {
+		return true;
+	}
+
+	public function validateOperation(string $name, array $checks, string $operation): void {
+	}
+
+	public function onEvent(string $eventName, Event $event, IRuleMatcher $ruleMatcher): void {
+	}
+}
+
+class TestUserOp extends TestAdminOp {
+	public function getDisplayName(): string {
+		return 'User';
+	}
+}
 
 /**
  * Class ManagerTest
@@ -64,7 +98,7 @@ class ManagerTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->db = \OC::$server->getDatabaseConnection();
+		$this->db = Server::get(IDBConnection::class);
 		$this->container = $this->createMock(IServerContainer::class);
 		/** @var IL10N|MockObject $l */
 		$this->l = $this->createMock(IL10N::class);
@@ -80,7 +114,7 @@ class ManagerTest extends TestCase {
 		$this->cacheFactory = $this->createMock(ICacheFactory::class);
 
 		$this->manager = new Manager(
-			\OC::$server->getDatabaseConnection(),
+			Server::get(IDBConnection::class),
 			$this->container,
 			$this->l,
 			$this->logger,
@@ -405,19 +439,19 @@ class ManagerTest extends TestCase {
 		$opId1 = $this->invokePrivate(
 			$this->manager,
 			'insertOperation',
-			['OCA\WFE\TestAdminOp', 'Test01', [11, 22], 'foo', $entity, []]
+			[TestAdminOp::class, 'Test01', [11, 22], 'foo', $entity, []]
 		);
 		$this->invokePrivate($this->manager, 'addScope', [$opId1, $adminScope]);
 
 		$opId2 = $this->invokePrivate(
 			$this->manager,
 			'insertOperation',
-			['OCA\WFE\TestUserOp', 'Test02', [33, 22], 'bar', $entity, []]
+			[TestUserOp::class, 'Test02', [33, 22], 'bar', $entity, []]
 		);
 		$this->invokePrivate($this->manager, 'addScope', [$opId2, $userScope]);
 
-		$check1 = ['class' => 'OCA\WFE\C22', 'operator' => 'eq', 'value' => 'asdf'];
-		$check2 = ['class' => 'OCA\WFE\C33', 'operator' => 'eq', 'value' => 23456];
+		$check1 = ['class' => ICheck::class, 'operator' => 'eq', 'value' => 'asdf'];
+		$check2 = ['class' => ICheck::class, 'operator' => 'eq', 'value' => 23456];
 
 		/** @noinspection PhpUnhandledExceptionInspection */
 		$op = $this->manager->updateOperation($opId1, 'Test01a', [$check1, $check2], 'foohur', $adminScope, $entity, ['\OCP\Files::postDelete']);
@@ -680,11 +714,6 @@ class ManagerTest extends TestCase {
 			->method('getScope')
 			->willReturn(IManager::SCOPE_ADMIN);
 
-		$operationMock->expects($this->once())
-			->method('isAvailableForScope')
-			->with(IManager::SCOPE_ADMIN)
-			->willReturn(true);
-
 		$operationMock->expects($this->never())
 			->method('validateOperation');
 
@@ -732,7 +761,7 @@ class ManagerTest extends TestCase {
 			'operator' => 'is',
 			'value' => 'barfoo',
 		];
-		$operationData = str_pad('', IManager::MAX_OPERATION_VALUE_BYTES + 1, 'FooBar');
+		$operationData = str_pad('', IManager::MAX_OPERATION_VALUE_BYTES - 1, 'FooBar');
 
 		$operationMock = $this->createMock(IOperation::class);
 		$entityMock = $this->createMock(IEntity::class);

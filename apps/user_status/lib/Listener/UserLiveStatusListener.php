@@ -61,8 +61,8 @@ class UserLiveStatusListener implements IEventListener {
 
 		// If the status is user-defined and one of the persistent status, we
 		// will not override it.
-		if ($userStatus->getIsUserDefined() &&
-			\in_array($userStatus->getStatus(), StatusService::PERSISTENT_STATUSES, true)) {
+		if ($userStatus->getIsUserDefined()
+			&& \in_array($userStatus->getStatus(), StatusService::PERSISTENT_STATUSES, true)) {
 			return;
 		}
 
@@ -82,7 +82,7 @@ class UserLiveStatusListener implements IEventListener {
 
 		// If the emitted status is more important than the current status
 		// treat it as outdated and update
-		if (array_search($event->getStatus(), StatusService::PRIORITY_ORDERED_STATUSES) < array_search($userStatus->getStatus(), StatusService::PRIORITY_ORDERED_STATUSES)) {
+		if (array_search($event->getStatus(), StatusService::PRIORITY_ORDERED_STATUSES, true) < array_search($userStatus->getStatus(), StatusService::PRIORITY_ORDERED_STATUSES, true)) {
 			$needsUpdate = true;
 		}
 

@@ -20,6 +20,7 @@ use OC\Net\IpAddressClassifier;
 use OCP\Http\Client\LocalServerException;
 use OCP\ICacheFactory;
 use Psr\Http\Message\RequestInterface;
+use Psr\Log\NullLogger;
 use Test\TestCase;
 
 class DnsPinMiddlewareTest extends TestCase {
@@ -35,9 +36,10 @@ class DnsPinMiddlewareTest extends TestCase {
 
 		$ipAddressClassifier = new IpAddressClassifier();
 		$negativeDnsCache = new NegativeDnsCache($cacheFactory);
+		$logger = new NullLogger();
 
 		$this->dnsPinMiddleware = $this->getMockBuilder(DnsPinMiddleware::class)
-			->setConstructorArgs([$negativeDnsCache, $ipAddressClassifier])
+			->setConstructorArgs([$negativeDnsCache, $ipAddressClassifier, $logger])
 			->onlyMethods(['dnsGetRecord'])
 			->getMock();
 	}
@@ -273,7 +275,7 @@ class DnsPinMiddlewareTest extends TestCase {
 		$this->expectExceptionMessage('violates local access rules');
 
 		$mockHandler = new MockHandler([
-			static function (RequestInterface $request, array $options) {
+			static function (RequestInterface $request, array $options): void {
 				// The handler should not be called
 			},
 		]);
@@ -320,7 +322,7 @@ class DnsPinMiddlewareTest extends TestCase {
 		$this->expectExceptionMessage('violates local access rules');
 
 		$mockHandler = new MockHandler([
-			static function (RequestInterface $request, array $options) {
+			static function (RequestInterface $request, array $options): void {
 				// The handler should not be called
 			},
 		]);
@@ -367,7 +369,7 @@ class DnsPinMiddlewareTest extends TestCase {
 		$this->expectExceptionMessage('violates local access rules');
 
 		$mockHandler = new MockHandler([
-			static function (RequestInterface $request, array $options) {
+			static function (RequestInterface $request, array $options): void {
 				// The handler should not be called
 			},
 		]);
@@ -457,7 +459,7 @@ class DnsPinMiddlewareTest extends TestCase {
 		$this->expectExceptionMessage('No DNS record found for www.example.com');
 
 		$mockHandler = new MockHandler([
-			static function (RequestInterface $request, array $options) {
+			static function (RequestInterface $request, array $options): void {
 				// The handler should not be called
 			},
 		]);
@@ -480,7 +482,7 @@ class DnsPinMiddlewareTest extends TestCase {
 
 	public function testIgnoreSubdomainForSoaQuery(): void {
 		$mockHandler = new MockHandler([
-			static function (RequestInterface $request, array $options) {
+			static function (RequestInterface $request, array $options): void {
 				// The handler should not be called
 			},
 		]);

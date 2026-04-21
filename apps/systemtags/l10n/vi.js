@@ -48,12 +48,14 @@ OC.L10N.register(
     "Update" : "Cập nhật",
     "Delete" : "Xóa bỏ",
     "Reset" : "Đặt lại",
-    "Loading …" : "Đang tải …",
+    "Loading …" : "Đang tải …",
     "Manage tags" : "Quản lý nhãn",
     "Cancel" : "Hủy bỏ",
+    "Apply" : "Áp dụng",
     "Collaborative tags are available for all users. Restricted tags are visible to users but cannot be assigned by them. Invisible tags are for internal use, since users cannot see or assign them." : "Các thẻ hợp tác là có sẵn cho tất cả người dùng. Các thẻ giới hạn có thể được người dùng nhìn thấy nhưng không thể được họ phân công. Các thẻ vô hình là dành cho việc sử dụng nội bộ, vì những người dùng không thể thấy hay phân công chúng.",
     "Open in Files" : "Mở trong Tệp",
     "No tags found" : "Không tìm thấy nhãn",
-    "Tags you have created will show up here." : "Thẻ bạn đã tạo sẽ hiển thị ở đây"
+    "Tags you have created will show up here." : "Thẻ bạn đã tạo sẽ hiển thị ở đây",
+    "Loading …" : "Đang tải …"
 },
 "nplurals=1; plural=0;");

@@ -42,8 +42,8 @@ class AuthorizedGroupService {
 	 * @throws NotFoundException
 	 */
 	private function handleException(\Exception $e): void {
-		if ($e instanceof DoesNotExistException ||
-			$e instanceof MultipleObjectsReturnedException) {
+		if ($e instanceof DoesNotExistException
+			|| $e instanceof MultipleObjectsReturnedException) {
 			throw new NotFoundException('AuthorizedGroup not found');
 		} else {
 			throw $e;
@@ -57,8 +57,19 @@ class AuthorizedGroupService {
 	 * @param string $class
 	 * @return AuthorizedGroup
 	 * @throws Exception
+	 * @throws ConflictException
 	 */
 	public function create(string $groupId, string $class): AuthorizedGroup {
+		// Check if the group is already assigned to this class
+		try {
+			$existing = $this->mapper->findByGroupIdAndClass($groupId, $class);
+			if ($existing) {
+				throw new ConflictException('Group is already assigned to this class');
+			}
+		} catch (DoesNotExistException $e) {
+			// This is expected when no duplicate exists, continue with creation
+		}
+
 		$authorizedGroup = new AuthorizedGroup();
 		$authorizedGroup->setGroupId($groupId);
 		$authorizedGroup->setClass($class);

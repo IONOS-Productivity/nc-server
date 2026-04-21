@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -94,6 +95,15 @@ trait Sharing {
 	 */
 	public function creatingShare($body) {
 		$this->asCreatingAShareWith($this->currentUser, $body);
+	}
+
+	/**
+	 * @When /^accepting last share via the accept endpoint$/
+	 */
+	public function acceptingLastShareViaAcceptEndpoint(): void {
+		$share_id = $this->lastShareData->data[0]->id;
+		$url = "/index.php/apps/files_sharing/accept/ocinternal:$share_id";
+		$this->sendingToDirectUrl('GET', $url);
 	}
 
 	/**
@@ -336,6 +346,8 @@ trait Sharing {
 				return $this->isExpectedUrl((string)$data->$field, 'index.php/s/');
 			} elseif ($contentExpected == $data->$field) {
 				return true;
+			} else {
+				print($data->$field);
 			}
 			return false;
 		}
@@ -561,18 +573,18 @@ trait Sharing {
 		];
 		$expectedFields = array_merge($defaultExpectedFields, $body->getRowsHash());
 
-		if (!array_key_exists('uid_file_owner', $expectedFields) &&
-				array_key_exists('uid_owner', $expectedFields)) {
+		if (!array_key_exists('uid_file_owner', $expectedFields)
+				&& array_key_exists('uid_owner', $expectedFields)) {
 			$expectedFields['uid_file_owner'] = $expectedFields['uid_owner'];
 		}
-		if (!array_key_exists('displayname_file_owner', $expectedFields) &&
-				array_key_exists('displayname_owner', $expectedFields)) {
+		if (!array_key_exists('displayname_file_owner', $expectedFields)
+				&& array_key_exists('displayname_owner', $expectedFields)) {
 			$expectedFields['displayname_file_owner'] = $expectedFields['displayname_owner'];
 		}
 
-		if (array_key_exists('share_type', $expectedFields) &&
-				$expectedFields['share_type'] == 10 /* IShare::TYPE_ROOM */ &&
-				array_key_exists('share_with', $expectedFields)) {
+		if (array_key_exists('share_type', $expectedFields)
+				&& $expectedFields['share_type'] == 10 /* IShare::TYPE_ROOM */
+				&& array_key_exists('share_with', $expectedFields)) {
 			if ($expectedFields['share_with'] === 'private_conversation') {
 				$expectedFields['share_with'] = 'REGEXP /^private_conversation_[0-9a-f]{6}$/';
 			} else {
@@ -694,7 +706,13 @@ trait Sharing {
 		if ($body instanceof TableNode) {
 			$parameters = [];
 			foreach ($body->getRowsHash() as $key => $value) {
-				$parameters[] = $key . '=' . $value;
+				if ($key === 'shareTypes') {
+					foreach (explode(' ', $value) as $shareType) {
+						$parameters[] = 'shareType[]=' . $shareType;
+					}
+				} else {
+					$parameters[] = $key . '=' . $value;
+				}
 			}
 			if (!empty($parameters)) {
 				$url .= '?' . implode('&', $parameters);
@@ -729,9 +747,46 @@ trait Sharing {
 			$shareeType = substr($shareeType, 6);
 		}
 
+		// "simplexml_load_string" creates a SimpleXMLElement object for each
+		// XML element with child elements. In turn, each child is indexed by
+		// its tag in the SimpleXMLElement object. However, when there are
+		// several child XML elements with the same tag, an array with all the
+		// children with the same tag is indexed instead. Therefore, when the
+		// XML contains
+		// <XXX>
+		//   <element>
+		//     <label>...</label>
+		//     <value>...</value>
+		//   </element>
+		// </XXX>
+		// the "$elements[$shareeType]" variable contains an "element" key which
+		// in turn contains "label" and "value" keys, but when the XML contains
+		// <XXX>
+		//   <element>
+		//     <label>...</label>
+		//     <value>...</value>
+		//   </element>
+		//   <element>
+		//     <label>...</label>
+		//     <value>...</value>
+		//   </element>
+		// </XXX>
+		// the "$elements[$shareeType]" variable contains an "element" key which
+		// in turn contains "0" and "1" keys, and in turn each one contains
+		// "label" and "value" keys.
+		if (array_key_exists('element', $elements[$shareeType]) && is_int(array_keys($elements[$shareeType]['element'])[0])) {
+			$elements[$shareeType] = $elements[$shareeType]['element'];
+		}
+
 		$sharees = [];
 		foreach ($elements[$shareeType] as $element) {
-			$sharees[] = [$element['label'], $element['value']['shareType'], $element['value']['shareWith']];
+			$sharee = [$element['label'], $element['value']['shareType'], $element['value']['shareWith']];
+
+			if (array_key_exists('shareWithDisplayNameUnique', $element)) {
+				$sharee[] = $element['shareWithDisplayNameUnique'];
+			}
+
+			$sharees[] = $sharee;
 		}
 		return $sharees;
 	}

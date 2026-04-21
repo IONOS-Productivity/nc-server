@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -8,6 +9,8 @@ namespace OCA\Files_Sharing\Tests;
 
 use OC\Files\Filesystem;
 use OCA\Files_Sharing\Helper;
+use OCP\IConfig;
+use OCP\Server;
 
 /**
  * Class HelperTest
@@ -29,6 +32,6 @@ class HelperTest extends TestCase {
 		$this->assertTrue(Filesystem::is_dir($sharedFolder));
 
 		// cleanup
-		\OC::$server->getConfig()->deleteSystemValue('share_folder');
+		Server::get(IConfig::class)->deleteSystemValue('share_folder');
 	}
 }

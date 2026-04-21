@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2017 ownCloud, Inc.
@@ -11,6 +12,7 @@ use OCA\Files_Sharing\Tests\TestCase;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
+use OCP\Server;
 use OCP\Share\IShare;
 
 /**
@@ -34,7 +36,7 @@ class SetPasswordColumnTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->connection = \OC::$server->getDatabaseConnection();
+		$this->connection = Server::get(IDBConnection::class);
 		$this->config = $this->createMock(IConfig::class);
 		$this->migration = new SetPasswordColumn($this->connection, $this->config);
 

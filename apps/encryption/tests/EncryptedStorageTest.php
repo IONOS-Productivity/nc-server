@@ -11,8 +11,10 @@ namespace OCA\encryption\tests;
 use OC\Files\Storage\Temporary;
 use OC\Files\Storage\Wrapper\Encryption;
 use OC\Files\View;
+use OCA\Encryption\KeyManager;
 use OCP\Files\Mount\IMountManager;
 use OCP\Files\Storage\IDisableEncryptionStorage;
+use OCP\Server;
 use Test\TestCase;
 use Test\Traits\EncryptionTrait;
 use Test\Traits\MountProviderTrait;
@@ -31,6 +33,8 @@ class EncryptedStorageTest extends TestCase {
 	use UserTrait;
 
 	public function testMoveFromEncrypted(): void {
+		Server::get(KeyManager::class)->validateMasterKey();
+		Server::get(KeyManager::class)->validateShareKey();
 		$this->createUser('test1', 'test2');
 		$this->setupForUser('test1', 'test2');
 
@@ -44,7 +48,7 @@ class EncryptedStorageTest extends TestCase {
 		$view = new View('/test1/files');
 
 		/** @var IMountManager $mountManager */
-		$mountManager = \OC::$server->get(IMountManager::class);
+		$mountManager = Server::get(IMountManager::class);
 
 		$encryptedMount = $mountManager->find('/test1/files/enc');
 		$unencryptedMount = $mountManager->find('/test1/files/unenc');

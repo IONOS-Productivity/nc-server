@@ -50,16 +50,14 @@
 <script>
 import { showError } from '@nextcloud/dialogs'
 import { confirmPassword } from '@nextcloud/password-confirmation'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
 
 import logger from '../../logger.ts'
 import {
 	startRegistration,
 	finishRegistration,
 } from '../../service/WebAuthnRegistrationSerice.ts'
-
-import '@nextcloud/password-confirmation/dist/style.css'
 
 const logAndPass = (text) => (data) => {
 	logger.debug(text)

@@ -15,8 +15,9 @@ use OCP\IConfig;
  * fixes cyclic DI: AllConfig needs AppConfig needs Database needs AllConfig
  */
 class SystemConfig {
-	/** @var array */
-	protected $sensitiveValues = [
+	protected array $sensitiveValues;
+
+	protected const DEFAULT_SENSITIVE_VALUES = [
 		'instanceid' => true,
 		'datadirectory' => true,
 		'dbname' => true,
@@ -114,24 +115,7 @@ class SystemConfig {
 	public function __construct(
 		private Config $config,
 	) {
-	}
-
-	/**
-	 * Since system config is admin controlled, we can tell psalm to ignore any taint
-	 *
-	 * @psalm-taint-escape sql
-	 * @psalm-taint-escape html
-	 * @psalm-taint-escape ldap
-	 * @psalm-taint-escape callable
-	 * @psalm-taint-escape file
-	 * @psalm-taint-escape ssrf
-	 * @psalm-taint-escape cookie
-	 * @psalm-taint-escape header
-	 * @psalm-taint-escape has_quotes
-	 * @psalm-pure
-	 */
-	public static function trustSystemConfig(mixed $value): mixed {
-		return $value;
+		$this->sensitiveValues = array_merge(self::DEFAULT_SENSITIVE_VALUES, $this->config->getValue('config_extra_sensitive_values', []));
 	}
 
 	/**
@@ -170,7 +154,7 @@ class SystemConfig {
 	 * @return mixed the value or $default
 	 */
 	public function getValue($key, $default = '') {
-		return $this->trustSystemConfig($this->config->getValue($key, $default));
+		return $this->config->getValue($key, $default);
 	}
 
 	/**

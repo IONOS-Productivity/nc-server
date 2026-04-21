@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -7,48 +8,48 @@
 namespace OCA\Files_External\Tests\Service;
 
 use OC\Files\Filesystem;
+use OC\User\User;
 use OCA\Files_External\Lib\StorageConfig;
 use OCA\Files_External\MountConfig;
-
 use OCA\Files_External\NotFoundException;
 use OCA\Files_External\Service\GlobalStoragesService;
+
 use OCA\Files_External\Service\StoragesService;
 use OCA\Files_External\Service\UserStoragesService;
+use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\Server;
+use PHPUnit\Framework\MockObject\MockObject;
 use Test\Traits\UserTrait;
 
 /**
  * @group DB
  */
-class UserStoragesServiceTest extends StoragesServiceTest {
+class UserStoragesServiceTest extends StoragesServiceTestCase {
 	use UserTrait;
 
-	private $user;
+	protected User $user;
 
-	private $userId;
-
-	/**
-	 * @var StoragesService
-	 */
-	protected $globalStoragesService;
+	protected string $userId;
+	protected StoragesService $globalStoragesService;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->globalStoragesService = new GlobalStoragesService($this->backendService, $this->dbConfig, $this->mountCache, $this->eventDispatcher);
+		$this->globalStoragesService = new GlobalStoragesService($this->backendService, $this->dbConfig, $this->mountCache, $this->eventDispatcher, $this->appConfig);
 
 		$this->userId = $this->getUniqueID('user_');
 		$this->createUser($this->userId, $this->userId);
-		$this->user = \OC::$server->getUserManager()->get($this->userId);
+		$this->user = Server::get(IUserManager::class)->get($this->userId);
 
-		/** @var IUserSession|\PHPUnit\Framework\MockObject\MockObject $userSession */
+		/** @var IUserSession&MockObject $userSession */
 		$userSession = $this->createMock(IUserSession::class);
 		$userSession
 			->expects($this->any())
 			->method('getUser')
 			->willReturn($this->user);
 
-		$this->service = new UserStoragesService($this->backendService, $this->dbConfig, $userSession, $this->mountCache, $this->eventDispatcher);
+		$this->service = new UserStoragesService($this->backendService, $this->dbConfig, $userSession, $this->mountCache, $this->eventDispatcher, $this->appConfig);
 	}
 
 	private function makeTestStorageData() {
@@ -127,9 +128,7 @@ class UserStoragesServiceTest extends StoragesServiceTest {
 		$this->assertEmpty(self::$hookCalls);
 	}
 
-	/**
-	 * @dataProvider deleteStorageDataProvider
-	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('deleteStorageDataProvider')]
 	public function testDeleteStorage($backendOptions, $rustyStorageId): void {
 		parent::testDeleteStorage($backendOptions, $rustyStorageId);
 

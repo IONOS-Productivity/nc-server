@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -8,6 +9,8 @@ namespace OCA\Files_Sharing\Tests;
 
 use OC\Files\View;
 use OCP\Constants;
+use OCP\ITempManager;
+use OCP\Server;
 use OCP\Share\IShare;
 use Test\Traits\UserTrait;
 
@@ -23,7 +26,7 @@ class SizePropagationTest extends TestCase {
 
 	protected function setupUser($name, $password = '') {
 		$this->createUser($name, $password);
-		$tmpFolder = \OC::$server->getTempManager()->getTemporaryFolder();
+		$tmpFolder = Server::get(ITempManager::class)->getTemporaryFolder();
 		$this->registerMount($name, '\OC\Files\Storage\Local', '/' . $name, ['datadir' => $tmpFolder]);
 		$this->loginAsUser($name);
 		return new View('/' . $name . '/files');

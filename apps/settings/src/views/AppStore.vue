@@ -6,7 +6,8 @@
 <template>
 	<!-- Apps list -->
 	<NcAppContent class="app-settings-content"
-		:page-heading="appStoreLabel">
+		:page-heading="pageHeading"
+		:page-title="pageTitle">
 		<h2 class="app-settings-content__label" v-text="viewLabel" />
 
 		<AppStoreDiscoverSection v-if="currentCategory === 'discover'" />
@@ -23,15 +24,15 @@
 
 <script setup lang="ts">
 import { translate as t } from '@nextcloud/l10n'
-import { computed, getCurrentInstance, onBeforeMount, onBeforeUnmount, watchEffect } from 'vue'
+import { computed, getCurrentInstance, onBeforeMount, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router/composables'
 
 import { useAppsStore } from '../store/apps-store'
 import { APPS_SECTION_ENUM } from '../constants/AppsConstants'
 
-import NcAppContent from '@nextcloud/vue/dist/Components/NcAppContent.js'
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcAppContent from '@nextcloud/vue/components/NcAppContent'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import AppList from '../components/AppList.vue'
 import AppStoreDiscoverSection from '../components/AppStoreDiscover/AppStoreDiscoverSection.vue'
 import { useAppApiStore } from '../store/app-api-store.ts'
@@ -45,12 +46,10 @@ const appApiStore = useAppApiStore()
  */
 const currentCategory = computed(() => route.params?.category ?? 'discover')
 
-const appStoreLabel = t('settings', 'App Store')
-const viewLabel = computed(() => APPS_SECTION_ENUM[currentCategory.value] ?? store.getCategoryById(currentCategory.value)?.displayName ?? appStoreLabel)
+const viewLabel = computed<string>(() => APPS_SECTION_ENUM[currentCategory.value] ?? store.getCategoryById(currentCategory.value)?.displayName)
 
-watchEffect(() => {
-	window.document.title = `${viewLabel.value} - ${appStoreLabel} - Nextcloud`
-})
+const pageHeading = t('settings', 'App Store')
+const pageTitle = computed(() => `${viewLabel.value} - ${pageHeading}`) // NcAppContent automatically appends the instance name
 
 // TODO this part should be migrated to pinia
 const instance = getCurrentInstance()

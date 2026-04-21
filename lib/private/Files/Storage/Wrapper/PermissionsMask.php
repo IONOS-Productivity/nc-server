@@ -8,6 +8,7 @@
 namespace OC\Files\Storage\Wrapper;
 
 use OC\Files\Cache\Wrapper\CachePermissionsMask;
+use OC\Files\Storage\Storage;
 use OCP\Constants;
 use OCP\Files\Storage\IStorage;
 
@@ -22,10 +23,10 @@ class PermissionsMask extends Wrapper {
 	/**
 	 * @var int the permissions bits we want to keep
 	 */
-	private $mask;
+	protected readonly int $mask;
 
 	/**
-	 * @param array $parameters ['storage' => $storage, 'mask' => $mask]
+	 * @param array{storage: Storage, mask: int, ...} $parameters
 	 *
 	 * $storage: The storage the permissions mask should be applied on
 	 * $mask: The permission bits that should be kept, a combination of the \OCP\Constant::PERMISSION_ constants
@@ -114,7 +115,7 @@ class PermissionsMask extends Wrapper {
 		$data = parent::getMetaData($path);
 
 		if ($data && isset($data['permissions'])) {
-			$data['scan_permissions'] = $data['scan_permissions'] ?? $data['permissions'];
+			$data['scan_permissions'] ??= $data['permissions'];
 			$data['permissions'] &= $this->mask;
 		}
 		return $data;
@@ -129,7 +130,7 @@ class PermissionsMask extends Wrapper {
 
 	public function getDirectoryContent(string $directory): \Traversable {
 		foreach ($this->getWrapperStorage()->getDirectoryContent($directory) as $data) {
-			$data['scan_permissions'] = $data['scan_permissions'] ?? $data['permissions'];
+			$data['scan_permissions'] ??= $data['permissions'];
 			$data['permissions'] &= $this->mask;
 
 			yield $data;

@@ -27,8 +27,6 @@ $expectedFiles = [
 	'.npmignore',
 	'.php-cs-fixer.dist.php',
 	'.pre-commit-config.yaml',
-	'.reuse',
-	'.scrutinizer.yml',
 	'.tag',
 	'.tx',
 	'.user.ini',
@@ -43,6 +41,7 @@ $expectedFiles = [
 	'DESIGN.md',
 	'Makefile',
 	'README.md',
+	'REUSE.toml',
 	'SECURITY.md',
 	'apps',
 	'autotest-checkers.sh',
@@ -72,6 +71,7 @@ $expectedFiles = [
 	'occ',
 	'ocs',
 	'ocs-provider',
+	'openapi.json',
 	'package-lock.json',
 	'package.json',
 	'psalm-ncu.xml',
@@ -92,6 +92,7 @@ $expectedFiles = [
 	'webpack.common.js',
 	'webpack.config.js',
 	'webpack.modules.js',
+	'window.d.ts',
 ];
 $actualFiles = [];
 

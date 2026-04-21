@@ -57,9 +57,9 @@
 </template>
 
 <script>
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
 
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import ClickOutside from 'vue-click-outside'
@@ -224,6 +224,6 @@ export default {
 	}
 
 	.invalid {
-		border-color: var(--color-error) !important;
+		border-color: var(--color-border-error) !important;
 	}
 </style>

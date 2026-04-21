@@ -16,6 +16,7 @@ use OCP\IRequest;
 use OCP\ISession;
 use OCP\IURLGenerator;
 use OCP\Security\Bruteforce\IThrottler;
+use OCP\Security\Bruteforce\MaxDelayReached;
 use OCP\Share\Exceptions\ShareNotFound;
 use OCP\Share\IManager;
 use OCP\Share\IShare;
@@ -55,6 +56,7 @@ class PublicAuth extends AbstractBasic {
 
 	/**
 	 * @throws NotAuthenticated
+	 * @throws MaxDelayReached
 	 * @throws ServiceUnavailable
 	 */
 	public function check(RequestInterface $request, ResponseInterface $response): array {
@@ -78,7 +80,17 @@ class PublicAuth extends AbstractBasic {
 			}
 
 			return $this->checkToken();
-		} catch (NotAuthenticated $e) {
+		} catch (NotAuthenticated|MaxDelayReached $e) {
+			$this->throttler->registerAttempt(self::BRUTEFORCE_ACTION, $this->request->getRemoteAddress());
+			throw $e;
+		} catch (PreconditionFailed $e) {
+			$response->setHeader(
+				'Location',
+				$this->urlGenerator->linkToRoute(
+					'files_sharing.share.showShare',
+					[ 'token' => $this->getToken() ],
+				),
+			);
 			throw $e;
 		} catch (PreconditionFailed $e) {
 			$response->setHeader(
@@ -105,7 +117,7 @@ class PublicAuth extends AbstractBasic {
 		$path = $this->request->getPathInfo() ?: '';
 		// ['', 'dav', 'files', 'token']
 		$splittedPath = explode('/', $path);
-		
+
 		if (count($splittedPath) < 4 || $splittedPath[3] === '') {
 			throw new NotFound();
 		}
@@ -134,8 +146,7 @@ class PublicAuth extends AbstractBasic {
 		\OC_User::setIncognitoMode(true);
 
 		// If already authenticated
-		if ($this->session->exists(self::DAV_AUTHENTICATED)
-			&& $this->session->get(self::DAV_AUTHENTICATED) === $share->getId()) {
+		if ($this->isShareInSession($share)) {
 			return [true, $this->principalPrefix . $token];
 		}
 
@@ -177,17 +188,17 @@ class PublicAuth extends AbstractBasic {
 			if ($share->getShareType() === IShare::TYPE_LINK
 				|| $share->getShareType() === IShare::TYPE_EMAIL
 				|| $share->getShareType() === IShare::TYPE_CIRCLE) {
+				// Validate password if provided
 				if ($this->shareManager->checkPassword($share, $password)) {
 					// If not set, set authenticated session cookie
-					if (!$this->session->exists(self::DAV_AUTHENTICATED)
-						|| $this->session->get(self::DAV_AUTHENTICATED) !== $share->getId()) {
-						$this->session->set(self::DAV_AUTHENTICATED, $share->getId());
+					if (!$this->isShareInSession($share)) {
+						$this->addShareToSession($share);
 					}
 					return true;
 				}
-				
-				if ($this->session->exists(PublicAuth::DAV_AUTHENTICATED)
-					&& $this->session->get(PublicAuth::DAV_AUTHENTICATED) === $share->getId()) {
+
+				// We are already authenticated for this share in the session
+				if ($this->isShareInSession($share)) {
 					return true;
 				}
 
@@ -220,5 +231,28 @@ class PublicAuth extends AbstractBasic {
 		}
 
 		return $this->share;
+	}
+
+	private function addShareToSession(IShare $share): void {
+		$allowedShareIds = $this->session->get(self::DAV_AUTHENTICATED) ?? [];
+		if (!is_array($allowedShareIds)) {
+			$allowedShareIds = [];
+		}
+
+		$allowedShareIds[] = $share->getId();
+		$this->session->set(self::DAV_AUTHENTICATED, $allowedShareIds);
+	}
+
+	private function isShareInSession(IShare $share): bool {
+		if (!$this->session->exists(self::DAV_AUTHENTICATED)) {
+			return false;
+		}
+
+		$allowedShareIds = $this->session->get(self::DAV_AUTHENTICATED);
+		if (!is_array($allowedShareIds)) {
+			return false;
+		}
+
+		return in_array($share->getId(), $allowedShareIds);
 	}
 }

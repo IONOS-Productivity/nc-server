@@ -7,7 +7,7 @@
 	<div class="guest-box login-box">
 		<template v-if="!hideLoginForm || directLogin">
 			<transition name="fade" mode="out-in">
-				<div v-if="!passwordlessLogin && !resetPassword && resetPasswordTarget === ''">
+				<div v-if="!passwordlessLogin && !resetPassword && resetPasswordTarget === ''" class="login-box__wrapper">
 					<LoginForm :username.sync="user"
 						:redirect-url="redirectUrl"
 						:direct-login="directLogin"
@@ -15,42 +15,33 @@
 						:errors="errors"
 						:throttle-delay="throttleDelay"
 						:auto-complete-allowed="autoCompleteAllowed"
+						:rememberme-allowed="remembermeAllowed"
 						:email-states="emailStates"
 						@submit="loading = true" />
-					<a v-if="canResetPassword && resetPasswordLink !== ''"
+					<NcButton v-if="hasPasswordless"
+						type="tertiary"
+						wide
+						@click.prevent="passwordlessLogin = true">
+						{{ t('core', 'Log in with a device') }}
+					</NcButton>
+					<NcButton v-if="canResetPassword && resetPasswordLink !== ''"
 						id="lost-password"
-						class="login-box__link"
-						:href="resetPasswordLink">
-						{{ t('core', 'Forgot password?') }}
-					</a>
-					<a v-else-if="canResetPassword && !resetPassword"
-						id="lost-password"
-						class="login-box__link"
 						:href="resetPasswordLink"
+						type="tertiary-no-background"
+						wide>
+						{{ t('core', 'Forgot password?') }}
+					</NcButton>
+					<NcButton v-else-if="canResetPassword && !resetPassword"
+						id="lost-password"
+						type="tertiary"
+						wide
 						@click.prevent="resetPassword = true">
 						{{ t('core', 'Forgot password?') }}
-					</a>
-					<template v-if="hasPasswordless">
-						<div v-if="countAlternativeLogins"
-							class="alternative-logins">
-							<a v-if="hasPasswordless"
-								class="button"
-								:class="{ 'single-alt-login-option': countAlternativeLogins }"
-								href="#"
-								@click.prevent="passwordlessLogin = true">
-								{{ t('core', 'Log in with a device') }}
-							</a>
-						</div>
-						<a v-else
-							href="#"
-							@click.prevent="passwordlessLogin = true">
-							{{ t('core', 'Log in with a device') }}
-						</a>
-					</template>
+					</NcButton>
 				</div>
 				<div v-else-if="!loading && passwordlessLogin"
 					key="reset-pw-less"
-					class="login-additional login-passwordless">
+					class="login-additional login-box__wrapper">
 					<PasswordLessLoginForm :username.sync="user"
 						:redirect-url="redirectUrl"
 						:auto-complete-allowed="autoCompleteAllowed"
@@ -89,7 +80,7 @@
 			</transition>
 		</template>
 
-		<div id="alternative-logins" class="alternative-logins">
+		<div id="alternative-logins" class="login-box__alternative-logins">
 			<NcButton v-for="(alternativeLogin, index) in alternativeLogins"
 				:key="index"
 				type="secondary"
@@ -105,14 +96,16 @@
 
 <script>
 import { loadState } from '@nextcloud/initial-state'
+import { generateUrl } from '@nextcloud/router'
+
 import queryString from 'query-string'
 
 import LoginForm from '../components/login/LoginForm.vue'
 import PasswordLessLoginForm from '../components/login/PasswordLessLoginForm.vue'
 import ResetPassword from '../components/login/ResetPassword.vue'
 import UpdatePassword from '../components/login/UpdatePassword.vue'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { wipeBrowserStorages } from '../utils/xhr-request.js'
 
 const query = queryString.parse(location.search)
@@ -147,6 +140,7 @@ export default {
 			canResetPassword: loadState('core', 'loginCanResetPassword', false),
 			resetPasswordLink: loadState('core', 'loginResetPasswordLink', ''),
 			autoCompleteAllowed: loadState('core', 'loginAutocomplete', true),
+			remembermeAllowed: loadState('core', 'loginCanRememberme', true),
 			resetPasswordTarget: loadState('core', 'resetPasswordTarget', ''),
 			resetPasswordUser: loadState('core', 'resetPasswordUser', ''),
 			directLogin: query.direct === '1',
@@ -162,29 +156,28 @@ export default {
 
 	methods: {
 		passwordResetFinished() {
-			this.resetPasswordTarget = ''
-			this.directLogin = true
+			window.location.href = generateUrl('login') + '?direct=1'
 		},
 	},
 }
 </script>
 
-<style lang="scss">
-body {
-	font-size: var(--default-font-size);
-}
-
+<style scoped lang="scss">
 .login-box {
 	// Same size as dashboard panels
 	width: 320px;
 	box-sizing: border-box;
 
-	&__link {
-		display: block;
-		padding: 1rem;
-		font-size: var(--default-font-size);
-		text-align: center;
-		font-weight: normal !important;
+	&__wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: calc(2 * var(--default-grid-baseline));
+	}
+
+	&__alternative-logins {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
 	}
 }
 
@@ -194,21 +187,5 @@ body {
 
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
 	opacity: 0;
-}
-
-.alternative-logins {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-
-	.button-vue {
-		box-sizing: border-box;
-	}
-}
-
-.login-passwordless {
-	.button-vue {
-		margin-top: 0.5rem;
-	}
 }
 </style>

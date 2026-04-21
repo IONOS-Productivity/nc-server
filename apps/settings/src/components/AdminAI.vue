@@ -6,16 +6,22 @@
 	<div class="ai-settings">
 		<NcSettingsSection :name="t('settings', 'Unified task processing')"
 			:description="t('settings', 'AI tasks can be implemented by different apps. Here you can set which app should be used for which task.')">
+			<NcCheckboxRadioSwitch v-model="settings['ai.taskprocessing_guests']"
+				type="switch"
+				@update:modelValue="saveChanges">
+				{{ t('settings', 'Allow AI usage for guest users') }}
+			</NcCheckboxRadioSwitch>
+			<h3>{{ t('settings', 'Provider for Task types') }}</h3>
 			<template v-for="type in taskProcessingTaskTypes">
-				<div :key="type">
-					<h3>{{ t('settings', 'Task:') }} {{ type.name }}</h3>
-					<p>{{ type.description }}</p>
+				<div :key="type" class="tasktype-item">
+					<p class="tasktype-name">
+						{{ type.name }}
+					</p>
 					<NcCheckboxRadioSwitch v-model="settings['ai.taskprocessing_type_preferences'][type.id]"
 						type="switch"
 						@update:modelValue="saveChanges">
 						{{ t('settings', 'Enable') }}
-					</NcCheckboxRadioSwitch>
-					<NcSelect v-model="settings['ai.taskprocessing_provider_preferences'][type.id]"
+					</NcCheckboxRadioSwitch><NcSelect v-model="settings['ai.taskprocessing_provider_preferences'][type.id]"
 						class="provider-select"
 						:clearable="false"
 						:disabled="!settings['ai.taskprocessing_type_preferences'][type.id]"
@@ -28,7 +34,6 @@
 							{{ taskProcessingProviders.find(p => p.id === label)?.name }}
 						</template>
 					</NcSelect>
-					<p>&nbsp;</p>
 				</div>
 			</template>
 			<template v-if="!hasTaskProcessing">
@@ -107,11 +112,11 @@
 
 <script>
 import axios from '@nextcloud/axios'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
-import NcSettingsSection from '@nextcloud/vue/dist/Components/NcSettingsSection.js'
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import NcSettingsSection from '@nextcloud/vue/components/NcSettingsSection'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import draggable from 'vuedraggable'
 import DragVerticalIcon from 'vue-material-design-icons/DragVertical.vue'
 import ArrowDownIcon from 'vue-material-design-icons/ArrowDown.vue'
@@ -238,5 +243,15 @@ export default {
 
 .provider-select {
 	min-width: 350px !important;
+}
+
+.tasktype-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .tasktype-name {
+    flex: 1;
+    margin: 0;
+  }
 }
 </style>

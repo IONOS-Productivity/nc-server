@@ -57,10 +57,8 @@
 <script>
 import { confirmPassword } from '@nextcloud/password-confirmation'
 import { print } from '../service/PrintService.js'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-
-import '@nextcloud/password-confirmation/dist/style.css'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 
 export default {
 	name: 'PersonalSettings',

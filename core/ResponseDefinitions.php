@@ -87,6 +87,7 @@ namespace OC\Core;
  *     name: string,
  *     icon: string,
  *     order: int,
+ *     isExternalProvider: bool,
  *     triggers: list<string>,
  *     filters: array<string, string>,
  *     inAppSearch: bool,
@@ -148,19 +149,28 @@ namespace OC\Core;
  *  }
  *
  * @psalm-type CoreTeam = array{
- *      id: string,
- *      name: string,
- *      icon: string,
+ *     teamId: string,
+ *     displayName: string,
+ *     link: ?string,
  * }
  *
  * @psalm-type CoreTeamResource = array{
- *       id: int,
- *       label: string,
- *       url: string,
- *       iconSvg: ?string,
- *       iconURL: ?string,
- *       iconEmoji: ?string,
- *   }
+ *     id: string,
+ *     label: string,
+ *     url: string,
+ *     iconSvg: ?string,
+ *     iconURL: ?string,
+ *     iconEmoji: ?string,
+ *     provider: array{
+ *         id: string,
+ *         name: string,
+ *         icon: string,
+ *     },
+ * }
+ *
+ * @psalm-type CoreTeamWithResources = CoreTeam&array{
+ *     resources: list<CoreTeamResource>,
+ * }
  *
  * @psalm-type CoreTaskProcessingShape = array{
  *     name: string,
@@ -200,6 +210,34 @@ namespace OC\Core;
  *     scheduledAt: ?int,
  *     startedAt: ?int,
  *     endedAt: ?int,
+ *     allowCleanup: bool,
+ * }
+ *
+ * @psalm-type CoreProfileAction = array{
+ *     id: string,
+ *     icon: string,
+ *     title: string,
+ *     target: ?string,
+ * }
+ *
+ * @psalm-type CoreProfileFields = array{
+ *     userId: string,
+ *     address?: string|null,
+ *     biography?: string|null,
+ *     displayname?: string|null,
+ *     headline?: string|null,
+ *     isUserAvatarVisible?: bool,
+ *     organisation?: string|null,
+ *     pronouns?: string|null,
+ *     role?: string|null,
+ *     actions: list<CoreProfileAction>,
+ * }
+ *
+ * @psalm-type CoreProfileData = CoreProfileFields&array{
+ *     // Timezone identifier like Europe/Berlin or America/North_Dakota/Beulah
+ *     timezone: string,
+ *     // Offset in seconds, negative when behind UTC, positive otherwise
+ *     timezoneOffset: int,
  * }
  *
  * @psalm-type CoreProfileAction = array{

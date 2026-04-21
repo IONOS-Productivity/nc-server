@@ -11,7 +11,6 @@ OC.L10N.register(
     "Confirm permanent deletion" : "영구 삭제 확인",
     "Are you sure you want to permanently delete all files and folders in the trash? This cannot be undone." : "휴지통 안의 모든 파일과 폴더를 영구적으로 삭제하시겠습니까? 되돌릴 수 없습니다.",
     "Cancel" : "취소",
-    "Deletion cancelled" : "삭제가 취소됨",
     "Original location" : "원래 위치",
     "Deleted by" : "삭제한 사용자: ",
     "Deleted" : "삭제됨",

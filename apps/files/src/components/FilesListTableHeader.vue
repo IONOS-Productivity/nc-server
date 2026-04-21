@@ -6,7 +6,10 @@
 	<tr class="files-list__row-head">
 		<th class="files-list__column files-list__row-checkbox"
 			@keyup.esc.exact="resetSelection">
-			<NcCheckboxRadioSwitch v-bind="selectAllBind" data-cy-files-list-selection-checkbox @update:checked="onToggleAll" />
+			<NcCheckboxRadioSwitch v-bind="selectAllBind"
+				:id="FILES_LIST_HEADER_SELECT_ALL_CHECKBOX_ID"
+				data-cy-files-list-selection-checkbox
+				@update:checked="onToggleAll" />
 		</th>
 
 		<!-- Columns display -->
@@ -22,7 +25,19 @@
 		</th>
 
 		<!-- Actions -->
-		<th class="files-list__row-actions" />
+		<th class="files-list__row-actions">
+			<span class="hidden-visually">
+				{{ t('files', 'Actions') }}
+			</span>
+		</th>
+
+		<!-- Mime -->
+		<th v-if="isMimeAvailable"
+			class="files-list__column files-list__row-mime"
+			:class="{ 'files-list__column--sortable': isMimeAvailable }"
+			:aria-sort="ariaSortForMode('mime')">
+			<FilesListTableHeaderButton :name="t('files', 'File type')" mode="mime" />
+		</th>
 
 		<!-- Size -->
 		<th v-if="isSizeAvailable"
@@ -58,17 +73,20 @@ import type { Node } from '@nextcloud/files'
 import type { PropType } from 'vue'
 import type { FileSource } from '../types.ts'
 
-import { defineComponent } from 'vue'
 import { translate as t } from '@nextcloud/l10n'
-import { useHotKey } from '@nextcloud/vue/dist/Composables/useHotKey.js'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import { useHotKey } from '@nextcloud/vue/composables/useHotKey'
+import { defineComponent } from 'vue'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 
+import { FILE_LIST_HEAD_FIRST_BATCH_ACTION_ID } from './FilesListTableHeaderActions.vue'
 import { useFilesStore } from '../store/files.ts'
 import { useNavigation } from '../composables/useNavigation'
 import { useSelectionStore } from '../store/selection.ts'
 import FilesListTableHeaderButton from './FilesListTableHeaderButton.vue'
 import filesSortingMixin from '../mixins/filesSorting.ts'
 import logger from '../logger.ts'
+
+export const FILES_LIST_HEADER_SELECT_ALL_CHECKBOX_ID = 'files-list-header-select-all-checkbox'
 
 export default defineComponent({
 	name: 'FilesListTableHeader',
@@ -83,6 +101,10 @@ export default defineComponent({
 	],
 
 	props: {
+		isMimeAvailable: {
+			type: Boolean,
+			default: false,
+		},
 		isMtimeAvailable: {
 			type: Boolean,
 			default: false,
@@ -111,6 +133,7 @@ export default defineComponent({
 			selectionStore,
 
 			currentView,
+			FILES_LIST_HEADER_SELECT_ALL_CHECKBOX_ID,
 		}
 	},
 
@@ -170,8 +193,13 @@ export default defineComponent({
 		})
 	},
 
+	mounted() {
+		const selectAllCheckbox = document.getElementById(FILES_LIST_HEADER_SELECT_ALL_CHECKBOX_ID)
+		selectAllCheckbox?.addEventListener('keydown', this.onSelectAllCheckboxFocusOut)
+	},
+
 	methods: {
-		ariaSortForMode(mode: string): ARIAMixin['ariaSort'] {
+		ariaSortForMode(mode: string): 'ascending'|'descending'|null {
 			if (this.sortingMode === mode) {
 				return this.isAscSorting ? 'ascending' : 'descending'
 			}
@@ -204,6 +232,18 @@ export default defineComponent({
 				return
 			}
 			this.selectionStore.reset()
+		},
+
+		onSelectAllCheckboxFocusOut(event: KeyboardEvent) {
+			// If the user tabbed further and we have a batch action to tab to
+			const firstBatchActionButton = document.getElementById(FILE_LIST_HEAD_FIRST_BATCH_ACTION_ID)
+			if (event.code === 'Tab' && !event.shiftKey && !event.metaKey && firstBatchActionButton) {
+				event.preventDefault()
+				event.stopPropagation()
+
+				firstBatchActionButton.focus()
+				logger.debug('Focusing first batch action button')
+			}
 		},
 
 		t,

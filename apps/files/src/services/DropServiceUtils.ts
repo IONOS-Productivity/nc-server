@@ -2,14 +2,16 @@
  * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
+
+import type { Folder, Node } from '@nextcloud/files'
 import type { FileStat, ResponseDataDetailed } from 'webdav'
 
+import { showWarning, showInfo } from '@nextcloud/dialogs'
 import { emit } from '@nextcloud/event-bus'
-import { Folder, Node, davGetClient, davGetDefaultPropfind, davResultToNode } from '@nextcloud/files'
+import { defaultRemoteURL, defaultRootPath, getClient, getDefaultPropfind, resultToNode } from '@nextcloud/files/dav'
+import { t } from '@nextcloud/l10n'
+import { join } from '@nextcloud/paths'
 import { openConflictPicker } from '@nextcloud/upload'
-import { showError, showInfo } from '@nextcloud/dialogs'
-import { translate as t } from '@nextcloud/l10n'
-
 import logger from '../logger.ts'
 
 /**
@@ -129,14 +131,22 @@ const readDirectory = (directory: FileSystemDirectoryEntry): Promise<FileSystemE
 	})
 }
 
-export const createDirectoryIfNotExists = async (absolutePath: string) => {
-	const davClient = davGetClient()
-	const dirExists = await davClient.exists(absolutePath)
+/**
+ * @param path - The path relative to the destination root
+ * @param destination - The destination folder. When provided, directories are created relative
+ *   to its source URL instead of the default user root. This is needed for uploads into
+ *   non-default locations like team folders.
+ */
+export async function createDirectoryIfNotExists(path: string, destination?: IFolder) {
+	const davUrl = destination?.source ?? join(defaultRemoteURL, defaultRootPath)
+	const davRoot = destination?.root ?? defaultRootPath
+	const davClient = getClient(davUrl)
+	const dirExists = await davClient.exists(path)
 	if (!dirExists) {
-		logger.debug('Directory does not exist, creating it', { absolutePath })
-		await davClient.createDirectory(absolutePath, { recursive: true })
-		const stat = await davClient.stat(absolutePath, { details: true, data: davGetDefaultPropfind() }) as ResponseDataDetailed<FileStat>
-		emit('files:node:created', davResultToNode(stat.data))
+		logger.debug('Directory does not exist, creating it', { path, davUrl })
+		await davClient.createDirectory(path, { recursive: true })
+		const stat = await davClient.stat(path, { details: true, data: getDefaultPropfind() }) as ResponseDataDetailed<FileStat>
+		emit('files:node:created', resultToNode(stat.data, davRoot, davUrl))
 	}
 }
 
@@ -158,7 +168,7 @@ export const resolveConflict = async <T extends ((Directory|File)|Node)>(files: 
 		logger.debug('Conflict resolution', { uploads, selected, renamed })
 
 		// If the user selected nothing, we cancel the upload
-		if (selected.length === 0 && renamed.length === 0) {
+		if (selected.length === 0 && renamed.length === 0 && uploads.length === 0) {
 			// User skipped
 			showInfo(t('files', 'Conflicts resolution skipped'))
 			logger.info('User skipped the conflict resolution')
@@ -168,10 +178,9 @@ export const resolveConflict = async <T extends ((Directory|File)|Node)>(files: 
 		// Update the list of files to upload
 		return [...uploads, ...selected, ...renamed] as (typeof files)
 	} catch (error) {
-		console.error(error)
 		// User cancelled
-		showError(t('files', 'Upload cancelled'))
-		logger.error('User cancelled the upload')
+		logger.warn('User cancelled the upload', { error })
+		showWarning(t('files', 'Upload cancelled'))
 	}
 
 	return []

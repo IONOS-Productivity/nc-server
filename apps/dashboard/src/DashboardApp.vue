@@ -100,7 +100,7 @@
 				<div v-if="statuses.weather && isStatusActive('weather')">
 					<h2>{{ t('dashboard', 'Weather service') }}</h2>
 					<p>
-						{{ t('dashboard', 'For your privacy, the weather data is requested by your Nextcloud server on your behalf so the weather service receives no personal information.') }}
+						{{ t('dashboard', 'For your privacy, the weather data is requested by your {productName} server on your behalf so the weather service receives no personal information.', { productName }) }}
 					</p>
 					<p class="credits--end">
 						<a href="https://api.met.no/doc/TermsOfService" target="_blank" rel="noopener">{{ t('dashboard', 'Weather data from Met.no') }}</a>,
@@ -118,10 +118,10 @@ import { generateUrl, generateOcsUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
 import { loadState } from '@nextcloud/initial-state'
 import axios from '@nextcloud/axios'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import Draggable from 'vuedraggable'
-import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
-import NcUserStatusIcon from '@nextcloud/vue/dist/Components/NcUserStatusIcon.js'
+import NcModal from '@nextcloud/vue/components/NcModal'
+import NcUserStatusIcon from '@nextcloud/vue/components/NcUserStatusIcon'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Vue from 'vue'
 
@@ -155,6 +155,12 @@ export default {
 	mixins: [
 		isMobile,
 	],
+
+	setup() {
+		return {
+			productName: window.OC.theme.productName,
+		}
+	},
 
 	data() {
 		return {

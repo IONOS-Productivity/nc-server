@@ -6,7 +6,6 @@ import type { User } from '@nextcloud/cypress'
 import { createShare } from './FilesSharingUtils.ts'
 import {
 	getRowForFile,
-	moveFile,
 	copyFile,
 	navigateToFolder,
 	triggerActionForFile,
@@ -41,7 +40,10 @@ export const moveFileForbidden = (fileName: string, dirPath: string) => {
 		cy.intercept('MOVE', /\/(remote|public)\.php\/dav\/files\//).as('moveFile')
 
 		// select home folder
-		cy.get('button[title="Home"]').should('be.visible').click()
+		cy.get('.breadcrumb')
+			.findByRole('button', { name: 'All files' })
+			.should('be.visible')
+			.click()
 
 		const directories = dirPath.split('/')
 		directories.forEach((directory) => {
@@ -66,7 +68,6 @@ describe('files_sharing: Move or copy files', { testIsolation: true }, () => {
 			sharee = $user
 		})
 	})
-
 
 	it('can create a file in a shared folder', () => {
 		// share the folder

@@ -89,65 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
 			.then(() => {
 				OC.msg.finishedSuccess('#sendtestmail_msg', t('settings', 'Email sent'))
 			}).catch((error) => {
-				OC.msg.finishedError('#sendtestmail_msg', error)
+				OC.msg.finishedError('#sendtestmail_msg', error.response.data)
 			})
 	})
-
-	const setupChecks = () => {
-		// run setup checks then gather error messages
-		$.when(
-			OC.SetupChecks.checkSetup(),
-		).then((messages) => {
-			const $el = $('#postsetupchecks')
-			$('#security-warning-state-loading').addClass('hidden')
-
-			const $errorsEl = $el.find('.errors')
-			const $warningsEl = $el.find('.warnings')
-			const $infoEl = $el.find('.info')
-
-			for (let i = 0; i < messages.length; i++) {
-				switch (messages[i].type) {
-				case OC.SetupChecks.MESSAGE_TYPE_INFO:
-					$infoEl.append('<li>' + messages[i].msg + '</li>')
-					break
-				case OC.SetupChecks.MESSAGE_TYPE_WARNING:
-					$warningsEl.append('<li>' + messages[i].msg + '</li>')
-					break
-				case OC.SetupChecks.MESSAGE_TYPE_ERROR:
-				default:
-					$errorsEl.append('<li>' + messages[i].msg + '</li>')
-				}
-			}
-
-			let hasErrors = false
-			let hasWarnings = false
-
-			if ($errorsEl.find('li').length > 0) {
-				$errorsEl.removeClass('hidden')
-				hasErrors = true
-			}
-			if ($warningsEl.find('li').length > 0) {
-				$warningsEl.removeClass('hidden')
-				hasWarnings = true
-			}
-			if ($infoEl.find('li').length > 0) {
-				$infoEl.removeClass('hidden')
-			}
-
-			if (hasErrors || hasWarnings) {
-				$('#postsetupchecks-hint').removeClass('hidden')
-				if (hasErrors) {
-					$('#security-warning-state-failure').removeClass('hidden')
-				} else {
-					$('#security-warning-state-warning').removeClass('hidden')
-				}
-			} else {
-				$('#security-warning-state-ok').removeClass('hidden')
-			}
-		})
-	}
-
-	if (document.getElementById('security-warning') !== null) {
-		setupChecks()
-	}
 })

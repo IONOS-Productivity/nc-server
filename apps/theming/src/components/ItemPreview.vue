@@ -29,7 +29,7 @@
 
 <script>
 import { generateFilePath } from '@nextcloud/router'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 
 export default {
 	name: 'ItemPreview',
@@ -157,7 +157,8 @@ export default {
 	}
 
 	&-warning {
-		color: var(--color-warning);
+		background-color: var(--color-warning);
+		color: var(--color-warning-text);
 	}
 }
 

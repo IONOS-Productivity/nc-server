@@ -11,6 +11,8 @@ namespace OC\Security\IdentityProof;
 use OC\Files\AppData\Factory;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
+use OCP\ICache;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\Security\ICrypto;
@@ -19,13 +21,17 @@ use Psr\Log\LoggerInterface;
 class Manager {
 	private IAppData $appData;
 
+	protected ICache $cache;
+
 	public function __construct(
 		Factory $appDataFactory,
 		private ICrypto $crypto,
 		private IConfig $config,
 		private LoggerInterface $logger,
+		private ICacheFactory $cacheFactory,
 	) {
 		$this->appData = $appDataFactory->get('identityproof');
+		$this->cache = $this->cacheFactory->createDistributed('identityproof::');
 	}
 
 	/**
@@ -96,12 +102,24 @@ class Manager {
 	 */
 	protected function retrieveKey(string $id): Key {
 		try {
+			$cachedPublicKey = $this->cache->get($id . '-public');
+			$cachedPrivateKey = $this->cache->get($id . '-private');
+
+			if ($cachedPublicKey !== null && $cachedPrivateKey !== null) {
+				$decryptedPrivateKey = $this->crypto->decrypt($cachedPrivateKey);
+
+				return new Key($cachedPublicKey, $decryptedPrivateKey);
+			}
+
 			$folder = $this->appData->getFolder($id);
-			$privateKey = $this->crypto->decrypt(
-				$folder->getFile('private')->getContent()
-			);
+			$privateKey = $folder->getFile('private')->getContent();
 			$publicKey = $folder->getFile('public')->getContent();
-			return new Key($publicKey, $privateKey);
+
+			$this->cache->set($id . '-public', $publicKey);
+			$this->cache->set($id . '-private', $privateKey);
+
+			$decryptedPrivateKey = $this->crypto->decrypt($privateKey);
+			return new Key($publicKey, $decryptedPrivateKey);
 		} catch (\Exception $e) {
 			return $this->generateKey($id);
 		}
@@ -115,6 +133,18 @@ class Manager {
 	public function getKey(IUser $user): Key {
 		$uid = $user->getUID();
 		return $this->retrieveKey('user-' . $uid);
+	}
+
+	/**
+	 * Set public key for $user
+	 */
+	public function setPublicKey(IUser $user, string $publicKey): void {
+		$id = 'user-' . $user->getUID();
+
+		$folder = $this->appData->getFolder($id);
+		$folder->newFile('public', $publicKey);
+
+		$this->cache->set($id . '-public', $publicKey);
 	}
 
 	/**

@@ -19,7 +19,7 @@
 				<NcLoadingIcon v-if="isInitialLoad && loading.users"
 					:name="t('settings', 'Loading accounts …')"
 					:size="64" />
-				<NcIconSvgWrapper v-else :path="mdiAccountGroup" :size="64" />
+				<NcIconSvgWrapper v-else :path="mdiAccountGroupOutline" :size="64" />
 			</template>
 		</NcEmptyContent>
 
@@ -58,15 +58,15 @@
 </template>
 
 <script>
-import { mdiAccountGroup } from '@mdi/js'
+import { mdiAccountGroupOutline } from '@mdi/js'
 import { showError } from '@nextcloud/dialogs'
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
 import { Fragment } from 'vue-frag'
 
 import Vue from 'vue'
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 
 import VirtualList from './Users/VirtualList.vue'
 import NewUserDialog from './Users/NewUserDialog.vue'
@@ -120,7 +120,7 @@ export default {
 	setup() {
 		// non reactive properties
 		return {
-			mdiAccountGroup,
+			mdiAccountGroupOutline,
 			rowHeight: 55,
 
 			UserRow,

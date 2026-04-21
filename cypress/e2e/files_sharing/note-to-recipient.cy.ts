@@ -4,7 +4,7 @@
  */
 import type { User } from '@nextcloud/cypress'
 import { createShare, openSharingPanel } from './FilesSharingUtils.ts'
-import { getRowForFile, navigateToFolder } from '../files/FilesUtils.ts'
+import { navigateToFolder } from '../files/FilesUtils.ts'
 
 describe('files_sharing: Note to recipient', { testIsolation: true }, () => {
 	let user: User
@@ -72,7 +72,7 @@ describe('files_sharing: Note to recipient', { testIsolation: true }, () => {
 		createShare('folder', sharee.userId, { read: true, download: true, note: 'Hello, this is the note.' })
 
 		// reload just to be sure
-		cy.reload()
+		cy.visit('/apps/files')
 
 		// open the sharing tab
 		openSharingPanel('folder')

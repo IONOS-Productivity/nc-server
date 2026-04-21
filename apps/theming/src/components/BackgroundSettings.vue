@@ -83,11 +83,11 @@ import { getFilePickerBuilder, showError } from '@nextcloud/dialogs'
 import { loadState } from '@nextcloud/initial-state'
 import axios from '@nextcloud/axios'
 import debounce from 'debounce'
-import NcColorPicker from '@nextcloud/vue/dist/Components/NcColorPicker.js'
+import NcColorPicker from '@nextcloud/vue/components/NcColorPicker'
 
 import Check from 'vue-material-design-icons/Check.vue'
 import ImageEdit from 'vue-material-design-icons/ImageEdit.vue'
-import ColorPalette from 'vue-material-design-icons/Palette.vue'
+import ColorPalette from 'vue-material-design-icons/PaletteOutline.vue'
 
 const shippedBackgroundList = loadState('theming', 'shippedBackgrounds')
 const backgroundImage = loadState('theming', 'userBackgroundImage')

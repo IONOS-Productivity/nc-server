@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import Plus from 'vue-material-design-icons/Plus.vue'
 
 import FederationControl from './FederationControl.vue'
@@ -116,14 +116,14 @@ export default {
 
 <style lang="scss" scoped>
 	.headerbar-label {
-		font-weight: normal;
-		display: inline-flex;
-		width: 100%;
-		margin: 12px 0 0 0;
-		gap: 8px;
 		align-items: center;
+		color: var(--color-main-text);
+		display: inline-flex;
 		font-size: 16px;
-		color: var(--color-text-light);
+		font-weight: normal;
+		gap: 8px;
+		margin: 12px 0 0 0;
+		width: 100%;
 
 		&.profile-property {
 			height: 38px;

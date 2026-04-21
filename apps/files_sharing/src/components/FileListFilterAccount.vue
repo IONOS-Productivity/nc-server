@@ -8,7 +8,7 @@
 		:filter-name="t('files_sharing', 'People')"
 		@reset-filter="resetFilter">
 		<template #icon>
-			<NcIconSvgWrapper :path="mdiAccountMultiple" />
+			<NcIconSvgWrapper :path="mdiAccountMultipleOutline" />
 		</template>
 		<NcActionInput v-if="availableAccounts.length > 1"
 			:label="t('files_sharing', 'Filter accounts')"
@@ -39,14 +39,14 @@
 import type { IAccountData } from '../files_filters/AccountFilter.ts'
 
 import { translate as t } from '@nextcloud/l10n'
-import { mdiAccountMultiple } from '@mdi/js'
+import { mdiAccountMultipleOutline } from '@mdi/js'
 import { computed, ref, watch } from 'vue'
 
 import FileListFilter from '../../../files/src/components/FileListFilter/FileListFilter.vue'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcActionInput from '@nextcloud/vue/dist/Components/NcActionInput.js'
-import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
-import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActionInput from '@nextcloud/vue/components/NcActionInput'
+import NcAvatar from '@nextcloud/vue/components/NcAvatar'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 
 interface IUserSelectData {
 	id: string

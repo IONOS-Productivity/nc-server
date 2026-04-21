@@ -126,7 +126,7 @@ class Storage {
 	}
 
 	/**
-	 * @return array [ available, last_checked ]
+	 * @return array{available: bool, last_checked: int}
 	 */
 	public function getAvailability() {
 		if ($row = self::getStorageById($this->storageId)) {
@@ -213,6 +213,7 @@ class Storage {
 			$query = $db->getQueryBuilder();
 			$query->delete('filecache')
 				->where($query->expr()->in('storage', $query->createNamedParameter($storageIds, IQueryBuilder::PARAM_INT_ARRAY)));
+			$query->runAcrossAllShards();
 			$query->executeStatement();
 
 			$query = $db->getQueryBuilder();

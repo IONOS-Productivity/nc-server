@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -17,7 +18,9 @@ use OCP\App\IAppManager;
 use OCP\AppFramework\Http\ContentSecurityPolicy;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
+use OCP\AppFramework\Services\IAppConfig;
 use OCP\AppFramework\Services\IInitialState;
+use OCP\Authentication\TwoFactorAuth\IRegistry;
 use OCP\Diagnostics\IEventLogger;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\File;
@@ -46,6 +49,7 @@ use Test\TestCase;
 class ViewControllerTest extends TestCase {
 	private ContainerInterface&MockObject $container;
 	private IAppManager&MockObject $appManager;
+	private IAppConfig&MockObject $appConfig;
 	private ICacheFactory&MockObject $cacheFactory;
 	private IConfig&MockObject $config;
 	private IEventDispatcher $eventDispatcher;
@@ -62,12 +66,14 @@ class ViewControllerTest extends TestCase {
 	private UserConfig&MockObject $userConfig;
 	private ViewConfig&MockObject $viewConfig;
 	private Router $router;
+	private IRegistry&MockObject $twoFactorRegistry;
 
 	private ViewController&MockObject $viewController;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->appManager = $this->createMock(IAppManager::class);
+		$this->appConfig = $this->createMock(IAppConfig::class);
 		$this->config = $this->createMock(IConfig::class);
 		$this->eventDispatcher = $this->createMock(IEventDispatcher::class);
 		$this->initialState = $this->createMock(IInitialState::class);
@@ -78,6 +84,7 @@ class ViewControllerTest extends TestCase {
 		$this->userConfig = $this->createMock(UserConfig::class);
 		$this->userSession = $this->createMock(IUserSession::class);
 		$this->viewConfig = $this->createMock(ViewConfig::class);
+		$this->twoFactorRegistry = $this->createMock(IRegistry::class);
 
 		$this->user = $this->getMockBuilder(IUser::class)->getMock();
 		$this->user->expects($this->any())
@@ -94,6 +101,9 @@ class ViewControllerTest extends TestCase {
 		$this->appManager->expects($this->any())
 			->method('getAppPath')
 			->willReturnCallback(fn (string $appid): string => \OC::$SERVERROOT . '/apps/' . $appid);
+		$this->appManager->expects($this->any())
+			->method('isAppLoaded')
+			->willReturn(true);
 
 		$this->cacheFactory = $this->createMock(ICacheFactory::class);
 		$this->logger = $this->createMock(LoggerInterface::class);
@@ -134,6 +144,8 @@ class ViewControllerTest extends TestCase {
 				$this->userConfig,
 				$this->viewConfig,
 				$filenameValidator,
+				$this->twoFactorRegistry,
+				$this->appConfig,
 			])
 			->onlyMethods([
 				'getStorageInfo',
@@ -189,7 +201,7 @@ class ViewControllerTest extends TestCase {
 		$this->assertEquals($expected, $this->viewController->index('MyDir', 'MyView'));
 	}
 
-	public function dataTestShortRedirect(): array {
+	public static function dataTestShortRedirect(): array {
 		// openfile is true by default
 		// opendetails is undefined by default
 		// both will be evaluated as truthy
@@ -206,10 +218,8 @@ class ViewControllerTest extends TestCase {
 		];
 	}
 
-	/**
-	 * @dataProvider dataTestShortRedirect
-	 */
-	public function testShortRedirect($openfile, $opendetails, $result) {
+	#[\PHPUnit\Framework\Attributes\DataProvider('dataTestShortRedirect')]
+	public function testShortRedirect(?string $openfile, ?string $opendetails, string $result): void {
 		$this->appManager->expects($this->any())
 			->method('isEnabledForUser')
 			->with('files')
@@ -236,7 +246,7 @@ class ViewControllerTest extends TestCase {
 			->with(123456)
 			->willReturn($node);
 
-		$response = $this->viewController->showFile(123456, $opendetails, $openfile);
+		$response = $this->viewController->showFile('123456', $opendetails, $openfile);
 		$this->assertStringContainsString($result, $response->getHeaders()['Location']);
 	}
 
@@ -245,13 +255,13 @@ class ViewControllerTest extends TestCase {
 			->method('isEnabledForUser')
 			->willReturn(true);
 
-		$parentNode = $this->getMockBuilder(Folder::class)->getMock();
+		$parentNode = $this->createMock(Folder::class);
 		$parentNode->expects($this->once())
 			->method('getPath')
 			->willReturn('testuser1/files_trashbin/files/test.d1462861890/sub');
 
-		$baseFolderFiles = $this->getMockBuilder(Folder::class)->getMock();
-		$baseFolderTrash = $this->getMockBuilder(Folder::class)->getMock();
+		$baseFolderFiles = $this->createMock(Folder::class);
+		$baseFolderTrash = $this->createMock(Folder::class);
 
 		$this->rootFolder->expects($this->any())
 			->method('getUserFolder')
@@ -267,7 +277,7 @@ class ViewControllerTest extends TestCase {
 			->with(123)
 			->willReturn(null);
 
-		$node = $this->getMockBuilder(File::class)->getMock();
+		$node = $this->createMock(File::class);
 		$node->expects($this->once())
 			->method('getParent')
 			->willReturn($parentNode);
@@ -283,5 +293,25 @@ class ViewControllerTest extends TestCase {
 
 		$expected = new RedirectResponse('/index.php/apps/files/trashbin/123?dir=/test.d1462861890/sub');
 		$this->assertEquals($expected, $this->viewController->index('', '', '123'));
+	}
+
+	public function testTwoFactorAuthEnabled(): void {
+		$this->twoFactorRegistry->method('getProviderStates')
+			->willReturn([
+				'totp' => true,
+				'backup_codes' => true,
+			]);
+
+		$invokedCountProvideInitialState = $this->exactly(13);
+		$this->initialState->expects($invokedCountProvideInitialState)
+			->method('provideInitialState')
+			->willReturnCallback(function ($key, $data) use ($invokedCountProvideInitialState): void {
+				if ($invokedCountProvideInitialState->numberOfInvocations() === 13) {
+					$this->assertEquals('isTwoFactorEnabled', $key);
+					$this->assertTrue($data);
+				}
+			});
+
+		$this->viewController->index('', '', null);
 	}
 }

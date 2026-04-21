@@ -17,6 +17,7 @@
     "Apps" : "Appar",
     "Settings" : "Instillingar",
     "Log out" : "Logg ut",
+    "Accounts" : "Accounts",
     "Email" : "Epost",
     "Phone" : "Telefonnummer",
     "Address" : "Adresse",
@@ -71,7 +72,8 @@
     "Dec." : "Des.",
     "A valid password must be provided" : "Du må oppgje eit gyldig passord",
     "Login canceled by app" : "Innlogging avbroten av app",
-    "Authentication error" : "Feil i autentisering",
-    "Summary" : "Oppsumering"
+    "Images" : "Bilete",
+    "Summary" : "Oppsumering",
+    "Authentication error" : "Feil i autentisering"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

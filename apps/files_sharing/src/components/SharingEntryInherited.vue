@@ -29,17 +29,15 @@
 </template>
 
 <script>
-import { generateUrl } from '@nextcloud/router'
 import { basename } from '@nextcloud/paths'
-import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcActionLink from '@nextcloud/vue/dist/Components/NcActionLink.js'
-import NcActionText from '@nextcloud/vue/dist/Components/NcActionText.js'
-
-// eslint-disable-next-line no-unused-vars
+import NcAvatar from '@nextcloud/vue/components/NcAvatar'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActionLink from '@nextcloud/vue/components/NcActionLink'
+import NcActionText from '@nextcloud/vue/components/NcActionText'
 import Share from '../models/Share.js'
 import SharesMixin from '../mixins/SharesMixin.js'
 import SharingEntrySimple from '../components/SharingEntrySimple.vue'
+import { generateFileUrl } from '../utils/generateUrl.js'
 
 export default {
 	name: 'SharingEntryInherited',
@@ -63,9 +61,7 @@ export default {
 
 	computed: {
 		viaFileTargetUrl() {
-			return generateUrl('/f/{fileid}', {
-				fileid: this.share.viaFileid,
-			})
+			return generateFileUrl(this.share.viaFileid)
 		},
 
 		viaFolderName() {

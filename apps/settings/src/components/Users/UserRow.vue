@@ -289,11 +289,11 @@ import { getCurrentUser } from '@nextcloud/auth'
 import { showSuccess, showError } from '@nextcloud/dialogs'
 import { confirmPassword } from '@nextcloud/password-confirmation'
 
-import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js'
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
+import NcAvatar from '@nextcloud/vue/components/NcAvatar'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
 
 import UserRowActions from './UserRowActions.vue'
 
@@ -301,6 +301,8 @@ import UserRowMixin from '../../mixins/UserRowMixin.js'
 import { isObfuscated, unlimitedQuota } from '../../utils/userUtils.ts'
 import { searchGroups, loadUserGroups, loadUserSubAdminGroups } from '../../service/groups.ts'
 import logger from '../../logger.ts'
+
+const productName = window.OC.theme.productName
 
 export default {
 	name: 'UserRow',
@@ -425,13 +427,21 @@ export default {
 
 		userGroupsLabels() {
 			return this.userGroups
-				.map(group => group.name ?? group.id)
+				.map(group => {
+					// Try to match with more extensive group data
+					const availableGroup = this.availableGroups.find(g => g.id === group.id)
+					return availableGroup?.name ?? group.name ?? group.id
+				})
 				.join(', ')
 		},
 
 		userSubAdminGroupsLabels() {
 			return this.userSubAdminGroups
-				.map(group => group.name ?? group.id)
+				.map(group => {
+					// Try to match with more extensive group data
+					const availableGroup = this.availableSubAdminGroups.find(g => g.id === group.id)
+					return availableGroup?.name ?? group.name ?? group.id
+				})
 				.join(', ')
 		},
 
@@ -526,7 +536,10 @@ export default {
 			const userid = this.user.id
 			await confirmPassword()
 			OC.dialogs.confirmDestructive(
-				t('settings', 'In case of lost device or exiting the organization, this can remotely wipe the Nextcloud data from all devices associated with {userid}. Only works if the devices are connected to the internet.', { userid }),
+				t('settings',
+					'In case of lost device or exiting the organization, this can remotely wipe the {productName} data from all devices associated with {userid}. Only works if the devices are connected to the internet.',
+					{ userid, productName },
+				),
 				t('settings', 'Remote wipe of devices'),
 				{
 					type: OC.dialogs.YES_NO_BUTTONS,
@@ -575,7 +588,6 @@ export default {
 				for (const group of groups) {
 					this.$store.commit('addGroup', group)
 				}
-				this.selectedGroups = this.selectedGroups.map(selectedGroup => groups.find(group => group.id === selectedGroup.id) ?? selectedGroup)
 			} catch (error) {
 				logger.error(t('settings', 'Failed to load groups with details'), { error })
 			}
@@ -592,9 +604,8 @@ export default {
 				for (const group of groups) {
 					this.$store.commit('addGroup', group)
 				}
-				this.selectedSubAdminGroups = this.selectedSubAdminGroups.map(selectedGroup => groups.find(group => group.id === selectedGroup.id) ?? selectedGroup)
 			} catch (error) {
-				logger.error(t('settings', 'Failed to load subadmin groups with details'), { error })
+				logger.error(t('settings', 'Failed to load sub admin groups with details'), { error })
 			}
 			this.loading.subadmins = false
 			this.loading.subAdminGroupsDetails = false
@@ -856,7 +867,6 @@ export default {
 					userid,
 					gid,
 				})
-				this.userSubAdminGroups.push(group)
 			} catch (error) {
 				console.error(error)
 			}

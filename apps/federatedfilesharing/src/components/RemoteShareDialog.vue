@@ -5,8 +5,8 @@
 <script setup lang="ts">
 import { t } from '@nextcloud/l10n'
 import { computed, ref } from 'vue'
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
-import NcPasswordField from '@nextcloud/vue/dist/Components/NcPasswordField.js'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
+import NcPasswordField from '@nextcloud/vue/components/NcPasswordField'
 
 const props = defineProps<{
 	/** Name of the share */
@@ -35,8 +35,8 @@ const buttons = computed(() => [
 	},
 	{
 		label: t('federatedfilesharing', 'Add remote share'),
-		nativeType: props.passwordRequired ? 'submit' : undefined,
-		type: 'primary',
+		type: props.passwordRequired ? 'submit' : undefined,
+		variant: 'primary',
 		callback: () => emit('close', true, password.value),
 	},
 ])

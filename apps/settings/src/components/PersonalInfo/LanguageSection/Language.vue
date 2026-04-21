@@ -15,7 +15,7 @@
 			:value="language"
 			@option:selected="onLanguageChange" />
 
-		<a href="https://www.transifex.com/nextcloud/nextcloud/"
+		<a href="https://explore.transifex.com/nextcloud/"
 			target="_blank"
 			rel="noreferrer noopener">
 			<em>{{ t('settings', 'Help translate') }}</em>
@@ -29,7 +29,7 @@ import { savePrimaryAccountProperty } from '../../../service/PersonalInfo/Person
 import { validateLanguage } from '../../../utils/validate.js'
 import { handleError } from '../../../utils/handlers.ts'
 
-import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
 
 export default {
 	name: 'Language',

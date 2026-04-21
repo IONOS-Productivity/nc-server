@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016-2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-FileCopyrightText: 2016 ownCloud, Inc.
@@ -20,6 +21,7 @@ use OCP\Files\FileInfo;
 use OCP\Files\IMimeTypeDetector;
 use OCP\ICache;
 use OCP\ICacheFactory;
+use OCP\ITempManager;
 use OCP\Server;
 use Psr\Log\LoggerInterface;
 
@@ -29,26 +31,21 @@ class AmazonS3 extends Common {
 
 	private LoggerInterface $logger;
 
-	public function needsPartFile(): bool {
-		return false;
-	}
-
 	/** @var CappedMemoryCache<array|false> */
 	private CappedMemoryCache $objectCache;
-
 	/** @var CappedMemoryCache<bool> */
 	private CappedMemoryCache $directoryCache;
-
 	/** @var CappedMemoryCache<array> */
 	private CappedMemoryCache $filesCache;
 
 	private IMimeTypeDetector $mimeDetector;
-	private ?bool $versioningEnabled = null;
 	private ICache $memCache;
+	private ?bool $versioningEnabled = null;
 
 	public function __construct(array $parameters) {
 		parent::__construct($parameters);
 		$this->parseParams($parameters);
+		// @todo: using `key` here may be problematic with different authentication methods and/or key rotation...
 		$this->id = 'amazon::external::' . md5($this->params['hostname'] . ':' . $this->params['bucket'] . ':' . $this->params['key']);
 		$this->objectCache = new CappedMemoryCache();
 		$this->directoryCache = new CappedMemoryCache();
@@ -63,7 +60,7 @@ class AmazonS3 extends Common {
 	private function normalizePath(string $path): string {
 		$path = trim($path, '/');
 
-		if (!$path) {
+		if ($path === '') {
 			$path = '.';
 		}
 
@@ -261,13 +258,16 @@ class AmazonS3 extends Common {
 			// to delete all objects prefixed with the path.
 			do {
 				// instead of the iterator, manually loop over the list ...
-				$objects = $connection->listObjects($params);
+				$objects = $connection->listObjectsV2($params);
 				// ... so we can delete the files in batches
 				if (isset($objects['Contents'])) {
 					$connection->deleteObjects([
 						'Bucket' => $this->bucket,
 						'Delete' => [
-							'Objects' => $objects['Contents']
+							'Quiet' => true,
+							'Objects' => array_map(fn (array $object) => [
+								'Key' => $object['Key'],
+							], $objects['Contents'])
 						]
 					]);
 					$this->testTimeout();
@@ -451,7 +451,7 @@ class AmazonS3 extends Common {
 				}
 			case 'w':
 			case 'wb':
-				$tmpFile = \OC::$server->getTempManager()->getTemporaryFile();
+				$tmpFile = Server::get(ITempManager::class)->getTemporaryFile();
 
 				$handle = fopen($tmpFile, 'w');
 				return CallbackWrapper::wrap($handle, null, null, function () use ($path, $tmpFile): void {
@@ -472,7 +472,7 @@ class AmazonS3 extends Common {
 				} else {
 					$ext = '';
 				}
-				$tmpFile = \OC::$server->getTempManager()->getTemporaryFile($ext);
+				$tmpFile = Server::get(ITempManager::class)->getTemporaryFile($ext);
 				if ($this->file_exists($path)) {
 					$source = $this->readObject($path);
 					file_put_contents($tmpFile, $source);
@@ -734,6 +734,11 @@ class AmazonS3 extends Common {
 			// and have the scanner figure out if anything has actually changed
 			return true;
 		}
+	}
+
+	public function needsPartFile(): bool {
+		// handled natively by the S3 backend/client integration
+		return false;
 	}
 
 	public function writeStream(string $path, $stream, ?int $size = null): int {
