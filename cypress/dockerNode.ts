@@ -94,9 +94,6 @@ export const startNextcloud = async function(branch: string = getCurrentGitBranc
 						HostPort: '8083',
 					}],
 				},
-				// If running the setup tests, let's bind to host
-				// to communicate with the github actions DB services
-				NetworkMode: process.env.SETUP_TESTING === 'true' ? await getGithubNetwork() : undefined,
 			},
 			Env: [
 				`BRANCH=${branch}`,
@@ -253,7 +250,6 @@ export const getContainerIP = async function(
 			if (err) {
 				throw err
 			}
-
 			if (data?.HostConfig.PortBindings?.['80/tcp']?.[0]?.HostPort) {
 				ip = `localhost:${data.HostConfig.PortBindings['80/tcp'][0].HostPort}`
 			} else {

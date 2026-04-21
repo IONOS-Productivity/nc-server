@@ -9,6 +9,7 @@ OC.L10N.register(
     "Confirm permanent deletion" : "Vahvista lopullinen poistaminen",
     "Are you sure you want to permanently delete all files and folders in the trash? This cannot be undone." : "Haluatko varmasti poistaa pysyvästi kaikki roskakorissa olevat tiedostot ja kansiot? Tätä ei voi perua.",
     "Cancel" : "Peruuta",
+    "Deletion cancelled" : "Poistaminen peruttu",
     "Original location" : "Alkuperäinen sijainti",
     "Deleted by" : "Poistanut",
     "Deleted" : "Poistettu",
@@ -19,8 +20,6 @@ OC.L10N.register(
     "You" : "Sinä",
     "List of files that have been deleted." : "Luettelo poistetuista tiedostoista.",
     "No deleted files" : "Ei poistettuja tiedostoja",
-    "Files and folders you have deleted will show up here" : "Poistamasi tiedostot ja kansiot näkyvät täällä",
-    "All files have been permanently deleted" : "Kaikki tiedostot on poistettu pysyvästi",
-    "Deletion cancelled" : "Poistaminen peruttu"
+    "Files and folders you have deleted will show up here" : "Poistamasi tiedostot ja kansiot näkyvät täällä"
 },
 "nplurals=2; plural=(n != 1);");

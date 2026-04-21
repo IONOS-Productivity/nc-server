@@ -22,7 +22,6 @@ use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Middleware;
 use OCP\IAppConfig;
-use OCP\IConfig;
 use OCP\IRequest;
 use OCP\ISession;
 use OCP\IUserSession;
@@ -58,9 +57,7 @@ class RateLimitingMiddleware extends Middleware {
 		protected Limiter $limiter,
 		protected ISession $session,
 		protected IAppConfig $appConfig,
-		protected IConfig $serverConfig,
 		protected BruteforceAllowList $bruteForceAllowList,
-		protected LoggerInterface $logger,
 	) {
 	}
 

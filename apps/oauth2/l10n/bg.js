@@ -14,7 +14,7 @@ OC.L10N.register(
     "Redirection URI" : "URI за пренасочване",
     "Add client" : "Добавяне на клиент",
     "Add" : "Добавяне",
-    "Client Identifier" : "Идентификатор на клиента",
-    "Show client secret" : "Покажете тайната на клиента"
+    "Show client secret" : "Покажете тайната на клиента",
+    "Delete" : "Изтриване"
 },
 "nplurals=2; plural=(n != 1);");

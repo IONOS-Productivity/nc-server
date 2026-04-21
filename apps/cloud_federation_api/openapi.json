@@ -36,10 +36,79 @@
             },
             "Capabilities": {
                 "type": "object",
-                "additionalProperties": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "object"
+                "required": [
+                    "ocm"
+                ],
+                "properties": {
+                    "ocm": {
+                        "type": "object",
+                        "required": [
+                            "apiVersion",
+                            "enabled",
+                            "endPoint",
+                            "resourceTypes",
+                            "version"
+                        ],
+                        "properties": {
+                            "apiVersion": {
+                                "type": "string",
+                                "enum": [
+                                    "1.0-proposal1"
+                                ]
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "endPoint": {
+                                "type": "string"
+                            },
+                            "publicKey": {
+                                "type": "object",
+                                "required": [
+                                    "keyId",
+                                    "publicKeyPem"
+                                ],
+                                "properties": {
+                                    "keyId": {
+                                        "type": "string"
+                                    },
+                                    "publicKeyPem": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "resourceTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "name",
+                                        "shareTypes",
+                                        "protocols"
+                                    ],
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "shareTypes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "protocols": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },

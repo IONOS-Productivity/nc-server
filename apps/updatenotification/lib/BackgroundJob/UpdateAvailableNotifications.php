@@ -72,7 +72,7 @@ class UpdateAvailableNotifications extends TimedJob {
 	/**
 	 * Check for Nextcloud server update
 	 */
-	protected function checkCoreUpdate(): void {
+	protected function checkCoreUpdate() {
 		if (!$this->config->getSystemValueBool('updatechecker', true)) {
 			// update checker is disabled so no core update check!
 			return;

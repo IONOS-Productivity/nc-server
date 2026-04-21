@@ -107,7 +107,9 @@ class ContactsManagerTest extends \Test\TestCase {
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('searchProvider')]
+	/**
+	 * @dataProvider searchProvider
+	 */
 	public function testSearchDisabledAb($search1): void {
 		/** @var \PHPUnit\Framework\MockObject\MockObject|IAddressBookEnabled $addressbook */
 		$addressbook1 = $this->getMockBuilder('\OCP\IAddressBookEnabled')

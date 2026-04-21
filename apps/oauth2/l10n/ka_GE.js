@@ -9,7 +9,7 @@ OC.L10N.register(
     "Redirection URI" : "გადამისამართების URI",
     "Add client" : "კლიენტის დამატება",
     "Add" : "დამატება",
-    "Client Identifier" : "კლიენტის იდენტიფიკატორი",
-    "Show client secret" : "გამოაჩინე კლიენტის საიდუმლო"
+    "Show client secret" : "გამოაჩინე კლიენტის საიდუმლო",
+    "Delete" : "წაშლა"
 },
 "nplurals=2; plural=(n!=1);");

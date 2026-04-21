@@ -297,7 +297,7 @@ $CONFIG = [
 /**
  * The directory where the skeleton files are located. These files will be
  * copied to the data directory of new users. Set empty string to not copy any
- * skeleton files. If unset and templatedirectory is an empty string, shipped
+ * skeleton files. If unset and templatedirectory is empty string, shipped
  * templates will be used to create a template directory for the user.
  * ``{lang}`` can be used as a placeholder for the language of the user.
  * If the directory does not exist, it falls back to non-dialect (from ``de_DE``
@@ -464,34 +464,10 @@ $CONFIG = [
 'ratelimit.protection.enabled' => true,
 
 /**
- * Overwrite the individual rate limit for a specific route
- *
- * From time to time it can be necessary to extend the rate limit of a specific route,
- * depending on your usage pattern or when you script some actions.
- * Instead of completely disabling the rate limit or excluding an IP address from the
- * rate limit, the following config allows to overwrite the rate limit duration and period.
- *
- * The first level key is the name of the route. You can find the route name from a URL
- * using the ``occ router:list`` command of your server.
- *
- * You can also specify different limits for logged-in users with the ``user`` key
- * and not-logged-in users with the ``anon`` key. However, if there is no specific ``user`` limit,
- * the ``anon`` limit is also applied for logged-in users.
- *
- * Defaults to empty array ``[]``
- */
-'ratelimit_overwrite' => [
-	'profile.profilepage.index' => [
-		'user' => ['limit' => 300, 'period' => 3600],
-		'anon' => ['limit' => 1, 'period' => 300],
-	]
-],
-
-/**
  * Size of subnet used to normalize IPv6
  *
- * For Brute Force Protection and Rate Limiting, IPv6 addresses are truncated using subnet size.
- * It defaults to /56, but you can set it between /32 and /64
+ * For Brute Force Protection and Rate Limiting, IPv6 are truncated using subnet size.
+ * It defaults to /56 but you can set it between /32 and /64
  *
  * Defaults to ``56``
  */
@@ -2284,6 +2260,14 @@ $CONFIG = [
  */
 'enforce_theme' => '',
 
+
+/**
+ * This setting allows to disable the PWA functionality that allows browsers to open web applications in dedicated windows.
+ *
+ * Defaults to ``true``
+ */
+'theming.standalone_window.enabled' => true,
+
 /**
  * Enable or disable Progressive Web App (PWA) functionality, which allows
  * browsers to open web applications in dedicated windows.
@@ -2813,19 +2797,21 @@ $CONFIG = [
 'files.trash.delete' => true,
 
 /**
- * Enable PHP 8.4 lazy objects for Dependency Injection to improve performance by
- * avoiding instantiation of unused objects.
+ * Request path without /index.php/ maps to a controller path in the form
+ * <app name>.<controller name>.<handler>.
  *
- * Defaults to ``true``
+ * - For a FooController.php the controller name is "foo" (lowercase)
+ * - A handler would be a method in FooController that was annotated with
+ *   - either #[FrontpageRoute] attribute
+ *   - or configured in routes.php
+ *
+ * Defaults to ``[]`` (no redirects)
  */
-'enable_lazy_objects' => true,
+'redirects' => [
+   /**
+    * Example:
+    * '^\/settings' => 'acmesettings.page.index'
+    */
+],
 
-/**
- * Change the default certificates bundle used for trusting certificates.
- *
- * Nextcloud ships its own up-to-date certificates bundle, but in certain cases admins may wish to specify a different bundle, for example the one shipped by their distro.
- *
- * Defaults to `\OC::$SERVERROOT . '/resources/config/ca-bundle.crt'`.
- */
-'default_certificates_bundle_path' => \OC::$SERVERROOT . '/resources/config/ca-bundle.crt',
 ];

@@ -20,7 +20,6 @@ use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IAppConfig;
-use OCP\IConfig;
 use OCP\IRequest;
 use OCP\ISession;
 use OCP\IUser;
@@ -66,9 +65,7 @@ class RateLimitingMiddlewareTest extends TestCase {
 	private Limiter|MockObject $limiter;
 	private ISession|MockObject $session;
 	private IAppConfig|MockObject $appConfig;
-	private IConfig|MockObject $serverConfig;
 	private BruteforceAllowList|MockObject $bruteForceAllowList;
-	private LoggerInterface|MockObject $logger;
 	private RateLimitingMiddleware $rateLimitingMiddleware;
 
 	protected function setUp(): void {
@@ -80,9 +77,7 @@ class RateLimitingMiddlewareTest extends TestCase {
 		$this->limiter = $this->createMock(Limiter::class);
 		$this->session = $this->createMock(ISession::class);
 		$this->appConfig = $this->createMock(IAppConfig::class);
-		$this->serverConfig = $this->createMock(IConfig::class);
 		$this->bruteForceAllowList = $this->createMock(BruteforceAllowList::class);
-		$this->logger = $this->createMock(LoggerInterface::class);
 
 		$this->rateLimitingMiddleware = new RateLimitingMiddleware(
 			$this->request,
@@ -91,9 +86,7 @@ class RateLimitingMiddlewareTest extends TestCase {
 			$this->limiter,
 			$this->session,
 			$this->appConfig,
-			$this->serverConfig,
 			$this->bruteForceAllowList,
-			$this->logger
 		);
 	}
 

@@ -81,7 +81,10 @@ $linkCheckPlugin = new PublicLinkCheckPlugin();
 $filesDropPlugin = new FilesDropPlugin();
 
 /** @var string $baseuri defined in public.php */
-$server = $serverFactory->createServer(true, $baseuri, $requestUri, $authPlugin, function (\Sabre\DAV\Server $server) use ($baseuri, $requestUri, $authBackend, $linkCheckPlugin, $filesDropPlugin) {
+preg_match('/(^files\/[a-z0-9-_]+)/i', substr($requestUri, strlen($baseuri)), $match);
+$baseuri = $baseuri . $match[0];
+
+$server = $serverFactory->createServer($baseuri, $requestUri, $authPlugin, function (\Sabre\DAV\Server $server) use ($authBackend, $linkCheckPlugin, $filesDropPlugin) {
 	// GET must be allowed for e.g. showing images and allowing Zip downloads
 	if ($server->httpRequest->getMethod() !== 'GET') {
 		// If this is *not* a GET request we only allow access to public DAV from AJAX or when Server2Server is allowed

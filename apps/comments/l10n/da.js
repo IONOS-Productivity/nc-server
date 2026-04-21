@@ -31,7 +31,6 @@ OC.L10N.register(
     "An error occurred while trying to edit the comment" : "Der opstod en fejl under forsøget på at redigere kommentaren",
     "Comment deleted" : "Kommentar slettet",
     "An error occurred while trying to delete the comment" : "Der opstod en fejl under forsøget på at slette kommentaren",
-    "An error occurred while trying to create the comment" : "Der opstod en fejl under forsøget på at oprette kommentaren",
-    "Write a comment …" : "Skriv kommentar…"
+    "An error occurred while trying to create the comment" : "Der opstod en fejl under forsøget på at oprette kommentaren"
 },
 "nplurals=2; plural=(n != 1);");

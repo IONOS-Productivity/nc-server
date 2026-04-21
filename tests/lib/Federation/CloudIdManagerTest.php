@@ -56,6 +56,34 @@ class CloudIdManagerTest extends TestCase {
 		$this->overwriteService(ICloudIdManager::class, $this->cloudIdManager);
 	}
 
+	public function dataGetDisplayNameFromContact(): array {
+		return [
+			['test1@example.tld', 'test', 'test'],
+			['test2@example.tld', null, null],
+			['test3@example.tld', 'test3@example', 'test3@example'],
+			['test4@example.tld', 'test4@example.tld', null],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetDisplayNameFromContact
+	 */
+	public function testGetDisplayNameFromContact(string $cloudId, ?string $displayName, ?string $expected): void {
+		$returnedContact = [
+			'CLOUD' => [$cloudId],
+			'FN' => $expected,
+		];
+		if ($displayName === null) {
+			unset($returnedContact['FN']);
+		}
+		$this->contactsManager->method('search')
+			->with($cloudId, ['CLOUD'])
+			->willReturn([$returnedContact]);
+
+		$this->assertEquals($expected, $this->cloudIdManager->getDisplayNameFromContact($cloudId));
+		$this->assertEquals($expected, $this->cloudIdManager->getDisplayNameFromContact($cloudId));
+	}
+
 	public static function dataGetDisplayNameFromContact(): array {
 		return [
 			['test1@example.tld', 'test', 'test'],
@@ -126,7 +154,9 @@ class CloudIdManagerTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('invalidCloudIdProvider')]
+	/**
+	 * @dataProvider invalidCloudIdProvider
+	 */
 	public function testInvalidCloudId(string $cloudId): void {
 		$this->expectException(\InvalidArgumentException::class);
 

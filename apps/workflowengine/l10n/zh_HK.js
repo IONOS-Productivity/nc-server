@@ -49,13 +49,13 @@ OC.L10N.register(
     "Select a filter" : "選擇過濾器",
     "Select a comparator" : "選擇比較器",
     "Remove filter" : "移除過濾",
-    "Audio" : "音頻",
     "Folder" : "資料夾",
     "Images" : "圖片",
     "Office documents" : "Microsoft Office 文件",
     "PDF documents" : "PDF 文件",
     "Video" : "視像",
     "Custom MIME type" : "自訂 MIME 類型",
+    "Custom mimetype" : "自訂 mimetype",
     "Select a file type" : "選擇檔案類型",
     "e.g. httpd/unix-directory" : "例如 httpd/unix-directory",
     "Please enter a valid time span" : "請輸入有效的時間跨度",
@@ -119,7 +119,6 @@ OC.L10N.register(
     "Request user agent" : "索取 user agent",
     "Group membership" : "群組成員身分",
     "is member of" : "是以下群組的成員：",
-    "is not member of" : "非以下群組的成員：",
-    "Type to search for group …" : "輸入以搜尋群組 …"
+    "is not member of" : "非以下群組的成員："
 },
 "nplurals=1; plural=0;");

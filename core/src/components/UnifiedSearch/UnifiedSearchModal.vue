@@ -67,6 +67,7 @@
 					</NcActionButton>
 				</NcActions>
 				<SearchableList :label-text="t('core', 'Search people')"
+					v-if="peopleSearchEnabled"
 					:search-list="userContacts"
 					:empty-content-text="t('core', 'Not found')"
 					data-cy-unified-search-filter="people"
@@ -138,7 +139,7 @@
 						v-bind="result" />
 				</ul>
 				<div class="result-footer">
-					<NcButton v-if="providerResult.results.length === providerResult.limit" type="tertiary-no-background" @click="loadMoreResultsForProvider(providerResult)">
+					<NcButton type="tertiary-no-background" @click="loadMoreResultsForProvider(providerResult)">
 						{{ t('core', 'Load more results') }}
 						<template #icon>
 							<IconDotsHorizontal :size="20" />
@@ -268,6 +269,14 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
+
+		/**
+		 * Show people search filter
+		 */
+		peopleSearchEnabled: {
+			type: Boolean,
+			default: false,
+		}
 	},
 
 	emits: ['update:open', 'update:query'],
@@ -497,7 +506,7 @@ export default defineComponent({
 
 			this.searching = true
 			const newResults = []
-			const providersToSearch = providersToSearchOverride || (this.filteredProviders.length > 0 ? this.filteredProviders : this.providers)
+			const providersToSearch = this.filteredProviders.length > 0 ? this.filteredProviders : this.providers
 			const searchProvider = (provider) => {
 				const params = {
 					type: provider.searchFrom ?? provider.id,
@@ -508,30 +517,20 @@ export default defineComponent({
 
 				// This block of filter checks should be dynamic somehow and should be handled in
 				// nextcloud/search lib
-				const contentFilterTypes = this.filters
-					.filter((f) => f.type !== 'provider')
-					.map((f) => f.type)
-				const supportsActiveFilters = contentFilterTypes.length === 0
-					|| contentFilterTypes.every((type) => this.providerIsCompatibleWithFilters(provider, [type]))
-
-				const baseProvider = provider.searchFrom
-					? this.providers.find((p) => p.id === provider.searchFrom) ?? provider
-					: provider
-
-				const activeFilters = this.filters.filter((filter) => {
+				const activeFilters = this.filters.filter(filter => {
 					return filter.type !== 'provider' && this.providerIsCompatibleWithFilters(provider, [filter.type])
 				})
 
-				activeFilters.forEach((filter) => {
+				activeFilters.forEach(filter => {
 					switch (filter.type) {
 					case 'date':
-						if (baseProvider.filters?.since && baseProvider.filters?.until) {
+						if (provider.filters?.since && provider.filters?.until) {
 							params.since = this.dateFilter.startFrom
 							params.until = this.dateFilter.endAt
 						}
 						break
 					case 'person':
-						if (baseProvider.filters?.person) {
+						if (provider.filters?.person) {
 							params.person = this.personFilter.user
 						}
 						break
@@ -541,14 +540,6 @@ export default defineComponent({
 				if (this.providerResultLimit > 5) {
 					params.limit = this.providerResultLimit
 					unifiedSearchLogger.debug('Limiting search to', params.limit)
-				}
-
-				const shouldSkipSearch = !this.searchExternalResources && provider.isExternalProvider
-				const wasManuallySelected = this.filteredProviders.some(filteredProvider => filteredProvider.id === provider.id)
-				// if the provider is an external resource and the user has not manually selected it, skip the search
-				if (shouldSkipSearch && !wasManuallySelected) {
-					this.searching = false
-					return
 				}
 
 				const request = unifiedSearch(params).request
@@ -644,7 +635,15 @@ export default defineComponent({
 		},
 		async loadMoreResultsForProvider(provider) {
 			this.providerResultLimit += 5
-			this.find(this.searchQuery, [provider])
+			// Remove all other providers from filteredProviders except the current "loadmore" provider
+			this.filteredProviders = this.filteredProviders.filter(filteredProvider => filteredProvider.id === provider.id)
+			// Plugin filters may have extra parameters, so we need to keep them
+			// See method handlePluginFilter for more details
+			if (this.filteredProviders.length > 0 && this.filteredProviders[0].isPluginFilter) {
+				provider = this.filteredProviders[0]
+			}
+			this.addProviderFilter(provider, true)
+			this.find(this.searchQuery)
 		},
 		addProviderFilter(providerFilter, loadMoreResultsForProvider = false) {
 			unifiedSearchLogger.debug('Applying provider filter', { providerFilter, loadMoreResultsForProvider })
@@ -692,6 +691,7 @@ export default defineComponent({
 				for (let i = 0; i < this.filters.length; i++) {
 					if (this.filters[i].id === filter.id) {
 						this.filters.splice(i, 1)
+						this.enableAllProviders()
 						break
 					}
 				}
@@ -730,6 +730,9 @@ export default defineComponent({
 				this.filters.push(this.dateFilter)
 			}
 
+			this.providers.forEach(async (provider, index) => {
+				this.providers[index].disabled = !(await this.providerIsCompatibleWithFilters(provider, ['since', 'until']))
+			})
 			this.debouncedFind(this.searchQuery)
 		},
 		applyQuickDateRange(range) {

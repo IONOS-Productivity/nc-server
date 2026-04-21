@@ -75,24 +75,8 @@ interface IMimeTypeDetector {
 	public function getAllAliases(): array;
 
 	/**
-	 * Get all extension to MIME type mappings.
-	 *
-	 * The return format is an array of the file extension, as the key,
-	 * mapped to a list where the first entry is the MIME type
-	 * and the second entry is the secure MIME type (or null if none).
-	 * Due to PHP idiosyncrasies if a numeric string is set as the extension,
-	 * then also the array key (file extension) is a number instead of a string.
-	 *
-	 * @return array<list{string, string|null}>
+	 * @return array<string, list{string, string|null}>
 	 * @since 32.0.0
 	 */
 	public function getAllMappings(): array;
-
-	/**
-	 * Get all human readable mime names
-	 *
-	 * @return array<string,string>
-	 * @since 32.0.0
-	 */
-	public function getAllNamings(): array;
 }

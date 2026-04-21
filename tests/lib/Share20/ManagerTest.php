@@ -58,7 +58,6 @@ use OCP\Share\IProviderFactory;
 use OCP\Share\IShare;
 use OCP\Share\IShareProvider;
 use OCP\Share\IShareProviderSupportsAllSharesInFolder;
-use OCP\Util;
 use PHPUnit\Framework\MockObject\MockBuilder;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
@@ -946,7 +945,7 @@ class ManagerTest extends \Test\TestCase {
 
 		$allPermssionsFiles = $this->createMock(File::class);
 		$allPermssionsFiles->method('isShareable')->willReturn(true);
-		$allPermssionsFiles->method('getPermissions')->willReturn(Constants::PERMISSION_ALL);
+		$allPermssionsFiles->method('getPermissions')->willReturn(\OCP\Constants::PERMISSION_ALL);
 		$allPermssionsFiles->method('getId')->willReturn(187);
 		$allPermssionsFiles->method('getOwner')
 			->willReturn($owner);
@@ -954,9 +953,9 @@ class ManagerTest extends \Test\TestCase {
 			->willReturn($storage);
 
 		// test invalid CREATE or DELETE permissions
-		$data[] = [$this->createShare(null, IShare::TYPE_USER, $allPermssionsFiles, $user2, $user0, $user0, Constants::PERMISSION_ALL, null, null), 'File shares cannot have create or delete permissions', true];
-		$data[] = [$this->createShare(null, IShare::TYPE_GROUP, $allPermssionsFiles, $group0, $user0, $user0, Constants::PERMISSION_READ | Constants::PERMISSION_CREATE, null, null), 'File shares cannot have create or delete permissions', true];
-		$data[] = [$this->createShare(null, IShare::TYPE_LINK, $allPermssionsFiles, null, $user0, $user0, Constants::PERMISSION_READ | Constants::PERMISSION_DELETE, null, null), 'File shares cannot have create or delete permissions', true];
+		$data[] = [$this->createShare(null, IShare::TYPE_USER, $allPermssionsFiles, $user2, $user0, $user0, \OCP\Constants::PERMISSION_ALL, null, null), 'File shares cannot have create or delete permissions', true];
+		$data[] = [$this->createShare(null, IShare::TYPE_GROUP, $allPermssionsFiles, $group0, $user0, $user0, \OCP\Constants::PERMISSION_READ | \OCP\Constants::PERMISSION_CREATE, null, null), 'File shares cannot have create or delete permissions', true];
+		$data[] = [$this->createShare(null, IShare::TYPE_LINK, $allPermssionsFiles, null, $user0, $user0, \OCP\Constants::PERMISSION_READ | \OCP\Constants::PERMISSION_DELETE, null, null), 'File shares cannot have create or delete permissions', true];
 
 		$allPermssions = $this->createMock(Folder::class);
 		$allPermssions->method('isShareable')->willReturn(true);

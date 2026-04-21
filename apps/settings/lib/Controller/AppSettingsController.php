@@ -137,7 +137,7 @@ class AppSettingsController extends Controller {
 	 * @throws \Exception
 	 */
 	#[NoCSRFRequired]
-	public function getAppDiscoverMedia(string $fileName, ILimiter $limiter, IUserSession $session): Response {
+	public function getAppDiscoverMedia(string $fileName): Response {
 		$getEtag = $this->discoverFetcher->getETag() ?? date('Y-m');
 		$etag = trim($getEtag, '"');
 

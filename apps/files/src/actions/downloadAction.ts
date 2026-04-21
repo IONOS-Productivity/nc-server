@@ -4,17 +4,10 @@
  */
 import type { Node, View } from '@nextcloud/files'
 import { FileAction, FileType, DefaultType } from '@nextcloud/files'
-import { showError } from '@nextcloud/dialogs'
 import { t } from '@nextcloud/l10n'
 import axios from '@nextcloud/axios'
 
 import ArrowDownSvg from '@mdi/svg/svg/arrow-down.svg?raw'
-
-import { isDownloadable } from '../utils/permissions'
-import { usePathsStore } from '../store/paths'
-import { getPinia } from '../store'
-import { useFilesStore } from '../store/files'
-import { emit } from '@nextcloud/event-bus'
 
 /**
  * Trigger downloading a file.
@@ -22,10 +15,7 @@ import { emit } from '@nextcloud/event-bus'
  * @param url The url of the asset to download
  * @param name Optionally the recommended name of the download (browsers might ignore it)
  */
-async function triggerDownload(url: string, name?: string) {
-	// try to see if the resource is still available
-	await axios.head(url)
-
+function triggerDownload(url: string, name?: string) {
 	const hiddenElement = document.createElement('a')
 	hiddenElement.download = name ?? ''
 	hiddenElement.href = url
@@ -67,8 +57,7 @@ async function downloadNodes(nodes: Node[]) {
 
 	if (nodes.length === 1) {
 		if (nodes[0].type === FileType.File) {
-			await triggerDownload(nodes[0].encodedSource, nodes[0].displayname)
-			return
+			return triggerDownload(nodes[0].encodedSource, nodes[0].displayname)
 		} else {
 			url = new URL(nodes[0].encodedSource)
 			url.searchParams.append('accept', 'zip')

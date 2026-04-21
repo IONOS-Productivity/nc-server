@@ -26,6 +26,7 @@
     "Each server must validate the other. This process may require a few cron cycles." : "Je třeba, aby každý server ověřil ten druhý. Tento proces může vyžadovat několik cyklů plánovače.",
     "External documentation for Federated Cloud Sharing" : "Externí dokumentace pro sdílení v rámci federovaného cloudu",
     "+ Add trusted server" : "+ Přidat důvěryhodný server",
-    "Trusted server" : "Důvěryhodný server"
+    "Trusted server" : "Důvěryhodný server",
+    "Add" : "Přidat"
 },"pluralForm" :"nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;"
 }

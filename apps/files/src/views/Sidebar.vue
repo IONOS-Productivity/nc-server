@@ -95,7 +95,19 @@
 	</NcAppSidebar>
 </template>
 <script lang="ts">
-import type { INode } from '@nextcloud/files'
+import { davRemoteURL, davRootPath, File, Folder, formatFileSize } from '@nextcloud/files'
+import { defineComponent } from 'vue'
+import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
+import { encodePath } from '@nextcloud/paths'
+import { fetchNode } from '../services/WebdavClient.ts'
+import { generateUrl } from '@nextcloud/router'
+import { getCapabilities } from '@nextcloud/capabilities'
+import { getCurrentUser } from '@nextcloud/auth'
+import { mdiStar, mdiStarOutline } from '@mdi/js'
+import { ShareType } from '@nextcloud/sharing'
+import { showError } from '@nextcloud/dialogs'
+import $ from 'jquery'
+import axios from '@nextcloud/axios'
 
 import { davRemoteURL, davRootPath, File, Folder, formatFileSize } from '@nextcloud/files'
 import { defineComponent } from 'vue'

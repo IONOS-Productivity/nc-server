@@ -24,8 +24,7 @@
 
 					<!-- Uploader -->
 					<UploadPicker v-if="canUpload && !isQuotaExceeded && currentFolder"
-						allow-folders
-						:no-label="fileListWidth <= 511"
+						:allow-folders="canUploadFolders"
 						class="files-list__header-upload-button"
 						:content="getContent"
 						:destination="currentFolder"
@@ -84,7 +83,61 @@
 			:size="38"
 			:name="t('files', 'Loading current folder')" />
 
-		<!-- File list - always mounted -->
+		<!-- Empty content placeholder -->
+		<template v-else-if="!loading && isEmptyDir && currentFolder && currentView">
+			<div class="files-list__before">
+				<!-- Headers -->
+				<FilesListHeader v-for="header in headers"
+					:key="header.id"
+					:current-folder="currentFolder"
+					:current-view="currentView"
+					:header="header" />
+			</div>
+			<!-- Empty due to error -->
+			<NcEmptyContent v-if="error" :name="error" data-cy-files-content-error>
+				<template #action>
+					<NcButton type="secondary" @click="fetchContent">
+						<template #icon>
+							<IconReload :size="20" />
+						</template>
+						{{ t('files', 'Retry') }}
+					</NcButton>
+				</template>
+				<template #icon>
+					<IconAlertCircleOutline />
+				</template>
+			</NcEmptyContent>
+			<!-- Custom empty view -->
+			<div v-else-if="currentView?.emptyView" class="files-list__empty-view-wrapper">
+				<div ref="customEmptyView" />
+			</div>
+			<!-- Default empty directory view -->
+			<NcEmptyContent v-else
+				:name="currentView?.emptyTitle || t('files', 'No files in here')"
+				:description="currentView?.emptyCaption || t('files', 'Upload some content or sync with your devices!')"
+				data-cy-files-content-empty>
+				<template v-if="directory !== '/'" #action>
+					<!-- Uploader -->
+					<UploadPicker v-if="canUpload && !isQuotaExceeded"
+						allow-folders
+						class="files-list__header-upload-button"
+						:content="getContent"
+						:destination="currentFolder"
+						:forbidden-characters="forbiddenCharacters"
+						multiple
+						@failed="onUploadFail"
+						@uploaded="onUpload" />
+					<NcButton v-else :to="toPreviousDir" type="primary">
+						{{ t('files', 'Go back') }}
+					</NcButton>
+				</template>
+				<template #icon>
+					<NcIconSvgWrapper :svg="currentView.icon" />
+				</template>
+			</NcEmptyContent>
+		</template>
+
+		<!-- File list -->
 		<FilesListVirtual v-else
 			ref="filesListVirtual"
 			:current-folder="currentFolder"
@@ -185,6 +238,8 @@ import ListViewIcon from 'vue-material-design-icons/FormatListBulletedSquare.vue
 import ViewGridIcon from 'vue-material-design-icons/ViewGridOutline.vue'
 
 import { action as sidebarAction } from '../actions/sidebarAction.ts'
+import { useNavigation } from '../composables/useNavigation.ts'
+import { useFileListHeaders } from '../composables/useFileListHeaders.ts'
 import { useFileListWidth } from '../composables/useFileListWidth.ts'
 import { useNavigation } from '../composables/useNavigation.ts'
 import { useRouteParameters } from '../composables/useRouteParameters.ts'
@@ -197,13 +252,12 @@ import { useUploaderStore } from '../store/uploader.ts'
 import { useUserConfigStore } from '../store/userconfig.ts'
 import { useViewConfigStore } from '../store/viewConfig.ts'
 import { humanizeWebDAVError } from '../utils/davUtils.ts'
-import { getSummaryFor } from '../utils/fileUtils.ts'
-import { defaultView } from '../utils/filesViews.ts'
 import BreadCrumbs from '../components/BreadCrumbs.vue'
-import DragAndDropNotice from '../components/DragAndDropNotice.vue'
+import FilesListHeader from '../components/FilesListHeader.vue'
 import FilesListVirtual from '../components/FilesListVirtual.vue'
 import filesSortingMixin from '../mixins/filesSorting.ts'
 import logger from '../logger.ts'
+import DragAndDropNotice from '../components/DragAndDropNotice.vue'
 
 const isSharingEnabled = (getCapabilities() as { files_sharing?: boolean })?.files_sharing !== undefined
 
@@ -213,6 +267,7 @@ export default defineComponent({
 	components: {
 		BreadCrumbs,
 		DragAndDropNotice,
+		FilesListHeader,
 		FilesListVirtual,
 		LinkIcon,
 		ListViewIcon,
@@ -263,6 +318,7 @@ export default defineComponent({
 			directory,
 			fileId,
 			fileListWidth,
+			headers: useFileListHeaders(),
 			t,
 
 			activeStore,
@@ -293,6 +349,14 @@ export default defineComponent({
 	},
 
 	computed: {
+		canUploadFolders() {
+			// TODO: Remove this small files_sharing hack when https://github.com/nextcloud/server/issues/15921 is implmented
+			if (this.currentView?.id === 'public-file-drop') {
+				return false
+			}
+			return true
+		},
+
 		/**
 		 * Get a callback function for the uploader to fetch directory contents for conflict resolution
 		 */
@@ -574,16 +638,14 @@ export default defineComponent({
 		// filter content if filter were changed
 		subscribe('files:filters:changed', this.filterDirContent)
 
-		subscribe('files:search:updated', this.onUpdateSearch)
-
 		// Finally, fetch the current directory contents
 		await this.fetchContent()
 		if (this.fileId) {
 			// If we have a fileId, let's check if the file exists
-			const node = this.dirContents.find(node => node.fileid?.toString() === this.fileId?.toString())
+			const node = this.dirContents.find(node => node.fileid.toString() === this.fileId.toString())
 			// If the file isn't in the current directory nor if
 			// the current directory is the file, we show an error
-			if (!node && this.currentFolder?.fileid?.toString() !== this.fileId.toString()) {
+			if (!node && this.currentFolder.fileid.toString() !== this.fileId.toString()) {
 				showError(t('files', 'The file could not be found'))
 			}
 		}

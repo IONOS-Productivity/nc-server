@@ -49,9 +49,10 @@ OC.L10N.register(
     "Old recovery key password" : "舊的還原金鑰密碼",
     "New recovery key password" : "新的還原金鑰密碼",
     "Repeat new recovery key password" : "再次輸入新的還原金鑰密碼",
-    "An error occurred while changing the recovery key password. Please try again." : "變更備援金鑰密碼時發生錯誤。請再試一次。",
-    "Update private key password" : "更新私鑰密碼",
-    "Your private key password no longer matches your log-in password. Set your old private key password to your current log-in password." : "您的私鑰密碼不再與您的登入密碼相符。請將舊的私鑰密碼設定為您目前的登入密碼。",
+    "Change Password" : "變更密碼",
+    "Basic encryption module" : "基本加密模組",
+    "Your private key password no longer matches your log-in password." : "您的私鑰密碼與您的登入密碼不相符。",
+    "Set your old private key password to your current log-in password:" : "將您的舊私鑰密碼設為您現在的登入密碼：",
     "If you do not remember your old password you can ask your administrator to recover your files." : "如果您忘記舊密碼，可以請求管理員協助取回檔案。",
     "Old log-in password" : "舊登入密碼",
     "Current log-in password" : "目前登入密碼",
@@ -72,7 +73,6 @@ OC.L10N.register(
     "Update Private Key Password" : "更新私鑰密碼",
     "Enable password recovery:" : "啟用密碼還原：",
     "Enabled" : "已啟用",
-    "Disabled" : "已停用",
-    "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss." : "此應用程式提供了 Nextcloud 伺服器端加密 (SSE) 功能的（預設）密碼學實作。\n\n\t\t\t**加密詳細資訊**\n\t\t\t*   **加密模式：**AES-256-CTR（預設）\n\t\t\t*   **驗證：**HMAC-SHA256\n\n\t\t\t**重要警告**\n\t\t\t*   **危險：**在解密所有檔案 (`occ encryption:decrypt-all`) 完成前請勿停用此應用程式。\n\t\t\t*   **警告：**啟用後若要恢復為未加密的檔案儲存模式，需透過命令列介面進行操作。若透過網頁使用者介面執行此操作，該設定將永久生效。\n\n\t\t\t**既有檔案的備註**\n\t\t\t*   預設情況下，啟用 SSE 並不會加密既有檔案；僅會加密新的檔案。\n\t\t\t*   要加密所有既有檔案，請使用 `occ encryption:encrypt-all` 命令。\n\n\t\t\t**在您開始前**\n\t\t\t*   **請讀文件：**在您啟用 SSE、加密既有檔案或停用 SSE 前，閱讀文件以理解其影響及避免資料遺失的適當程序至關重要。"
+    "Disabled" : "已停用"
 },
 "nplurals=1; plural=0;");

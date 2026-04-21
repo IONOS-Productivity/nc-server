@@ -23,6 +23,12 @@ use OCA\DAV\Events\CachedCalendarObjectUpdatedEvent;
 use OCA\DAV\Events\CalendarCreatedEvent;
 use OCA\DAV\Events\CalendarDeletedEvent;
 use OCA\DAV\Events\CalendarMovedToTrashEvent;
+use OCA\DAV\Events\CalendarObjectCreatedEvent as LegacyCalendarObjectCreatedEvent;
+use OCA\DAV\Events\CalendarObjectDeletedEvent as LegacyCalendarObjectDeletedEvent;
+use OCA\DAV\Events\CalendarObjectMovedEvent as LegacyCalendarObjectMovedEvent;
+use OCA\DAV\Events\CalendarObjectMovedToTrashEvent as LegacyCalendarObjectMovedToTrashEvent;
+use OCA\DAV\Events\CalendarObjectRestoredEvent as LegacyCalendarObjectRestoredEvent;
+use OCA\DAV\Events\CalendarObjectUpdatedEvent as LegacyCalendarObjectUpdatedEvent;
 use OCA\DAV\Events\CalendarPublishedEvent;
 use OCA\DAV\Events\CalendarRestoredEvent;
 use OCA\DAV\Events\CalendarShareUpdatedEvent;
@@ -32,7 +38,6 @@ use OCA\DAV\Events\SubscriptionCreatedEvent;
 use OCA\DAV\Events\SubscriptionDeletedEvent;
 use OCA\DAV\Events\SubscriptionUpdatedEvent;
 use OCP\AppFramework\Db\TTransactional;
-use OCP\Calendar\CalendarExportOptions;
 use OCP\Calendar\Events\CalendarObjectCreatedEvent;
 use OCP\Calendar\Events\CalendarObjectDeletedEvent;
 use OCP\Calendar\Events\CalendarObjectMovedEvent;
@@ -396,7 +401,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 			$subSelect->select('resourceid')
 				->from('dav_shares', 'd')
 				->where($subSelect->expr()->eq('d.access', $select->createNamedParameter(Backend::ACCESS_UNSHARED, IQueryBuilder::PARAM_INT), IQueryBuilder::PARAM_INT))
-				->andWhere($subSelect->expr()->in('d.principaluri', $select->createNamedParameter($principals, IQueryBuilder::PARAM_STR_ARRAY), IQueryBuilder::PARAM_STR_ARRAY));
+				->andWhere($subSelect->expr()->eq('d.principaluri', $select->createNamedParameter($principalUri, IQueryBuilder::PARAM_STR), IQueryBuilder::PARAM_STR));
 
 			$select->select($fields)
 				->from('dav_shares', 's')
@@ -1415,7 +1420,8 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				$shares = $this->getShares($calendarId);
 
 				$this->dispatcher->dispatchTyped(new CalendarObjectCreatedEvent($calendarId, $calendarRow, $shares, $objectRow));
-			} elseif ($calendarType === self::CALENDAR_TYPE_SUBSCRIPTION) {
+				$this->dispatcher->dispatchTyped(new LegacyCalendarObjectCreatedEvent($calendarId, $calendarRow, $shares, $objectRow));
+			} else {
 				$subscriptionRow = $this->getSubscriptionById($calendarId);
 
 				$this->dispatcher->dispatchTyped(new CachedCalendarObjectCreatedEvent($calendarId, $subscriptionRow, [], $objectRow));
@@ -1477,7 +1483,8 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 					$shares = $this->getShares($calendarId);
 
 					$this->dispatcher->dispatchTyped(new CalendarObjectUpdatedEvent($calendarId, $calendarRow, $shares, $objectRow));
-				} elseif ($calendarType === self::CALENDAR_TYPE_SUBSCRIPTION) {
+					$this->dispatcher->dispatchTyped(new LegacyCalendarObjectUpdatedEvent($calendarId, $calendarRow, $shares, $objectRow));
+				} else {
 					$subscriptionRow = $this->getSubscriptionById($calendarId);
 
 					$this->dispatcher->dispatchTyped(new CachedCalendarObjectUpdatedEvent($calendarId, $subscriptionRow, [], $objectRow));
@@ -1543,6 +1550,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				$targetShares = $this->getShares($targetCalendarId);
 				$sourceCalendarRow = $this->getCalendarById($sourceCalendarId);
 				$this->dispatcher->dispatchTyped(new CalendarObjectMovedEvent($sourceCalendarId, $sourceCalendarRow, $targetCalendarId, $targetCalendarRow, $sourceShares, $targetShares, $object));
+				$this->dispatcher->dispatchTyped(new LegacyCalendarObjectMovedEvent($sourceCalendarId, $sourceCalendarRow, $targetCalendarId, $targetCalendarRow, $sourceShares, $targetShares, $object));
 			}
 			return true;
 		}, $this->db);
@@ -1582,6 +1590,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 					$shares = $this->getShares($calendarId);
 
 					$this->dispatcher->dispatchTyped(new CalendarObjectDeletedEvent($calendarId, $calendarRow, $shares, $data));
+					$this->dispatcher->dispatchTyped(new LegacyCalendarObjectDeletedEvent($calendarId, $calendarRow, $shares, $data));
 				} else {
 					$subscriptionRow = $this->getSubscriptionById($calendarId);
 
@@ -1625,6 +1634,14 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				if ($calendarData !== null) {
 					$this->dispatcher->dispatchTyped(
 						new CalendarObjectMovedToTrashEvent(
+							$calendarId,
+							$calendarData,
+							$this->getShares($calendarId),
+							$data
+						)
+					);
+					$this->dispatcher->dispatchTyped(
+						new LegacyCalendarObjectMovedToTrashEvent(
 							$calendarId,
 							$calendarData,
 							$this->getShares($calendarId),
@@ -1684,6 +1701,14 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 			}
 			$this->dispatcher->dispatchTyped(
 				new CalendarObjectRestoredEvent(
+					(int)$objectData['calendarid'],
+					$calendarRow,
+					$this->getShares((int)$row['calendarid']),
+					$row
+				)
+			);
+			$this->dispatcher->dispatchTyped(
+				new LegacyCalendarObjectRestoredEvent(
 					(int)$objectData['calendarid'],
 					$calendarRow,
 					$this->getShares((int)$row['calendarid']),
@@ -3755,21 +3780,5 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				));
 			}
 		}, $this->db);
-	}
-
-	/**
-	 * @return array<string, mixed>[]
-	 */
-	public function getFederatedCalendarsForUser(string $principalUri): array {
-		$federatedCalendars = $this->federatedCalendarMapper->findByPrincipalUri($principalUri);
-		return array_map(
-			static fn (FederatedCalendarEntity $entity) => $entity->toCalendarInfo(),
-			$federatedCalendars,
-		);
-	}
-
-	public function getFederatedCalendarByUri(string $principalUri, string $uri): ?array {
-		$federatedCalendar = $this->federatedCalendarMapper->findByUri($principalUri, $uri);
-		return $federatedCalendar?->toCalendarInfo();
 	}
 }

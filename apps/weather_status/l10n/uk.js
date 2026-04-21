@@ -7,7 +7,6 @@ OC.L10N.register(
     "Error" : "Помилка",
     "Weather status" : "Прогноз погоди",
     "Weather status in your dashboard" : "Статус погоди на вашій інформаційній панелі",
-    "Weather status integrated in the Dashboard app.\n    The geographic location can be automatically determined or manually defined. A 6 hours forecast is then displayed.\n    This status can also be integrated in other places like the Calendar app." : "Стан погоди інтегрований в додаток Dashboard.\n    Географічне розташування може бути визначено автоматично або вручну. Потім відображається прогноз на 6 годин.\n    Цей статус також може бути інтегрований в інші місця, наприклад, в додаток \"Календар\".",
     "{temperature} {unit} clear sky later today" : "{temperature} {unit} ясне небо пізніше сьогодні",
     "{temperature} {unit} clear sky" : "{temperature} {unit} ясне небо",
     "{temperature} {unit} cloudy later today" : "{temperature} {unit} хмарно пізніше сьогодні",
@@ -55,7 +54,6 @@ OC.L10N.register(
     "There was an error setting the location." : "Під час встановлення місця розташування сталася помилка.",
     "There was an error saving the mode." : "Під час збереження режиму сталася помилка.",
     "There was an error using personal address." : "Під час використання особистої адреси сталася помилка.",
-    "Unknown weather code" : "Невідомий код погоди",
     "Detect location" : "Визначити місце розташування",
     "Set custom address" : "Встановити власну адресу",
     "Favorites" : "Із зірочкою"

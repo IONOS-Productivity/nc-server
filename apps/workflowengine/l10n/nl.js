@@ -48,13 +48,13 @@ OC.L10N.register(
     "Select a filter" : "Selecteer een filter",
     "Select a comparator" : "Selecteer een comparator",
     "Remove filter" : "Verwijder filter",
-    "Audio" : "Geluid",
     "Folder" : "Map",
     "Images" : "Afbeeldingen",
     "Office documents" : "Office documenten",
     "PDF documents" : "PDF documenten",
     "Video" : "Video",
     "Custom MIME type" : "Maatwerk mimetype",
+    "Custom mimetype" : "Maatwerk mimetype",
     "Select a file type" : "Selecteer een bestandstype",
     "e.g. httpd/unix-directory" : "bijv. httpd/unix-directory",
     "Please enter a valid time span" : "Geef een geldige tijdsinterval op",
@@ -117,7 +117,6 @@ OC.L10N.register(
     "Request user agent" : "Useragent aanvraag",
     "Group membership" : "Groepslidmaatschap",
     "is member of" : "is lid van",
-    "is not member of" : "is geen lid van",
-    "Type to search for group …" : "Type om groep te zoeken …"
+    "is not member of" : "is geen lid van"
 },
 "nplurals=2; plural=(n != 1);");

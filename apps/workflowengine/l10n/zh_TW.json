@@ -47,13 +47,13 @@
     "Select a filter" : "選取過濾條件",
     "Select a comparator" : "選取比較程式",
     "Remove filter" : "移除過濾條件",
-    "Audio" : "音訊",
     "Folder" : "資料夾",
     "Images" : "圖片",
     "Office documents" : "Office 文件",
     "PDF documents" : "PDF 文件",
     "Video" : "影片",
     "Custom MIME type" : "自訂 MIME 類型",
+    "Custom mimetype" : "自訂 mimetype",
     "Select a file type" : "選取檔案類型",
     "e.g. httpd/unix-directory" : "例如：httpd/unix-directory",
     "Please enter a valid time span" : "請輸入有效的時間範圍",
@@ -117,7 +117,6 @@
     "Request user agent" : "請求使用者代理字串",
     "Group membership" : "群組成員資格",
     "is member of" : "是成員的群組",
-    "is not member of" : "不是成員的群組",
-    "Type to search for group …" : "輸入以搜尋群組……"
+    "is not member of" : "不是成員的群組"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

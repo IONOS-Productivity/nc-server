@@ -10,13 +10,10 @@ OC.L10N.register(
     "Trusted servers" : "Megbízható kiszolgálók",
     "Federation" : "Föderáció",
     "Federation allows you to connect with other trusted servers to exchange the account directory." : "A föderáció lehetővé teszi a más megbízható kiszolgálókhoz kapcsolódást, hogy a kiszolgálók fiókjegyzéket cserélhessenek.",
-    "Federation allows you to connect with other trusted servers to exchange the account directory. For example this will be used to auto-complete external accounts for federated sharing." : "A föderáció lehetővé teszi a más megbízható kiszolgálókhoz kapcsolódást, hogy a kiszolgálók fiókjegyzéket cseréljenek. Például ennek segítségével lesznek automatikusan kiegészítve a külső fiókok a föderált megosztásnál.",
-    "Add" : "Hozzáadás",
-    "Delete" : "Törlés",
+    "Federation allows you to connect with other trusted servers to exchange the account directory. For example this will be used to auto-complete external accounts for federated sharing." : "A föderáció lehetővé teszi a más megbízható kiszolgálókhoz kapcsolódást, hogy a kiszolgálók fiókjegyzéket cseréljenek. Például ennek segítségével lesznek automatikusan kiegészítve a külső fióókok a föderált megosztásnál.",
     "Federation allows you to connect with other trusted servers to exchange the account directory. For example this will be used to auto-complete external accounts for federated sharing. It is not necessary to add a server as trusted server in order to create a federated share." : "A föderáció lehetővé teszi a más megbízható kiszolgálókhoz kapcsolódást, hogy a kiszolgálók fiókjegyzéket cseréljenek. Például ennek segítségével lesznek automatikusan kiegészítve a külső fiókok a föderált megosztásnál. Nem szükséges egy kiszolgálót megbízhatóként hozzáadni ahhoz, hogy föderált megosztást hozzon létre.",
-    "Each server must validate the other. This process may require a few cron cycles." : "Minden kiszolgálónak ellenőriznie kell a másikat. Ez a folyat néhány cron ciklust vehet igénybe.",
-    "External documentation for Federated Cloud Sharing" : "Külső dokumentáció a föderált felhőmegosztáshoz",
     "+ Add trusted server" : "+ Megbízható kiszolgáló hozzáadása",
-    "Trusted server" : "Megbízható kiszolgáló"
+    "Trusted server" : "Megbízható kiszolgáló",
+    "Add" : "Hozzáadás"
 },
 "nplurals=2; plural=(n != 1);");

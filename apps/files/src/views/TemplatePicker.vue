@@ -301,20 +301,8 @@ export default defineComponent({
 		},
 
 		async onSubmit() {
-			// Skip templates logic for external users.
-			if (getCurrentUser() === null) {
-				this.loading = true
-				return this.createFile()
-			}
-
 			const fileId = this.selectedTemplate?.fileid
-
-			// Only request field extraction if there is a valid template
-			// selected and it's not the blank template
-			let fields = []
-			if (fileId && fileId !== this.emptyTemplate.fileid) {
-				fields = await getTemplateFields(fileId)
-			}
+			const fields = await getTemplateFields(fileId)
 
 			if (fields.length > 0) {
 				spawnDialog(TemplateFiller, {

@@ -12,7 +12,14 @@ namespace OCA\CloudFederationAPI;
 use OC\OCM\OCMDiscoveryService;
 use OCP\Capabilities\ICapability;
 use OCP\Capabilities\IInitialStateExcludedCapability;
+use OCP\IAppConfig;
+use OCP\IURLGenerator;
 use OCP\OCM\Exceptions\OCMArgumentException;
+use OCP\OCM\IOCMProvider;
+use Psr\Log\LoggerInterface;
+
+class Capabilities implements ICapability, IInitialStateExcludedCapability {
+	public const API_VERSION = '1.1'; // informative, real version.
 
 class Capabilities implements ICapability, IInitialStateExcludedCapability {
 	public function __construct(
@@ -23,11 +30,58 @@ class Capabilities implements ICapability, IInitialStateExcludedCapability {
 	/**
 	 * Function an app uses to return the capabilities
 	 *
-	 * @return array<string, array<string, mixed>>
+	 * @return array{
+	 *     ocm: array{
+	 *     	   apiVersion: '1.0-proposal1',
+	 *         enabled: bool,
+	 *         endPoint: string,
+	 *         publicKey?: array{
+	 *             keyId: string,
+	 *             publicKeyPem: string,
+	 *         },
+	 *         resourceTypes: list<array{
+	 *             name: string,
+	 *             shareTypes: list<string>,
+	 *             protocols: array<string, string>
+	 *         }>,
+	 *         version: string
+	 *     }
+	 * }
 	 * @throws OCMArgumentException
 	 */
 	public function getCapabilities() {
-		$provider = $this->ocmDiscoveryService->getLocalOCMProvider(false);
-		return ['ocm' => $provider->jsonSerialize()];
+		$url = $this->urlGenerator->linkToRouteAbsolute('cloud_federation_api.requesthandlercontroller.addShare');
+		$pos = strrpos($url, '/');
+		if ($pos === false) {
+			throw new OCMArgumentException('generated route should contain a slash character');
+		}
+
+		$this->provider->setEnabled(true);
+		$this->provider->setApiVersion(self::API_VERSION);
+		$this->provider->setEndPoint(substr($url, 0, $pos));
+
+		$resource = $this->provider->createNewResourceType();
+		$resource->setName('file')
+			->setShareTypes(['user', 'group'])
+			->setProtocols(['webdav' => '/public.php/webdav/']);
+
+		$this->provider->addResourceType($resource);
+
+		// Adding a public key to the ocm discovery
+		try {
+			if (!$this->appConfig->getValueBool('core', OCMSignatoryManager::APPCONFIG_SIGN_DISABLED, lazy: true)) {
+				/**
+				 * @experimental 31.0.0
+				 * @psalm-suppress UndefinedInterfaceMethod
+				 */
+				$this->provider->setSignatory($this->ocmSignatoryManager->getLocalSignatory());
+			} else {
+				$this->logger->debug('ocm public key feature disabled');
+			}
+		} catch (SignatoryException|IdentityNotFoundException $e) {
+			$this->logger->warning('cannot generate local signatory', ['exception' => $e]);
+		}
+
+		return ['ocm' => $this->provider->jsonSerialize()];
 	}
 }

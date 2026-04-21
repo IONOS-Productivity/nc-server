@@ -5,7 +5,6 @@
     "Error" : "Грешка",
     "Weather status" : "Метеорологично състояние",
     "Weather status in your dashboard" : "Метеорологично състояние във вашето табло",
-    "Weather status integrated in the Dashboard app.\n    The geographic location can be automatically determined or manually defined. A 6 hours forecast is then displayed.\n    This status can also be integrated in other places like the Calendar app." : "Информацията за времето е вградена в приложението Табло.\n Географското местоположение може да бъде определено автоматично или зададено ръчно, след което се показва прогноза за следващите 6 часа.\nТази информация може да бъде използвана и на други места, като например приложението Календар.",
     "{temperature} {unit} clear sky later today" : "{temperature} {unit} по късно днес небето ще е ясно",
     "{temperature} {unit} clear sky" : "{temperature} {unit} ясно",
     "{temperature} {unit} cloudy later today" : "{temperature} {unit} по късно днес ще е облачно",
@@ -53,9 +52,8 @@
     "There was an error setting the location." : "Възникна грешка при задаване на местоположението.",
     "There was an error saving the mode." : "Възникна грешка при запазването на режима.",
     "There was an error using personal address." : "Възникна грешка при използването на личния адрес.",
-    "Unknown weather code" : "Непознат код за време",
     "Detect location" : "Откриване на местоположение",
-    "Set custom address" : "Задай локация",
+    "Set custom address" : "Задаване на персонализиран адрес",
     "Favorites" : "Любими"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

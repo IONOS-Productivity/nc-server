@@ -11,6 +11,7 @@ namespace Test;
 
 use OC\InitialStateService;
 use OC\TemplateLayout;
+use OCA\Theming\Service\ThemesService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IAppConfig;
@@ -67,7 +68,18 @@ class TemplateLayoutTest extends \Test\TestCase {
 			->with('theming', 'cachebuster', '0')
 			->willReturn('42');
 
-		$this->templateLayout = $this->getMockBuilder(TemplateLayout::class)
+		$initialState = $this->createMock(InitialStateService::class);
+		$themesService = $this->createMock(ThemesService::class);
+		$themesService->expects(self::once())
+			->method('getEnabledThemes')
+			->willReturn([]);
+
+		$this->overwriteService(ThemesService::class, $themesService);
+		$this->overwriteService(IConfig::class, $config);
+		$this->overwriteService(IAppManager::class, $appManager);
+		$this->overwriteService(InitialStateService::class, $initialState);
+
+		$layout = $this->getMockBuilder(TemplateLayout::class)
 			->onlyMethods(['getAppNamefromPath'])
 			->setConstructorArgs([
 				$this->config,

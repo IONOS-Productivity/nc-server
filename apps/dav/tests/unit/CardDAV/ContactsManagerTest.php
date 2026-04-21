@@ -31,12 +31,10 @@ class ContactsManagerTest extends TestCase {
 			['{DAV:}displayname' => 'Test address book', 'uri' => 'default'],
 		]);
 		$propertyMapper = $this->createMock(PropertyMapper::class);
-		/** @var IAppConfig&MockObject $appConfig */
-		$appConfig = $this->createMock(IAppConfig::class);
 
 		/** @var IL10N&MockObject $l */
 		$l = $this->createMock(IL10N::class);
-		$app = new ContactsManager($backEnd, $l, $propertyMapper, $appConfig);
+		$app = new ContactsManager($backEnd, $l, $propertyMapper);
 		$app->setupContactsProvider($cm, 'user01', $urlGenerator);
 	}
 }

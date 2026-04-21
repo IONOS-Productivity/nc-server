@@ -43,6 +43,10 @@
     "Old recovery key password" : "古い復旧キーのパスワード",
     "New recovery key password" : "新しい復旧キーのパスワード",
     "Repeat new recovery key password" : "新しい復旧キーのパスワードをもう一度入力",
+    "Change Password" : "パスワードを変更",
+    "Basic encryption module" : "基本暗号化モジュール",
+    "Your private key password no longer matches your log-in password." : "もはや秘密鍵はログインパスワードと一致しません。",
+    "Set your old private key password to your current log-in password:" : "古い秘密鍵のパスワードを現在のログインパスワードに設定:",
     "If you do not remember your old password you can ask your administrator to recover your files." : "古いパスワードを覚えていない場合は、管理者にファイルの復元を依頼することができます。",
     "Old log-in password" : "古いログインパスワード",
     "Current log-in password" : "現在のログインパスワード",
@@ -61,7 +65,6 @@
     "Update Private Key Password" : "秘密鍵のパスワードを更新",
     "Enable password recovery:" : "パスワードリカバリを有効に:",
     "Enabled" : "有効",
-    "Disabled" : "無効",
-    "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss." : "このアプリは、Nextcloud のサーバー側暗号化 (SSE) 機能の（デフォルトの）暗号化実装を提供します。\n\n**暗号化の詳細**\n* **暗号モード:** AES-256-CTR (デフォルト)\n* **認証:** HMAC-SHA256\n\n**重要な警告**\n* **危険:** すべてのファイルが復号化されるまで、このアプリケーションを無効にしないでください (`occ encryption:decrypt-all`)。\n* **警告**: アクティベーション後に暗号化されていないファイルストレージに戻すには、コマンドラインアクセスが必要です。この操作はWeb UI経由で永続的に実行されます。\n\n**既存ファイルに関する注意事項**\n* デフォルトでは、SSEを有効にしても既存のファイルは暗号化されず、新規ファイルのみが暗号化されます。\n* 既存のすべてのファイルを暗号化するには、コマンド「occ encryption:encrypt-all」を使用します。\n\n**始める前に**\n* **ドキュメントを読む:** SSEを有効化、既存ファイルを暗号化、または無効化する前に、\nSSEの影響とデータ損失を回避するための適切な手順を理解するために、ドキュメントを読むことが重要です。"
+    "Disabled" : "無効"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

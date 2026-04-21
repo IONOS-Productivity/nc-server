@@ -426,7 +426,7 @@ class FileEventsListener implements IEventListener {
 
 		try {
 			$owner = $node->getOwner()?->getUid();
-		} catch (NotFoundException) {
+		} catch (\OCP\Files\NotFoundException) {
 			$owner = null;
 		}
 

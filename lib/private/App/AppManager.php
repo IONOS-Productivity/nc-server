@@ -32,7 +32,6 @@ use OCP\INavigationManager;
 use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserSession;
-use OCP\Server;
 use OCP\ServerVersion;
 use OCP\Settings\IManager as ISettingsManager;
 use Psr\Log\LoggerInterface;
@@ -88,8 +87,6 @@ class AppManager implements IAppManager {
 		private IEventDispatcher $dispatcher,
 		private LoggerInterface $logger,
 		private ServerVersion $serverVersion,
-		private ConfigManager $configManager,
-		private DependencyAnalyzer $dependencyAnalyzer,
 	) {
 	}
 
@@ -1021,97 +1018,6 @@ class AppManager implements IAppManager {
 	 */
 	public function cleanAppId(string $app): string {
 		/* Only lowercase alphanumeric is allowed */
-		return preg_replace('/(^[0-9_-]+|[^a-z0-9_-]+|[_-]+$)/', '', $app);
-	}
-
-	/**
-	 * Run upgrade tasks for an app after the code has already been updated
-	 *
-	 * @throws AppPathNotFoundException if app folder can't be found
-	 */
-	public function upgradeApp(string $appId): bool {
-		// for apps distributed with core, we refresh app path in case the downloaded version
-		// have been installed in custom apps and not in the default path
-		$appPath = $this->getAppPath($appId, true);
-
-		$this->clearAppsCache();
-		$l = \OC::$server->getL10N('core');
-		$appData = $this->getAppInfo($appId, false, $l->getLanguageCode());
-		if ($appData === null) {
-			throw new AppPathNotFoundException('Could not find ' . $appId);
-		}
-
-		$ignoreMaxApps = $this->config->getSystemValue('app_install_overwrite', []);
-		$ignoreMax = in_array($appId, $ignoreMaxApps, true);
-		\OC_App::checkAppDependencies(
-			$this->config,
-			$l,
-			$appData,
-			$ignoreMax
-		);
-
-		\OC_App::registerAutoloading($appId, $appPath, true);
-		\OC_App::executeRepairSteps($appId, $appData['repair-steps']['pre-migration']);
-
-		$ms = new MigrationService($appId, Server::get(\OC\DB\Connection::class));
-		$ms->migrate();
-
-		\OC_App::executeRepairSteps($appId, $appData['repair-steps']['post-migration']);
-		$queue = Server::get(IJobList::class);
-		foreach ($appData['repair-steps']['live-migration'] as $step) {
-			$queue->add(\OC\Migration\BackgroundRepair::class, [
-				'app' => $appId,
-				'step' => $step]);
-		}
-
-		// update appversion in app manager
-		$this->clearAppsCache();
-		$this->getAppVersion($appId, false);
-
-		// Setup background jobs
-		foreach ($appData['background-jobs'] as $job) {
-			$queue->add($job);
-		}
-
-		//set remote/public handlers
-		foreach ($appData['remote'] as $name => $path) {
-			$this->config->setAppValue('core', 'remote_' . $name, $appId . '/' . $path);
-		}
-		foreach ($appData['public'] as $name => $path) {
-			$this->config->setAppValue('core', 'public_' . $name, $appId . '/' . $path);
-		}
-
-		\OC_App::setAppTypes($appId);
-
-		$version = $this->getAppVersion($appId);
-		$this->config->setAppValue($appId, 'installed_version', $version);
-
-		// migrate eventual new config keys in the process
-		/** @psalm-suppress InternalMethod */
-		$this->configManager->migrateConfigLexiconKeys($appId);
-		$this->configManager->updateLexiconEntries($appId);
-
-		$this->dispatcher->dispatchTyped(new AppUpdateEvent($appId));
-		$this->dispatcher->dispatch(ManagerEvent::EVENT_APP_UPDATE, new ManagerEvent(
-			ManagerEvent::EVENT_APP_UPDATE, $appId
-		));
-
-		return true;
-	}
-
-	public function isUpgradeRequired(string $appId): bool {
-		$versions = $this->getAppInstalledVersions();
-		$currentVersion = $this->getAppVersion($appId);
-		if ($currentVersion && isset($versions[$appId])) {
-			$installedVersion = $versions[$appId];
-			if (!version_compare($currentVersion, $installedVersion, '=')) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public function isAppCompatible(string $serverVersion, array $appInfo, bool $ignoreMax = false): bool {
-		return count($this->dependencyAnalyzer->analyzeServerVersion($serverVersion, $appInfo, $ignoreMax)) === 0;
+		return preg_replace('/(^[0-9_]|[^a-z0-9_]+|_$)/', '', $app);
 	}
 }

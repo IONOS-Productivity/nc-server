@@ -19,9 +19,6 @@ OC.L10N.register(
     "New comment" : "Νέο σχόλιο",
     "Write a comment …" : "Γράψτε ένα σχόλιο …",
     "Post comment" : "Αναρτήστε σχόλιο",
-    "@ for mentions, : for emoji, / for smart picker" : "@ για αναφορές, : για emoji, / για έξυπνο επιλογέα",
-    "Could not reload comments" : "Αδυναμία επανάφόρτωσης σχολίων",
-    "Failed to mark comments as read" : "Αποτυχία σήμανσης σχολίων ως αναγνωσμένα",
     "Unable to load the comments list" : "Δεν είναι δυνατή η μεταφόρτωση της λίστας σχολίων.",
     "No comments yet, start the conversation!" : "Δεν υπάρχουν σχόλια, ξεκινήστε την συζήτηση!",
     "No more messages" : "Δεν υπάρχουν άλλα μηνύματα",
@@ -31,7 +28,6 @@ OC.L10N.register(
     "An error occurred while trying to edit the comment" : "Παρουσιάστηκε σφάλμα κατά την προσπάθεια επεξεργασίας του σχολίου",
     "Comment deleted" : "Το σχόλιο διαγράφηκε",
     "An error occurred while trying to delete the comment" : "Παρουσιάστηκε σφάλμα κατά την προσπάθεια διαγραφής του σχολίου",
-    "An error occurred while trying to create the comment" : "Παρουσιάστηκε σφάλμα κατά την προσπάθεια δημιουργίας του σχολίου",
-    "Write a comment …" : "Γράψτε ένα σχόλιο …"
+    "An error occurred while trying to create the comment" : "Παρουσιάστηκε σφάλμα κατά την προσπάθεια δημιουργίας του σχολίου"
 },
 "nplurals=2; plural=(n != 1);");

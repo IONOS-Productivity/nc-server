@@ -17,8 +17,6 @@ use OCP\Files\Search\ISearchBinaryOperator;
 use OCP\Files\Search\ISearchComparison;
 use OCP\Files\Search\ISearchOperator;
 use OCP\FilesMetadata\IFilesMetadataManager;
-use OCP\IDBConnection;
-use OCP\Server;
 use Test\TestCase;
 
 /**

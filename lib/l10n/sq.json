@@ -139,6 +139,7 @@
     "Text" : "Tekst",
     "Summary" : "Përmbledhje",
     "Translate" : "Përkthe",
-    "Result" : "Rezultatet"
+    "Result" : "Rezultatet",
+    "File is currently busy, please try again later" : "Kartela tani është e zënë, ju lutemi, riprovoni më vonë."
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

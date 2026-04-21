@@ -156,14 +156,6 @@ class SystemTagManager implements ISystemTagManager {
 			throw new TagCreationForbiddenException();
 		}
 
-		// Check if tag already exists (case-insensitive)
-		$existingTags = $this->getAllTags(null, $tagName);
-		foreach ($existingTags as $existingTag) {
-			if (mb_strtolower($existingTag->getName()) === mb_strtolower($tagName)) {
-				throw new TagAlreadyExistsException('Tag ' . $tagName . ' already exists');
-			}
-		}
-
 		// Length of name column is 64
 		$truncatedTagName = substr($tagName, 0, 64);
 		$query = $this->connection->getQueryBuilder();

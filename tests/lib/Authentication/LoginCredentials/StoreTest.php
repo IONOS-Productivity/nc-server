@@ -276,7 +276,7 @@ class StoreTest extends TestCase {
 		$this->tokenProvider->expects($this->once())
 			->method('getToken')
 			->with('sess2233')
-			->willThrowException(new PasswordlessTokenException());
+			->will($this->throwException(new PasswordlessTokenException()));
 
 		$this->session->expects($this->once())
 			->method('exists')

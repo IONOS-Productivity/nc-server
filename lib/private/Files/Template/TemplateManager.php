@@ -229,7 +229,7 @@ class TemplateManager implements ITemplateManager {
 			}
 		}
 
-		return array_values($templates);
+		return $templates;
 	}
 
 	/**

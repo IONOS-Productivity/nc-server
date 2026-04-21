@@ -22,7 +22,6 @@ use Test\TestCase;
 
 class SetConfigTest extends TestCase {
 	protected IAppConfig&MockObject $appConfig;
-	protected ConfigManager&MockObject $configManager;
 	protected InputInterface&MockObject $consoleInput;
 	protected OutputInterface&MockObject $consoleOutput;
 	protected Command $command;
@@ -31,11 +30,10 @@ class SetConfigTest extends TestCase {
 		parent::setUp();
 
 		$this->appConfig = $this->createMock(AppConfig::class);
-		$this->configManager = $this->createMock(ConfigManager::class);
 		$this->consoleInput = $this->createMock(InputInterface::class);
 		$this->consoleOutput = $this->createMock(OutputInterface::class);
 
-		$this->command = new SetConfig($this->appConfig, $this->configManager);
+		$this->command = new SetConfig($this->appConfig);
 	}
 
 
@@ -60,7 +58,9 @@ class SetConfigTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataSet')]
+	/**
+	 * @dataProvider dataSet
+	 */
 	public function testSet(string $configName, mixed $newValue, bool $configExists, bool $updateOnly, bool $updated, string $expectedMessage): void {
 		$this->appConfig->method('hasKey')
 			->with('app-name', $configName)

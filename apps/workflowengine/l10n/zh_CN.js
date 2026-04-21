@@ -48,13 +48,11 @@ OC.L10N.register(
     "Select a filter" : "选择一个过滤器",
     "Select a comparator" : "选择一个比较器",
     "Remove filter" : "移除过滤条件",
-    "Audio" : "音频",
     "Folder" : "文件夹",
     "Images" : "图片",
     "Office documents" : "Office 文档",
     "PDF documents" : "PDF文档",
-    "Video" : "视频",
-    "Custom MIME type" : "自定义 MIME 类型",
+    "Custom mimetype" : "自定义MIME类型",
     "Select a file type" : "选择一个文件类型",
     "e.g. httpd/unix-directory" : "例如： httpd/unix-directory",
     "Please enter a valid time span" : "请输入有效的时间范围",
@@ -73,7 +71,7 @@ OC.L10N.register(
     "At least one event must be selected" : "必须至少选择一个事件",
     "Add new flow" : "添加新的流程",
     "The configuration is invalid" : "此配置是无效的",
-    "Active" : "作用",
+    "Active" : "活动",
     "Save" : "保存",
     "When" : "时间",
     "and" : "与",
@@ -117,7 +115,6 @@ OC.L10N.register(
     "Request user agent" : "请求用户代理",
     "Group membership" : "组成员资格",
     "is member of" : "是成员",
-    "is not member of" : "不是成员",
-    "Type to search for group …" : "输入以搜索群组..."
+    "is not member of" : "不是成员"
 },
 "nplurals=1; plural=0;");

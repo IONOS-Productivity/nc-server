@@ -49,10 +49,10 @@ OC.L10N.register(
     "Old recovery key password" : "Kata sandi kunci pemulihan lama",
     "New recovery key password" : "Kata sandi kunci pemulihan baru",
     "Repeat new recovery key password" : "Ulangi sandi kunci pemulihan baru",
-    "An error occurred while changing the recovery key password. Please try again." : "Terjadi kesalahan saat mengubah kata sandi kunci pemulihan. Silakan coba lagi.",
-    "Update private key password" : "Perbarui kata sandi kunci privat",
-    "Your private key password no longer matches your log-in password. Set your old private key password to your current log-in password." : "Kata sandi kunci privat Anda tidak lagi cocok dengan kata sandi login Anda. Atur kata sandi kunci privat lama Anda menjadi kata sandi login Anda saat ini.",
-    "If you do not remember your old password you can ask your administrator to recover your files." : "Jika Anda tidak ingat kata sandi lama Anda, Anda dapat meminta administrator Anda untuk memulihkan file Anda.",
+    "Change Password" : "Ubah Sandi",
+    "Basic encryption module" : "Modul enkripsi dasar",
+    "Your private key password no longer matches your log-in password." : "Kata sandi kunci private Anda tidak lagi cocok dengan kata sandi masuk Anda.",
+    "Set your old private key password to your current log-in password:" : "Setel kata sandi kunci private Anda untuk kata sandi masuk Anda saat ini:",
     "Old log-in password" : "Kata sandi masuk yang lama",
     "Current log-in password" : "Kata sandi masuk saat ini",
     "Update" : "Perbarui",
@@ -72,7 +72,6 @@ OC.L10N.register(
     "Update Private Key Password" : "Perbarui Kata Sandi Kunci Private",
     "Enable password recovery:" : "Aktifkan kata sandi pemulihan:",
     "Enabled" : "Diaktifkan",
-    "Disabled" : "Dinonaktifkan",
-    "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss." : "Aplikasi ini menyediakan implementasi kriptografi (default) untuk fitur Enkripsi Sisi Server (SSE) Nextcloud.\n\n\t\t\t**Rincian Enkripsi**\n\t\t\t*   **Mode Sandi:** AES-256-CTR (default)\n\t\t\t*   **Autentikasi:** HMAC-SHA256\n\n\t\t\t**Peringatan Penting**\n\t\t\t*  **BAHAYA:** Jangan menonaktifkan aplikasi ini sampai semua file telah didekripsi (`occ encryption:decrypt-all`).\n\t\t\t*   **PERINGATAN**: Mengembalikan penyimpanan file tanpa enkripsi setelah aktivasi memerlukan akses baris perintah. Tindakan ini bersifat permanen melalui UI Web.\"\n\n\t\t\t**Catatan untuk File yang Sudah Ada**\n\t\t\t*   Secara default, mengaktifkan SSE tidak mengenkripsi file yang sudah ada; hanya file baru yang akan dienkripsi.\n\t\t\t*   Untuk mengenkripsi semua file yang sudah ada, gunakan perintah `occ encryption:encrypt-all`.\n\n\t\t\t**Sebelum Anda Memulai**\n\t\t\t*   **Baca Dokumentasi:** Sebelum Anda mengaktifkan SSE, mengenkripsi file yang sudah ada, atau menonaktifkan SSE, sangat penting untuk \n\t\t\t\tmembaca dokumentasi untuk memahami implikasi dan prosedur yang tepat guna menghindari kehilangan data."
+    "Disabled" : "Dinonaktifkan"
 },
 "nplurals=1; plural=0;");

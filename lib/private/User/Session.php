@@ -10,6 +10,7 @@ namespace OC\User;
 use OC;
 use OC\Authentication\Exceptions\PasswordlessTokenException;
 use OC\Authentication\Exceptions\PasswordLoginForbiddenException;
+use OC\Authentication\Exceptions\UserAgentForbidden;
 use OC\Authentication\Token\IProvider;
 use OC\Authentication\Token\IToken;
 use OC\Authentication\Token\PublicKeyToken;
@@ -537,11 +538,15 @@ class Session implements IUserSession, Emitter {
 	 * @param IRequest $request
 	 * @param IThrottler $throttler
 	 * @return boolean if the login was successful
+	 * @throws UserAgentForbidden|LoginException
 	 */
 	public function tryBasicAuthLogin(IRequest $request,
 		IThrottler $throttler) {
 		if (!empty($request->server['PHP_AUTH_USER']) && !empty($request->server['PHP_AUTH_PW'])) {
 			try {
+				$userAgent = $request->server['HTTP_USER_AGENT'] ?? '';
+				$this->validateUserAgent($userAgent);
+
 				if ($this->logClientIn($request->server['PHP_AUTH_USER'], $request->server['PHP_AUTH_PW'], $request, $throttler)) {
 					/**
 					 * Add DAV authenticated. This should in an ideal world not be
@@ -566,6 +571,28 @@ class Session implements IUserSession, Emitter {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Validate the user agent and check if it is allowed to use the login flow.
+	 * Throws an exception if the user agent is not allowed.
+	 *
+	 * @param string $clientUserAgent
+	 * @throws UserAgentForbidden
+	 */
+	private function validateUserAgent(string $clientUserAgent): void {
+		$allowedAgents = $this->config->getSystemValue('core.login_flow_v2.allowed_user_agents', []);
+		if (empty($allowedAgents)) {
+			return;
+		}
+
+		foreach ($allowedAgents as $allowedAgent) {
+			if (preg_match($allowedAgent, $clientUserAgent) === 1) {
+				return;
+			}
+		}
+
+		throw new UserAgentForbidden('Client not allowed');
 	}
 
 	/**

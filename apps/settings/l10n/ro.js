@@ -132,7 +132,6 @@ OC.L10N.register(
     "Level" : "Nivel",
     "Actions" : "Acțiuni",
     "No apps found for your version" : "Nu au fost găsite aplicații pentru versiunea ta",
-    "Groups" : "Grupuri",
     "Group name" : "Numele grupului",
     "Type" : "Tip",
     "Confirm" : "Confirmă",
@@ -156,7 +155,6 @@ OC.L10N.register(
     "Ask questions or discuss" : "Puneți întrebări sau participați la discuții",
     "Changelog" : "Listă modificări",
     "Google Chrome for Android" : "Google Chrome for Android",
-    "{productName} Android app" : "{productName} aplicație Android",
     "This session" : "Această sesiune",
     "Device settings" : "Setările dispozitivului",
     "Allow filesystem access" : "Permite accesul la fișierele de sistem",
@@ -206,6 +204,7 @@ OC.L10N.register(
     "Send email" : "Expediază mesajul",
     "Server error while trying to complete WebAuthn device registration" : "Eroare de server în timpul încercării de a finaliza înregistrarea dispozitivului WebAuthn",
     "Add WebAuthn device" : "Adăugați dispozitivul WebAuthn",
+    "Adding your device …" : "Adăugarea dispozitivului dvs ...",
     "Unnamed device" : "Dispozitiv fără nume",
     "Your browser does not support WebAuthn." : "Browserul dvs. nu acceptă WebAuthn.",
     "Send mode" : "Modul de expediere",
@@ -223,6 +222,8 @@ OC.L10N.register(
     "All checks passed." : "Toate verificările s-au terminat fără erori.",
     "Apply" : "Aplică",
     "Admins" : "Administratori",
+    "Sending…" : "Se trimite...",
+    "Email sent" : "Mesajul a fost expediat",
     "Location" : "Locație",
     "Profile picture" : "Imagine de profil",
     "About" : "Despre",
@@ -272,6 +273,9 @@ OC.L10N.register(
     "SSL" : "SSL",
     "Credentials" : "Detalii de autentificare",
     "SMTP Password" : "Parolă SMTP",
-    "Save" : "Salvează"
+    "Save" : "Salvează",
+    "Security & setup warnings" : "Alerte de securitate & configurare",
+    "All checks passed." : "Toate verificările s-au terminat fără erori.",
+    "This community release of Nextcloud is unsupported and instant notifications are unavailable." : "Această versiune comunitară a Nextcloud nu este suportată, iar notificările instantanee nu sunt disponibile."
 },
 "nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));");

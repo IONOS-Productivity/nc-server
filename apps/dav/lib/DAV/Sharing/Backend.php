@@ -238,7 +238,7 @@ abstract class Backend {
 
 	public function unshare(IShareable $shareable, string $principalUri): bool {
 		$this->shareCache->clear();
-
+		
 		$principal = $this->principalBackend->findByUri($principalUri, '');
 		if (empty($principal)) {
 			return false;
@@ -275,21 +275,5 @@ abstract class Backend {
 		);
 
 		return count(array_intersect($memberships, $shares)) > 0;
-	}
-
-	public function getSharesByShareePrincipal(string $principal): array {
-		return $this->service->getSharesByPrincipals([$principal]);
-	}
-
-	/**
-	 * @param string[]|null $propertyFilter A list of properties to be retrieved or all if null. Is not guaranteed to always be applied and might overfetch.
-	 */
-	private function getPrincipalByPath(string $principalUri, ?array $propertyFilter = null): ?array {
-		// Hacky code below ... shouldn't we check the whole (principal) root collection instead?
-		if (str_starts_with($principalUri, RemoteUserPrincipalBackend::PRINCIPAL_PREFIX)) {
-			return $this->remoteUserPrincipalBackend->getPrincipalByPath($principalUri);
-		}
-
-		return $this->principalBackend->getPrincipalPropertiesByPath($principalUri, $propertyFilter);
 	}
 }

@@ -116,7 +116,7 @@ trait S3ConnectionTrait {
 			'use_aws_shared_config_files' => false,
 			'retries' => [
 				'mode' => 'standard',
-				'max_attempts' => $this->retriesMaxAttempts,
+				'max_attempts' => 5,
 			],
 		];
 

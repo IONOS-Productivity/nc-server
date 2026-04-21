@@ -11,7 +11,7 @@ OC.L10N.register(
     "Redirection URI" : "URI de redireccion",
     "Add client" : "Apondre un client",
     "Add" : "Apondre",
-    "Client Identifier" : "Identificador client",
-    "Show client secret" : "Afichar lo secret del client"
+    "Show client secret" : "Afichar lo secret del client",
+    "Delete" : "Suprimir"
 },
 "nplurals=2; plural=(n > 1);");

@@ -28,7 +28,6 @@ use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserSession;
 use OCP\ServerVersion;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
@@ -98,9 +97,10 @@ class AppManagerTest extends TestCase {
 	protected ServerVersion&MockObject $serverVersion;
 	protected ConfigManager&MockObject $configManager;
 
-	protected DependencyAnalyzer $dependencyAnalyzer;
+	protected ServerVersion&MockObject $serverVersion;
 
-	protected AppManager $manager;
+	/** @var IAppManager */
+	protected $manager;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -115,8 +115,6 @@ class AppManagerTest extends TestCase {
 		$this->logger = $this->createMock(LoggerInterface::class);
 		$this->urlGenerator = $this->createMock(IURLGenerator::class);
 		$this->serverVersion = $this->createMock(ServerVersion::class);
-		$this->configManager = $this->createMock(ConfigManager::class);
-		$this->dependencyAnalyzer = new DependencyAnalyzer($this->createMock(Platform::class));
 
 		$this->overwriteService(AppConfig::class, $this->appConfig);
 		$this->overwriteService(IURLGenerator::class, $this->urlGenerator);
@@ -139,8 +137,6 @@ class AppManagerTest extends TestCase {
 			$this->eventDispatcher,
 			$this->logger,
 			$this->serverVersion,
-			$this->configManager,
-			$this->dependencyAnalyzer,
 		);
 	}
 
@@ -279,8 +275,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods([
 				'getAppPath',
@@ -336,8 +330,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods([
 				'getAppPath',
@@ -400,8 +392,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods([
 				'getAppPath',
@@ -607,8 +597,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods(['getAppInfo'])
 			->getMock();
@@ -669,8 +657,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods(['getAppInfo'])
 			->getMock();
@@ -810,8 +796,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods([
 				'getAppInfo',
@@ -843,8 +827,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods([
 				'getAppInfo',
@@ -875,8 +857,6 @@ class AppManagerTest extends TestCase {
 				$this->eventDispatcher,
 				$this->logger,
 				$this->serverVersion,
-				$this->configManager,
-				$this->dependencyAnalyzer,
 			])
 			->onlyMethods([
 				'getAppInfo',
@@ -898,24 +878,4 @@ class AppManagerTest extends TestCase {
 		);
 	}
 
-	public static function dataCleanAppId(): array {
-		return [
-			['simple', 'simple'],
-			['UPPERCASEa', 'a'],
-			['MixEdCaSe', 'ixdae'],
-			['007startwithdigit', 'startwithdigit'],
-			['0-numb3rs-4ll0w3d-1n-m1ddle-0', 'numb3rs-4ll0w3d-1n-m1ddle-0'],
-			['hyphen-and_underscore_allowed', 'hyphen-and_underscore_allowed'],
-			['_but-not-at-the-end_', 'but-not-at-the-end'],
-			['-but-not-at-the-end-', 'but-not-at-the-end'],
-			['--_but-not-at-the-end___', 'but-not-at-the-end'],
-			[' also remove all spaces', 'alsoremoveallspaces'],
-			['a«"«»()@+-/*=%\{}…~|&œ—<>[]^±_−÷×≠‰A', 'a-_'],
-		];
-	}
-
-	#[DataProvider('dataCleanAppId')]
-	public function testCleanAppId(string $inputString, string $appid): void {
-		$this->assertEquals($appid, $this->manager->cleanAppId($inputString));
-	}
 }

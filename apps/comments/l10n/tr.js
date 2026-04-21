@@ -19,7 +19,7 @@ OC.L10N.register(
     "New comment" : "Yorum ekle",
     "Write a comment …" : "Bir yorum yazın…",
     "Post comment" : "Yorum gönder",
-    "@ for mentions, : for emoji, / for smart picker" : "Anmalar için @, emojiler için :, akıllı seçici için /",
+    "@ for mentions, : for emoji, / for smart picker" : "Bahsetmeler için @, emojiler için :, akıllı seçici için /",
     "Could not reload comments" : "Yorumlar yeniden yüklenemedi",
     "Failed to mark comments as read" : "Yorumlar okunmuş olarak işaretlenemedi",
     "Unable to load the comments list" : "Yorum listesi yüklenemedi",
@@ -31,7 +31,6 @@ OC.L10N.register(
     "An error occurred while trying to edit the comment" : "Yorum düzenlenmeye çalışılırken bir sorun çıktı",
     "Comment deleted" : "Yorum silindi",
     "An error occurred while trying to delete the comment" : "Yorum silinmeye çalışılırken bir sorun çıktı",
-    "An error occurred while trying to create the comment" : "Yorum eklenmeye çalışılırken bir sorun çıktı",
-    "Write a comment …" : "Bir yorum yazın…"
+    "An error occurred while trying to create the comment" : "Yorum eklenmeye çalışılırken bir sorun çıktı"
 },
 "nplurals=2; plural=(n > 1);");

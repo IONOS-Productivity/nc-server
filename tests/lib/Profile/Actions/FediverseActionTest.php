@@ -105,7 +105,7 @@ class FediverseActionTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataGetTitle')]
+	/** @dataProvider dataGetTitle */
 	public function testGetTitle(string $value): void {
 		$property = $this->createMock(IAccountProperty::class);
 		$property->method('getValue')
@@ -154,7 +154,7 @@ class FediverseActionTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataGetTarget')]
+	/** @dataProvider dataGetTarget */
 	public function testGetTarget(?string $value, ?string $expected): void {
 		$user = $this->createMock(IUser::class);
 

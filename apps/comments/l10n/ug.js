@@ -26,12 +26,10 @@ OC.L10N.register(
     "No comments yet, start the conversation!" : "تېخى باھا يوق ، سۆھبەتنى باشلاڭ!",
     "No more messages" : "باشقا ئۇچۇر يوق",
     "Retry" : "قايتا سىناڭ",
-    "_1 new comment_::_{unread} new comments_" : ["1 يېڭى ئىنكاس","{unread} يېڭى ئىنكاسلار"],
     "Comment" : "باھا",
     "An error occurred while trying to edit the comment" : "باھانى تەھرىرلىمەكچى بولغاندا خاتالىق كۆرۈلدى",
     "Comment deleted" : "باھا ئۆچۈرۈلدى",
     "An error occurred while trying to delete the comment" : "باھانى ئۆچۈرمەكچى بولغاندا خاتالىق كۆرۈلدى",
-    "An error occurred while trying to create the comment" : "باھا قۇرماقچى بولغاندا خاتالىق كۆرۈلدى",
-    "Write a comment …" : "باھا يېزىڭ…"
+    "An error occurred while trying to create the comment" : "باھا قۇرماقچى بولغاندا خاتالىق كۆرۈلدى"
 },
 "nplurals=2; plural=(n != 1);");

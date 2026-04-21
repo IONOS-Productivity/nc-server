@@ -178,6 +178,7 @@
     "Images" : "Bildoj",
     "Text" : "Teksto",
     "Summary" : "Resumo",
-    "Translate" : "Traduku"
+    "Translate" : "Traduku",
+    "File is currently busy, please try again later" : "La dosiero estas nun okupita, bv. reprovi poste"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

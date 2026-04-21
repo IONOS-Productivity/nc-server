@@ -15,6 +15,7 @@
     "Each server must validate the other. This process may require a few cron cycles." : "يجب على كل خادوم أن يُصادِق على الآخر. هذه العملية يمكن أن تستغرق عدة دورات من مهام الخلفية cron.",
     "External documentation for Federated Cloud Sharing" : "التوثيق الخارجي لمشاركة السحابة الاتحادية",
     "+ Add trusted server" : "+ إضافة خادم موثوق",
-    "Trusted server" : "خادم موثوق"
+    "Trusted server" : "خادم موثوق",
+    "Add" : "إضافة"
 },"pluralForm" :"nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;"
 }

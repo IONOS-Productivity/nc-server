@@ -90,6 +90,7 @@ class FilesDropPlugin extends ServerPlugin {
 		// Extract the attributes for the file request
 		$isFileRequest = false;
 		$attributes = $this->share->getAttributes();
+		$nickName = $request->hasHeader('X-NC-Nickname') ? trim(urldecode($request->getHeader('X-NC-Nickname'))) : null;
 		if ($attributes !== null) {
 			$isFileRequest = $attributes->getAttribute('fileRequest', 'enabled') === true;
 		}
@@ -100,8 +101,22 @@ class FilesDropPlugin extends ServerPlugin {
 			: null;
 
 		// We need a valid nickname for file requests
-		if ($isFileRequest && !$nickname) {
-			throw new BadRequest('A nickname header is required for file requests');
+		if ($isFileRequest && !$nickName) {
+			throw new BadRequest('Nickname is required for file requests');
+		}
+		
+		if ($nickName !== null) {
+			try {
+				$this->view->verifyPath($path, $nickName);
+			} catch (\Exception $e) {
+				// If the path is not valid, we throw an exception
+				throw new BadRequest('Invalid nickname: ' . $nickName);
+			}
+
+			// Forbid nicknames starting with a dot
+			if (str_starts_with($nickName, '.')) {
+				throw new BadRequest('Invalid nickname: ' . $nickName);
+			}
 		}
 
 		// If this is a folder creation request

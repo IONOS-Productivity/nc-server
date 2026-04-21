@@ -89,19 +89,15 @@ class Application extends App implements IBootstrap {
 		}
 
 		// No maintenance so register all events
-		$eventDispatcher->addServiceListener(BeforeTemplateRenderedEvent::class, BeforeTemplateRenderedListener::class);
+		$eventDispatcher->addServiceListener(UserCreatedEvent::class, UserEventsListener::class);
+		$eventDispatcher->addServiceListener(UserDeletedEvent::class, UserEventsListener::class);
+		$eventDispatcher->addServiceListener(BeforePasswordUpdatedEvent::class, UserEventsListener::class);
+		$eventDispatcher->addServiceListener(PasswordUpdatedEvent::class, UserEventsListener::class);
+		$eventDispatcher->addServiceListener(BeforePasswordResetEvent::class, UserEventsListener::class);
+		$eventDispatcher->addServiceListener(PasswordResetEvent::class, UserEventsListener::class);
 		$eventDispatcher->addServiceListener(UserLoggedInEvent::class, UserEventsListener::class);
 		$eventDispatcher->addServiceListener(UserLoggedInWithCookieEvent::class, UserEventsListener::class);
 		$eventDispatcher->addServiceListener(UserLoggedOutEvent::class, UserEventsListener::class);
-		if (!$util->isMasterKeyEnabled()) {
-			// Only make sense if no master key is used
-			$eventDispatcher->addServiceListener(UserCreatedEvent::class, UserEventsListener::class);
-			$eventDispatcher->addServiceListener(UserDeletedEvent::class, UserEventsListener::class);
-			$eventDispatcher->addServiceListener(BeforePasswordUpdatedEvent::class, UserEventsListener::class);
-			$eventDispatcher->addServiceListener(PasswordUpdatedEvent::class, UserEventsListener::class);
-			$eventDispatcher->addServiceListener(BeforePasswordResetEvent::class, UserEventsListener::class);
-			$eventDispatcher->addServiceListener(PasswordResetEvent::class, UserEventsListener::class);
-		}
 	}
 
 	public function registerEncryptionModule(

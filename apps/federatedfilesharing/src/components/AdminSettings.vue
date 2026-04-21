@@ -36,16 +36,16 @@
 			<legend>{{ t('federatedfilesharing', 'The lookup server is only available for global scale.') }}</legend>
 
 			<NcCheckboxRadioSwitch type="switch"
-				:checked="lookupServerEnabled"
+				:checked.sync="lookupServerEnabled"
 				disabled
-				@update:checked="showLookupServerConfirmation">
+				@update:checked="update('lookupServerEnabled', lookupServerEnabled)">
 				{{ t('federatedfilesharing', 'Search global and public address book for people') }}
 			</NcCheckboxRadioSwitch>
 
 			<NcCheckboxRadioSwitch type="switch"
-				:checked="lookupServerUploadEnabled"
+				:checked.sync="lookupServerUploadEnabled"
 				disabled
-				@update:checked="showLookupServerUploadConfirmation">
+				@update:checked="update('lookupServerUploadEnabled', lookupServerUploadEnabled)">
 				{{ t('federatedfilesharing', 'Allow people to publish their data to a global and public address book') }}
 			</NcCheckboxRadioSwitch>
 		</fieldset>

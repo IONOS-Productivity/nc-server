@@ -12,7 +12,11 @@ use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IWebhookCompatibleEvent;
 
 /**
- * @since 32.0.0
+ * Class CalendarObjectMovedEvent
+ *
+ * @package OCA\DAV\Events
+ * @since 25.0.0
+ * @deprecated 31.0.2 Use {@see \OCP\Calendar\Events\CalendarObjectMovedEvent} instead
  */
 class CalendarObjectMovedEvent extends Event implements IWebhookCompatibleEvent {
 	/**

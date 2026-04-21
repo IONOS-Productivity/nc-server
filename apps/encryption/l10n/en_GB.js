@@ -49,9 +49,10 @@ OC.L10N.register(
     "Old recovery key password" : "Old recovery key password",
     "New recovery key password" : "New recovery key password",
     "Repeat new recovery key password" : "Repeat new recovery key password",
-    "An error occurred while changing the recovery key password. Please try again." : "An error occurred while changing the recovery key password. Please try again.",
-    "Update private key password" : "Update private key password",
-    "Your private key password no longer matches your log-in password. Set your old private key password to your current log-in password." : "Your private key password no longer matches your log-in password. Set your old private key password to your current log-in password.",
+    "Change Password" : "Change Password",
+    "Basic encryption module" : "Basic encryption module",
+    "Your private key password no longer matches your log-in password." : "Your private key password no longer matches your log-in password.",
+    "Set your old private key password to your current log-in password:" : "Set your old private key password to your current log-in password:",
     "If you do not remember your old password you can ask your administrator to recover your files." : "If you do not remember your old password you can ask your administrator to recover your files.",
     "Old log-in password" : "Old login password",
     "Current log-in password" : "Current login password",
@@ -72,7 +73,6 @@ OC.L10N.register(
     "Update Private Key Password" : "Update Private Key Password",
     "Enable password recovery:" : "Enable password recovery:",
     "Enabled" : "Enabled",
-    "Disabled" : "Disabled",
-    "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss." : "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss."
+    "Disabled" : "Disabled"
 },
 "nplurals=2; plural=(n != 1);");

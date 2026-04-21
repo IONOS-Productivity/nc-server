@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "Ní mór do gach freastalaí an ceann eile a bhailíochtú. D'fhéadfadh go mbeadh cúpla timthriall cron ag teastáil don phróiseas seo.",
     "External documentation for Federated Cloud Sharing" : "Doiciméadú seachtrach maidir le Comhroinnt Néalríomhaireachta",
     "+ Add trusted server" : "+ Cuir freastalaí iontaofa leis",
-    "Trusted server" : "Freastalaí iontaofa"
+    "Trusted server" : "Freastalaí iontaofa",
+    "Add" : "Cuir"
 },
 "nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : 4);");

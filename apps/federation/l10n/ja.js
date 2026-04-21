@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "各サーバーは他のサーバーを検証しなければならない。このプロセスには数サイクルのcronが必要です。",
     "External documentation for Federated Cloud Sharing" : "Federated Cloud Sharingの外部ドキュメント",
     "+ Add trusted server" : "+ 信頼済サーバーに追加",
-    "Trusted server" : "信頼済サーバー"
+    "Trusted server" : "信頼済サーバー",
+    "Add" : "追加"
 },
 "nplurals=1; plural=0;");

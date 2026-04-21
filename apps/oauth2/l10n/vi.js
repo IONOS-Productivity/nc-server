@@ -13,7 +13,7 @@ OC.L10N.register(
     "Redirection URI" : "Liên kết chuyển tiếp",
     "Add client" : "Thêm kết nối",
     "Add" : "Thêm",
-    "Client Identifier" : "Mã định danh ứng dụng khách",
-    "Show client secret" : "Hiện bí mật ứng dụng khách"
+    "Show client secret" : "Hiện bí mật ứng dụng khách",
+    "Delete" : "Xóa"
 },
 "nplurals=1; plural=0;");

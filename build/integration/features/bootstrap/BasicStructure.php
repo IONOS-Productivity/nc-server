@@ -122,21 +122,12 @@ trait BasicStructure {
 	 * @param ResponseInterface $response
 	 * @return string
 	 */
-	public function getOCSResponseCode($response): int {
-		if ($response === null) {
-			throw new \RuntimeException('No response available');
+	public function getOCSResponse($response) {
+		$body = simplexml_load_string((string)$response->getBody());
+		if ($body === false) {
+			throw new \RuntimeException('Could not parse OCS response, body is not valid XML');
 		}
-
-		$body = (string)$response->getBody();
-		if (str_starts_with($body, '<')) {
-			$body = simplexml_load_string($body);
-			if ($body === false) {
-				throw new \RuntimeException('Could not parse OCS response, body is not valid XML');
-			}
-			return (int)$body->meta[0]->statuscode;
-		}
-
-		return json_decode($body, true)['ocs']['meta']['statuscode'];
+		return $body->meta[0]->statuscode;
 	}
 
 	/**

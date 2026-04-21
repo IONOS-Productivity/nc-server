@@ -12,7 +12,6 @@ import axios from '@nextcloud/axios'
 import LaptopSvg from '@mdi/svg/svg/laptop.svg?raw'
 import IconWeb from '@mdi/svg/svg/web.svg?raw'
 import { isPublicShare } from '@nextcloud/sharing/public'
-import { isSyncable } from '../utils/permissions.ts'
 
 export const action = new FileAction({
 	id: 'edit-locally',

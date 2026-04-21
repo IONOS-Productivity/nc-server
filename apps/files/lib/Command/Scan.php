@@ -26,7 +26,6 @@ use OCP\Files\StorageNotAvailableException;
 use OCP\FilesMetadata\IFilesMetadataManager;
 use OCP\IUserManager;
 use OCP\Lock\LockedException;
-use OCP\Server;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;

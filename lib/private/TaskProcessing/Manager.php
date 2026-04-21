@@ -32,9 +32,9 @@ use OCP\Files\NotPermittedException;
 use OCP\Files\SimpleFS\ISimpleFile;
 use OCP\Files\SimpleFS\ISimpleFolder;
 use OCP\Http\Client\IClientService;
-use OCP\IAppConfig;
 use OCP\ICache;
 use OCP\ICacheFactory;
+use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IServerContainer;
 use OCP\IUserManager;
@@ -119,10 +119,7 @@ class Manager implements IManager {
 		private IUserMountCache $userMountCache,
 		private IClientService $clientService,
 		private IAppManager $appManager,
-		private IUserManager $userManager,
-		private IUserSession $userSession,
 		ICacheFactory $cacheFactory,
-		private IFactory $l10nFactory,
 	) {
 		$this->appData = $appDataFactory->get('core');
 		$this->distributedCache = $cacheFactory->createDistributed('task_processing::');
@@ -803,11 +800,7 @@ class Manager implements IManager {
 			if ($this->preferences === null) {
 				$this->preferences = $this->distributedCache->get('ai.taskprocessing_provider_preferences');
 				if ($this->preferences === null) {
-					$this->preferences = json_decode(
-						$this->appConfig->getValueString('core', 'ai.taskprocessing_provider_preferences', 'null', lazy: true),
-						associative: true,
-						flags: JSON_THROW_ON_ERROR,
-					);
+					$this->preferences = json_decode($this->config->getAppValue('core', 'ai.taskprocessing_provider_preferences', 'null'), associative: true, flags: JSON_THROW_ON_ERROR);
 					$this->distributedCache->set('ai.taskprocessing_provider_preferences', $this->preferences, 60 * 3);
 				}
 			}
@@ -835,16 +828,9 @@ class Manager implements IManager {
 		throw new \OCP\TaskProcessing\Exception\Exception('No matching provider found');
 	}
 
-	public function getAvailableTaskTypes(bool $showDisabled = false, ?string $userId = null): array {
-		// We cache by language, because some task type fields are translated
-		$cacheKey = self::TASK_TYPES_CACHE_KEY . ':' . $this->l10nFactory->findLanguage();
-
-		// userId will be obtained from the session if left to null
-		if (!$this->checkGuestAccess($userId)) {
-			return [];
-		}
+	public function getAvailableTaskTypes(bool $showDisabled = false): array {
 		if ($this->availableTaskTypes === null) {
-			$cachedValue = $this->distributedCache->get($cacheKey);
+			$cachedValue = $this->distributedCache->get('available_task_types_v2');
 			if ($cachedValue !== null) {
 				$this->availableTaskTypes = unserialize($cachedValue);
 			}
@@ -890,7 +876,7 @@ class Manager implements IManager {
 			}
 
 			$this->availableTaskTypes = $availableTaskTypes;
-			$this->distributedCache->set($cacheKey, serialize($this->availableTaskTypes), 60);
+			$this->distributedCache->set('available_task_types_v2', serialize($this->availableTaskTypes), 60);
 		}
 
 
@@ -1141,7 +1127,7 @@ class Manager implements IManager {
 				$task->setEndedAt(time());
 				$error = 'The task was processed successfully but the provider\'s output doesn\'t pass validation against the task type\'s outputShape spec and/or the provider\'s own optionalOutputShape spec';
 				$task->setErrorMessage($error);
-				$this->logger->error($error, ['exception' => $e, 'output' => $result]);
+				$this->logger->error($error . ' Output was: ' . var_export($result, true), ['exception' => $e]);
 			} catch (NotPermittedException $e) {
 				$task->setProgress(1);
 				$task->setStatus(Task::STATUS_FAILED);

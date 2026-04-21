@@ -8,9 +8,7 @@ declare(strict_types=1);
 namespace OC\Core\Command\Info;
 
 use OC\Files\ObjectStore\ObjectStoreStorage;
-use OC\Files\ObjectStore\PrimaryObjectStoreConfig;
 use OC\Files\Storage\Wrapper\Encryption;
-use OC\Files\Storage\Wrapper\Wrapper;
 use OC\Files\View;
 use OCA\Files_External\Config\ExternalMountPoint;
 use OCA\GroupFolders\Mount\GroupMountPoint;

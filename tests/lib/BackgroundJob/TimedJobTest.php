@@ -9,7 +9,6 @@
 namespace Test\BackgroundJob;
 
 use OCP\AppFramework\Utility\ITimeFactory;
-use OCP\Server;
 
 class TimedJobTest extends \Test\TestCase {
 	private DummyJobList $jobList;

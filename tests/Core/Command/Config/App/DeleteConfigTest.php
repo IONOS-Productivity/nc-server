@@ -20,7 +20,6 @@ use Test\TestCase;
 
 class DeleteConfigTest extends TestCase {
 	protected IAppConfig&MockObject $appConfig;
-	protected ConfigManager&MockObject $configManager;
 	protected InputInterface&MockObject $consoleInput;
 	protected OutputInterface&MockObject $consoleOutput;
 	protected Command $command;
@@ -29,11 +28,10 @@ class DeleteConfigTest extends TestCase {
 		parent::setUp();
 
 		$this->appConfig = $this->createMock(IAppConfig::class);
-		$this->configManager = $this->createMock(ConfigManager::class);
 		$this->consoleInput = $this->createMock(InputInterface::class);
 		$this->consoleOutput = $this->createMock(OutputInterface::class);
 
-		$this->command = new DeleteConfig($this->appConfig, $this->configManager);
+		$this->command = new DeleteConfig($this->appConfig);
 	}
 
 
@@ -70,7 +68,9 @@ class DeleteConfigTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataDelete')]
+	/**
+	 * @dataProvider dataDelete
+	 */
 	public function testDelete(string $configName, bool $configExists, bool $checkIfExists, int $expectedReturn, string $expectedMessage): void {
 		$this->appConfig->expects(($checkIfExists) ? $this->once() : $this->never())
 			->method('getKeys')

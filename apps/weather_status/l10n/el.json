@@ -5,8 +5,6 @@
     "Error" : "Σφάλμα",
     "Weather status" : "Κατάσταση καιρού",
     "Weather status in your dashboard" : "Κατάσταση καιρού στον πίνακα ελέγχου",
-    "Weather status integrated in the Dashboard app.\n    The geographic location can be automatically determined or manually defined. A 6 hours forecast is then displayed.\n    This status can also be integrated in other places like the Calendar app." : "Η κατάσταση καιρού ενσωματωμένη στην εφαρμογή Πίνακας Ελέγχου.\n    Η γεωγραφική τοποθεσία μπορεί να προσδιορίζεται αυτόματα ή να ορίζεται χειροκίνητα. Στη συνέχεια εμφανίζεται πρόγνωση 6 ωρών.\n    Αυτή η κατάσταση μπορεί επίσης να ενσωματωθεί και σε άλλες εφαρμογές, όπως η Ημερολόγιο.",
-    "{temperature} {unit} clear sky later today" : "{temperature} {unit} καθαρός ουρανός αργότερα σήμερα",
     "{temperature} {unit} clear sky" : "{temperature} {unit} καθαρός ουρανός",
     "{temperature} {unit} cloudy later today" : "{temperature} {unit} συννεφιά αργότερα σήμερα",
     "{temperature} {unit} cloudy" : "{temperature} {unit} συννεφιά",
@@ -53,7 +51,6 @@
     "There was an error setting the location." : "Παρουσιάστηκε σφάλμα κατά τη ρύθμιση της τοποθεσίας.",
     "There was an error saving the mode." : "Παρουσιάστηκε σφάλμα κατά την αποθήκευση της λειτουργίας.",
     "There was an error using personal address." : "Παρουσιάστηκε σφάλμα κατά τη χρήση της προσωπικής διεύθυνσης.",
-    "Unknown weather code" : "Άγνωστος κωδικός καιρού",
     "Detect location" : "Εντοπισμός τοποθεσίας",
     "Set custom address" : "Ορισμός προσαρμοσμένης διεύθυνσης",
     "Favorites" : "Αγαπημένα"

@@ -48,14 +48,11 @@ OC.L10N.register(
     "Nextcloud workflow engine" : "Upravljački program tijeka rada Nextclouda",
     "Select a filter" : "Odaberi filtar",
     "Select a comparator" : "Odaberi usporednik",
-    "Remove filter" : "Ukloni filter",
-    "Audio" : "Audio",
     "Folder" : "Mapa",
     "Images" : "Slike",
     "Office documents" : "Dokumenti paketa Office",
     "PDF documents" : "Dokumenti PDF",
-    "Video" : "Videozapis",
-    "Custom MIME type" : "Prilagođena MIME vrsta",
+    "Custom mimetype" : "Prilagođeni mimetype",
     "Select a file type" : "Odaberi vrstu datoteke",
     "e.g. httpd/unix-directory" : "npr. httpd/unix-directory",
     "Please enter a valid time span" : "Unesite valjani vremenski raspon",
@@ -79,7 +76,6 @@ OC.L10N.register(
     "Save" : "Spremi",
     "When" : "Kada",
     "and" : "i",
-    "Add a new filter" : "Dodaj novi filter",
     "Cancel" : "Odustani",
     "Delete" : "Izbriši",
     "Available flows" : "Dostupni tijekovi",
@@ -119,7 +115,6 @@ OC.L10N.register(
     "Request user agent" : "Zatraži korisničkog agenta",
     "Group membership" : "Članstvo u grupi",
     "is member of" : "je član",
-    "is not member of" : "nije član",
-    "Type to search for group …" : "Upišite za pretraživanje grupe …"
+    "is not member of" : "nije član"
 },
 "nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;");

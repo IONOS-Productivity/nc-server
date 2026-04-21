@@ -49,13 +49,13 @@ OC.L10N.register(
     "Select a filter" : "Selecionar um filtro",
     "Select a comparator" : "Selecionar um comparador",
     "Remove filter" : "Remover filtro",
-    "Audio" : "Áudio",
     "Folder" : "Pasta",
     "Images" : "Imagens",
     "Office documents" : "Documentos Office",
     "PDF documents" : "Documentos PDF",
     "Video" : "Vídeo",
     "Custom MIME type" : "Tipo MIME personalizado",
+    "Custom mimetype" : "Mimetype personalizado",
     "Select a file type" : "Selecionar um tipo de arquivo",
     "e.g. httpd/unix-directory" : "por ex. httpd/unix-directory",
     "Please enter a valid time span" : "Digite um período de tempo válido",
@@ -68,7 +68,7 @@ OC.L10N.register(
     "Thunderbird & Outlook addons" : "Extensões para Thunderbird & Outlook",
     "Custom user agent" : "Agente do usuário personalizado",
     "Select a user agent" : "Selecione um agente de usuário",
-    "Select groups" : "Selecione grupos",
+    "Select groups" : "Selecionar grupos",
     "Groups" : "Grupos",
     "Type to search for group …" : "Digite para pesquisar por grupo …",
     "Select a trigger" : "Selecione um gatilho",
@@ -119,7 +119,6 @@ OC.L10N.register(
     "Request user agent" : "Agente de usuário da requisição",
     "Group membership" : "Associação ao grupo",
     "is member of" : "é membro de",
-    "is not member of" : "não é membro de",
-    "Type to search for group …" : "Digite para pesquisar um grupo …"
+    "is not member of" : "não é membro de"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -22,7 +22,6 @@ OC.L10N.register(
     "Check %s is invalid or does not exist" : "Athugunin %s er ógild eða er ekki til",
     "Flow" : "Flæði",
     "Remove filter" : "Fjarlægja síu",
-    "Audio" : "Hljóð",
     "Folder" : "Mappa",
     "Images" : "Myndir",
     "Video" : "Myndskeið",

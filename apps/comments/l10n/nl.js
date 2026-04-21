@@ -17,9 +17,9 @@ OC.L10N.register(
     "Delete comment" : "Reactie verwijderen",
     "Cancel edit" : "Bewerking annuleren",
     "New comment" : "Nieuwe reactie",
-    "Write a comment …" : "Schrijf een commentaar …",
+    "Write a comment …" : "Schrijf een reactie…",
     "Post comment" : "Reactie plaatsen",
-    "@ for mentions, : for emoji, / for smart picker" : "@ voor vermeldingen, : voor emoji, / voor Smart Picker",
+    "@ for mentions, : for emoji, / for smart picker" : "@ voor vermeldingen, : voor emoji, / voor smart picker",
     "Could not reload comments" : "Kon reactie niet opnieuw laden",
     "Failed to mark comments as read" : "Kon reacties niet als gelezen markeren",
     "Unable to load the comments list" : "Kan reactielijst niet laden",
@@ -31,7 +31,6 @@ OC.L10N.register(
     "An error occurred while trying to edit the comment" : "Er is een fout opgetreden bij het bewerken van de reactie",
     "Comment deleted" : "Reactie verwijderd",
     "An error occurred while trying to delete the comment" : "Er is een fout opgetreden bij het verwijderen van de reactie",
-    "An error occurred while trying to create the comment" : "Er is een fout opgetreden bij het aanmaken van de reactie",
-    "Write a comment …" : "Schrijf een reactie…"
+    "An error occurred while trying to create the comment" : "Er is een fout opgetreden bij het aanmaken van de reactie"
 },
 "nplurals=2; plural=(n != 1);");

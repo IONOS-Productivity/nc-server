@@ -40,46 +40,17 @@ class PropertyMapper extends QBMapper {
 	}
 
 	/**
-	 * @param array<string, string[]> $calendars
 	 * @return Property[]
-	 * @throws \OCP\DB\Exception
 	 */
-	public function findPropertiesByPathsAndUsers(array $calendars): array {
-		if (empty($calendars)) {
-			return [];
-		}
-		$selectQb = $this->db->getQueryBuilder();
-		$selectQb->select('*')
-			->from(self::TABLE_NAME);
-
-		foreach ($calendars as $user => $paths) {
-			$selectQb->orWhere(
-				$selectQb->expr()->andX(
-					$selectQb->expr()->eq('userid', $selectQb->createNamedParameter($user)),
-					$selectQb->expr()->in('propertypath', $selectQb->createNamedParameter($paths, IQueryBuilder::PARAM_STR_ARRAY)),
-				)
-			);
-		}
-
-		return $this->findEntities($selectQb);
-	}
-
-	/**
-	 * @param string[] $calendars
-	 * @param string[] $allowedProperties
-	 * @return Property[]
-	 * @throws \OCP\DB\Exception
-	 */
-	public function findPropertiesByPaths(array $calendars, array $allowedProperties = []): array {
+	public function findPropertiesByPath(string $userId, string $path): array {
 		$selectQb = $this->db->getQueryBuilder();
 		$selectQb->select('*')
 			->from(self::TABLE_NAME)
-			->where($selectQb->expr()->in('propertypath', $selectQb->createNamedParameter($calendars, IQueryBuilder::PARAM_STR_ARRAY)));
-
-		if ($allowedProperties) {
-			$selectQb->andWhere($selectQb->expr()->in('propertyname', $selectQb->createNamedParameter($allowedProperties, IQueryBuilder::PARAM_STR_ARRAY)));
-		}
-
+			->where(
+				$selectQb->expr()->eq('userid', $selectQb->createNamedParameter($userId)),
+				$selectQb->expr()->eq('propertypath', $selectQb->createNamedParameter($path)),
+			);
 		return $this->findEntities($selectQb);
 	}
+
 }

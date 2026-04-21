@@ -147,8 +147,7 @@ class TrashbinPlugin extends ServerPlugin {
 	public function beforeMove(string $sourcePath, string $destinationPath): bool {
 		try {
 			$node = $this->server->tree->getNodeForPath($sourcePath);
-			[$destinationDir, ] = Uri\split($destinationPath);
-			$destinationNodeParent = $this->server->tree->getNodeForPath($destinationDir);
+			$destinationNodeParent = $this->server->tree->getNodeForPath(dirname($destinationPath));
 		} catch (\Sabre\DAV\Exception $e) {
 			\OCP\Server::get(LoggerInterface::class)
 				->error($e->getMessage(), ['app' => 'files_trashbin', 'exception' => $e]);
@@ -166,9 +165,9 @@ class TrashbinPlugin extends ServerPlugin {
 		}
 		$restoreFolder = dirname($fileInfo->getOriginalLocation());
 		$freeSpace = $this->view->free_space($restoreFolder);
-		if ($freeSpace === FileInfo::SPACE_NOT_COMPUTED
-			|| $freeSpace === FileInfo::SPACE_UNKNOWN
-			|| $freeSpace === FileInfo::SPACE_UNLIMITED) {
+		if ($freeSpace === FileInfo::SPACE_NOT_COMPUTED ||
+			$freeSpace === FileInfo::SPACE_UNKNOWN ||
+			$freeSpace === FileInfo::SPACE_UNLIMITED) {
 			return true;
 		}
 		$filesize = $fileInfo->getSize();

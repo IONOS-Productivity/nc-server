@@ -181,7 +181,7 @@ class ShareesAPIController extends OCSController {
 		$this->offset = $perPage * ($page - 1);
 
 		// In global scale mode we always search the lookup server
-		$this->result['lookupEnabled'] = Server::get(GlobalScaleIConfig::class)->isGlobalScaleEnabled();
+		$this->result['lookupEnabled'] = \OCP\Server::get(GlobalScaleIConfig::class)->isGlobalScaleEnabled();
 		// TODO: Reconsider using lookup server for non-global-scale federation
 
 		[$result, $hasMoreResults] = $this->collaboratorSearch->search($search, $shareTypes, $this->result['lookupEnabled'], $this->limit, $this->offset);

@@ -237,10 +237,6 @@ import { showError, showSuccess } from '@nextcloud/dialogs'
 import { emit } from '@nextcloud/event-bus'
 import { t } from '@nextcloud/l10n'
 import moment from '@nextcloud/moment'
-import { generateUrl, getBaseUrl } from '@nextcloud/router'
-import { ShareType } from '@nextcloud/sharing'
-import { getSidebarInlineActions } from '@nextcloud/sharing/ui'
-import { toRaw } from 'vue'
 
 import VueQrcode from '@chenfengyuan/vue-qrcode'
 import NcActionButton from '@nextcloud/vue/components/NcActionButton'
@@ -411,7 +407,6 @@ export default {
 			}
 			return null
 		},
-
 		passwordExpirationTime() {
 			if (this.share.passwordExpirationTime === null) {
 				return null
@@ -732,7 +727,7 @@ export default {
 				const options = {
 					path,
 					shareType: ShareType.Link,
-					password: share.newPassword,
+					password: share.password,
 					expireDate: share.expireDate ?? '',
 					attributes: JSON.stringify(this.fileInfo.shareAttributes),
 					// we do not allow setting the publicUpload

@@ -122,7 +122,7 @@ class ThemingControllerTest extends TestCase {
 		$this->assertEquals($expected, $this->themingController->updateStylesheet($setting, $value));
 	}
 
-	public static function dataUpdateStylesheetError(): array {
+	public function dataUpdateStylesheetError() {
 		$urls = [
 			'url' => 'web address',
 			'imprintUrl' => 'legal notice address',
@@ -704,7 +704,7 @@ class ThemingControllerTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataGetManifest')]
+	/** @dataProvider dataGetManifest */
 	public function testGetManifest(bool $standalone): void {
 		$this->config
 			->expects($this->once())
@@ -727,7 +727,7 @@ class ThemingControllerTest extends TestCase {
 				['theming.Icon.getFavicon', ['app' => 'core'], 'favicon'],
 			]);
 		$this->config
-			->expects($this->exactly(2))
+			->expects($this->once())
 			->method('getSystemValueBool')
 			->with('theming.standalone_window.enabled', true)
 			->willReturn($standalone);
@@ -747,7 +747,6 @@ class ThemingControllerTest extends TestCase {
 						'sizes' => '16x16'
 					]
 				],
-			'display_override' => [$standalone ? 'minimal-ui' : ''],
 			'display' => $standalone ? 'standalone' : 'browser',
 			'short_name' => 'Nextcloud',
 			'theme_color' => null,

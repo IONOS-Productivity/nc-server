@@ -8,7 +8,6 @@ declare(strict_types=1);
  */
 namespace OCA\DAV\CalDAV;
 
-use OCA\DAV\CalDAV\Federation\FederatedCalendarImpl;
 use OCA\DAV\Db\Property;
 use OCA\DAV\Db\PropertyMapper;
 use OCP\Calendar\ICalendarProvider;
@@ -47,11 +46,7 @@ class CalendarProvider implements ICalendarProvider {
 		$iCalendars = [];
 
 		foreach ($calendarInfos as $calendarInfo) {
-			$user = str_replace('principals/users/', '', $calendarInfo['principaluri']);
-			$path = 'calendars/' . $user . '/' . $calendarInfo['uri'];
-
-			$calendarInfo = array_merge($calendarInfo, $additionalProperties[$path] ?? []);
-
+			$calendarInfo = array_merge($calendarInfo, $this->getAdditionalProperties($calendarInfo['principaluri'], $calendarInfo['uri']));
 			$calendar = new Calendar($this->calDavBackend, $calendarInfo, $this->l10n, $this->config, $this->logger);
 			$iCalendars[] = new CalendarImpl(
 				$calendar,
@@ -76,34 +71,16 @@ class CalendarProvider implements ICalendarProvider {
 		return $iCalendars;
 	}
 
-	/**
-	 * @param array{
-	 *     principaluri: string,
-	 *     uri: string,
-	 * }[] $uris
-	 * @return array<string, array<string, string|bool>>
-	 */
-	private function getAdditionalPropertiesForCalendars(array $uris): array {
-		$calendars = [];
-		foreach ($uris as $uri) {
-			/** @var string $user */
-			$user = str_replace('principals/users/', '', $uri['principaluri']);
-			if (!array_key_exists($user, $calendars)) {
-				$calendars[$user] = [];
-			}
-			$calendars[$user][] = 'calendars/' . $user . '/' . $uri['uri'];
-		}
+	public function getAdditionalProperties(string $principalUri, string $calendarUri): array {
+		$user = str_replace('principals/users/', '', $principalUri);
+		$path = 'calendars/' . $user . '/' . $calendarUri;
 
-		$properties = $this->propertyMapper->findPropertiesByPathsAndUsers($calendars);
+		$properties = $this->propertyMapper->findPropertiesByPath($user, $path);
 
 		$list = [];
 		foreach ($properties as $property) {
 			if ($property instanceof Property) {
-				if (!isset($list[$property->getPropertypath()])) {
-					$list[$property->getPropertypath()] = [];
-				}
-
-				$list[$property->getPropertypath()][$property->getPropertyname()] = match ($property->getPropertyname()) {
+				$list[$property->getPropertyname()] = match ($property->getPropertyname()) {
 					'{http://owncloud.org/ns}calendar-enabled' => (bool)$property->getPropertyvalue(),
 					default => $property->getPropertyvalue()
 				};

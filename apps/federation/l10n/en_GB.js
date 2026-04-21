@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "Each server must validate the other. This process may require a few cron cycles.",
     "External documentation for Federated Cloud Sharing" : "External documentation for Federated Cloud Sharing",
     "+ Add trusted server" : "+ Add trusted server",
-    "Trusted server" : "Trusted server"
+    "Trusted server" : "Trusted server",
+    "Add" : "Add"
 },
 "nplurals=2; plural=(n != 1);");

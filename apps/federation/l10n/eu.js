@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "Zerbitzari bakoitza bestea balioztatu behar du. Prozesu honek cron ziklo batzuk beharko ditu.",
     "External documentation for Federated Cloud Sharing" : "Federatutako hodei partekatzerako kanpoko dokumentazioa",
     "+ Add trusted server" : "+ Gehitu zerbitzari fidagarria",
-    "Trusted server" : "Zerbitzari fidagarria"
+    "Trusted server" : "Zerbitzari fidagarria",
+    "Add" : "Gehitu"
 },
 "nplurals=2; plural=(n != 1);");

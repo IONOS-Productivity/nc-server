@@ -255,7 +255,21 @@ class OCMProvider implements ICapabilityAwareOCMProvider {
 	}
 
 	/**
-	 * @since 28.0.0
+	 * @return array{
+	 *      enabled: bool,
+	 *      apiVersion: '1.0-proposal1',
+	 *      endPoint: string,
+	 *      publicKey?: array{
+	 *          keyId: string,
+	 *          publicKeyPem: string
+	 *      },
+	 *      resourceTypes: list<array{
+	 *          name: string,
+	 *          shareTypes: list<string>,
+	 *          protocols: array<string, string>
+	 *      }>,
+	 *      version: string
+	 *  }
 	 */
 	public function jsonSerialize(): array {
 		$resourceTypes = [];
@@ -269,7 +283,6 @@ class OCMProvider implements ICapabilityAwareOCMProvider {
 			'version' => $this->getApiVersion(), // informative but real version
 			'endPoint' => $this->getEndPoint(),
 			'publicKey' => $this->getSignatory()?->jsonSerialize(),
-			'provider' => $this->getProvider(),
 			'resourceTypes' => $resourceTypes
 		];
 

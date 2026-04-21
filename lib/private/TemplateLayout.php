@@ -64,13 +64,48 @@ class TemplateLayout {
 		}
 
 		// Decide which page we show
-		switch ($renderAs) {
-			case TemplateResponse::RENDER_AS_USER:
-				$page = $this->templateManager->getTemplate('core', 'layout.user');
-				if (in_array(\OC_App::getCurrentApp(), ['settings','admin', 'help']) !== false) {
-					$page->assign('bodyid', 'body-settings');
-				} else {
-					$page->assign('bodyid', 'body-user');
+		if ($renderAs === TemplateResponse::RENDER_AS_USER) {
+			parent::__construct('core', 'layout.user');
+			if (in_array(\OC_App::getCurrentApp(), ['settings','admin', 'help']) !== false) {
+				$this->assign('bodyid', 'body-settings');
+			} else {
+				$this->assign('bodyid', 'body-user');
+			}
+
+			$this->initialState->provideInitialState('core', 'active-app', $this->navigationManager->getActiveEntry());
+			$this->initialState->provideInitialState('core', 'apps', array_values($this->navigationManager->getAll()));
+
+			if ($this->config->getSystemValueBool('unified_search.enabled', false) || !$this->config->getSystemValueBool('enable_non-accessible_features', true)) {
+				$this->initialState->provideInitialState('unified-search', 'limit-default', (int)$this->config->getAppValue('core', 'unified-search.limit-default', (string)SearchQuery::LIMIT_DEFAULT));
+				$this->initialState->provideInitialState('unified-search', 'min-search-length', (int)$this->config->getAppValue('core', 'unified-search.min-search-length', (string)1));
+				$this->initialState->provideInitialState('unified-search', 'live-search', $this->config->getAppValue('core', 'unified-search.live-search', 'yes') === 'yes');
+				Util::addScript('core', 'legacy-unified-search', 'core');
+			} else {
+				Util::addScript('core', 'unified-search', 'core');
+			}
+
+			// Set logo link target
+			$logoUrl = $this->config->getSystemValueString('logo_url', '');
+			$this->assign('logoUrl', $logoUrl);
+
+			// Set default entry name
+			$defaultEntryId = $this->navigationManager->getDefaultEntryIdForUser();
+			$defaultEntry = $this->navigationManager->get($defaultEntryId);
+			$this->assign('defaultAppName', $defaultEntry['name']);
+
+			// Add navigation entry
+			$this->assign('application', '');
+			$this->assign('appid', $appId);
+
+			$navigation = $this->navigationManager->getAll();
+			$this->assign('navigation', $navigation);
+			$settingsNavigation = $this->navigationManager->getAll('settings');
+			$this->initialState->provideInitialState('core', 'settingsNavEntries', $settingsNavigation);
+
+			foreach ($navigation as $entry) {
+				if ($entry['active']) {
+					$this->assign('application', $entry['name']);
+					break;
 				}
 
 				$this->initialState->provideInitialState('core', 'active-app', $this->navigationManager->getActiveEntry());
@@ -98,17 +133,9 @@ class TemplateLayout {
 				$page->assign('application', '');
 				$page->assign('appid', $appId);
 
-				$navigation = $this->navigationManager->getAll();
-				$page->assign('navigation', $navigation);
-				$settingsNavigation = $this->navigationManager->getAll('settings');
-				$this->initialState->provideInitialState('core', 'settingsNavEntries', $settingsNavigation);
-
-				foreach ($navigation as $entry) {
-					if ($entry['active']) {
-						$page->assign('application', $entry['name']);
-						break;
-					}
-				}
+			// Set logo link target
+			$logoUrl = $this->config->getSystemValueString('logo_url', '');
+			$this->assign('logoUrl', $logoUrl);
 
 				foreach ($settingsNavigation as $entry) {
 					if ($entry['active']) {
@@ -184,11 +211,19 @@ class TemplateLayout {
 				$page = $this->templateManager->getTemplate('core', 'layout.base');
 				break;
 		}
+
+		// Set body data-theme
+		try {
+			$themesService = \OCP\Server::get(\OCA\Theming\Service\ThemesService::class);
+		} catch (\OCP\AppFramework\QueryException) {
+			$themesService = null;
+		}
+		$this->assign('enabledThemes', $themesService?->getEnabledThemes() ?? []);
+
 		// Send the language, locale, and direction to our layouts
-		$l10nFactory = Server::get(IFactory::class);
-		$lang = $l10nFactory->findLanguage();
-		$locale = $l10nFactory->findLocale($lang);
-		$direction = $l10nFactory->getLanguageDirection($lang);
+		$lang = \OC::$server->get(IFactory::class)->findLanguage();
+		$locale = \OC::$server->get(IFactory::class)->findLocale($lang);
+		$direction = \OC::$server->get(IFactory::class)->getLanguageDirection($lang);
 
 		$lang = str_replace('_', '-', $lang);
 		$page->assign('language', $lang);
@@ -373,8 +408,12 @@ class TemplateLayout {
 		return self::$cssLocator->getResources();
 	}
 
-	public function getAppNamefromPath(string $path): string|false {
-		if ($path !== '') {
+	/**
+	 * @param string $path
+	 * @return string|false
+	 */
+	public function getAppNamefromPath($path) {
+		if ($path !== '' && is_string($path)) {
 			$pathParts = explode('/', $path);
 			if ($pathParts[0] === 'css') {
 				// This is a scss request

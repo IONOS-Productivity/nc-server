@@ -39,9 +39,10 @@ class Watcher implements IWatcher {
 	/** @var callable[] */
 	protected $onUpdate = [];
 
-	protected ?string $checkFilter = null;
-
-	public function __construct(IStorage $storage) {
+	/**
+	 * @param \OC\Files\Storage\Storage $storage
+	 */
+	public function __construct(\OC\Files\Storage\Storage $storage) {
 		$this->storage = $storage;
 		$this->cache = $storage->getCache();
 		$this->scanner = $storage->getScanner();

@@ -4316,7 +4316,6 @@ class UsersControllerTest extends TestCase {
 				IAccountManager::PROPERTY_ADDRESS,
 				IAccountManager::PROPERTY_WEBSITE,
 				IAccountManager::PROPERTY_TWITTER,
-				IAccountManager::PROPERTY_BLUESKY,
 				IAccountManager::PROPERTY_FEDIVERSE,
 				IAccountManager::PROPERTY_ORGANISATION,
 				IAccountManager::PROPERTY_ROLE,
@@ -4348,7 +4347,6 @@ class UsersControllerTest extends TestCase {
 				IAccountManager::PROPERTY_ADDRESS,
 				IAccountManager::PROPERTY_WEBSITE,
 				IAccountManager::PROPERTY_TWITTER,
-				IAccountManager::PROPERTY_BLUESKY,
 				IAccountManager::PROPERTY_FEDIVERSE,
 				IAccountManager::PROPERTY_ORGANISATION,
 				IAccountManager::PROPERTY_ROLE,
@@ -4419,10 +4417,59 @@ class UsersControllerTest extends TestCase {
 				IAccountManager::PROPERTY_PROFILE_ENABLED,
 				IAccountManager::PROPERTY_PRONOUNS,
 			]],
+			[true, false, UserInterface::class, [
+				IAccountManager::COLLECTION_EMAIL,
+				IAccountManager::PROPERTY_PHONE,
+				IAccountManager::PROPERTY_ADDRESS,
+				IAccountManager::PROPERTY_WEBSITE,
+				IAccountManager::PROPERTY_TWITTER,
+				IAccountManager::PROPERTY_FEDIVERSE,
+				IAccountManager::PROPERTY_ORGANISATION,
+				IAccountManager::PROPERTY_ROLE,
+				IAccountManager::PROPERTY_HEADLINE,
+				IAccountManager::PROPERTY_BIOGRAPHY,
+				IAccountManager::PROPERTY_PROFILE_ENABLED,
+				IAccountManager::PROPERTY_PRONOUNS,
+			]],
+			[true, true, UserInterface::class, [
+				IAccountManager::PROPERTY_EMAIL,
+				IAccountManager::COLLECTION_EMAIL,
+				IAccountManager::PROPERTY_PHONE,
+				IAccountManager::PROPERTY_ADDRESS,
+				IAccountManager::PROPERTY_WEBSITE,
+				IAccountManager::PROPERTY_TWITTER,
+				IAccountManager::PROPERTY_FEDIVERSE,
+				IAccountManager::PROPERTY_ORGANISATION,
+				IAccountManager::PROPERTY_ROLE,
+				IAccountManager::PROPERTY_HEADLINE,
+				IAccountManager::PROPERTY_BIOGRAPHY,
+				IAccountManager::PROPERTY_PROFILE_ENABLED,
+				IAccountManager::PROPERTY_PRONOUNS,
+			]],
+			[false, false, UserInterface::class, [
+				IAccountManager::COLLECTION_EMAIL,
+				IAccountManager::PROPERTY_PHONE,
+				IAccountManager::PROPERTY_ADDRESS,
+				IAccountManager::PROPERTY_WEBSITE,
+				IAccountManager::PROPERTY_TWITTER,
+				IAccountManager::PROPERTY_FEDIVERSE,
+				IAccountManager::PROPERTY_ORGANISATION,
+				IAccountManager::PROPERTY_ROLE,
+				IAccountManager::PROPERTY_HEADLINE,
+				IAccountManager::PROPERTY_BIOGRAPHY,
+				IAccountManager::PROPERTY_PROFILE_ENABLED,
+				IAccountManager::PROPERTY_PRONOUNS,
+			]],
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataGetEditableFields')]
+	/**
+	 * @dataProvider dataGetEditableFields
+	 *
+	 * @param bool $allowedToChangeDisplayName
+	 * @param string $userBackend
+	 * @param array $expected
+	 */
 	public function testGetEditableFields(bool $allowedToChangeDisplayName, bool $allowedToChangeEmail, string $userBackend, array $expected): void {
 		$this->config->method('getSystemValue')->willReturnCallback(fn (string $key, mixed $default) => match ($key) {
 			'allow_user_to_change_display_name' => $allowedToChangeDisplayName,

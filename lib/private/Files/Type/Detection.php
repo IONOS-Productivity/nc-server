@@ -26,8 +26,8 @@ class Detection implements IMimeTypeDetector {
 	private const CUSTOM_MIMETYPEALIASES = 'mimetypealiases.json';
 	private const CUSTOM_MIMETYPENAMES = 'mimetypenames.json';
 
-	/** @var array<list{string, string|null}> */
-	protected array $mimeTypes = [];
+	/** @var array<string, list{string, string|null}> */
+	protected array $mimetypes = [];
 	protected array $secureMimeTypes = [];
 
 	protected array $mimeTypeIcons = [];
@@ -61,8 +61,8 @@ class Detection implements IMimeTypeDetector {
 		?string $secureMimeType = null): void {
 		// Make sure the extension is a string
 		// https://github.com/nextcloud/server/issues/42902
-		$this->mimeTypes[$extension] = [$mimeType, $secureMimeType];
-		$this->secureMimeTypes[$mimeType] = $secureMimeType ?? $mimeType;
+		$this->mimetypes[$extension] = [$mimetype, $secureMimeType];
+		$this->secureMimeTypes[$mimetype] = $secureMimeType ?: $mimetype;
 	}
 
 	/**
@@ -80,8 +80,8 @@ class Detection implements IMimeTypeDetector {
 			$this->registerType((string)$extension, $mimeType[0], $mimeType[1] ?? null);
 		}
 
-		// Update the alternative mimeTypes to avoid having to look them up each time.
-		foreach ($this->mimeTypes as $extension => $mimeType) {
+		// Update the alternative mimetypes to avoid having to look them up each time.
+		foreach ($this->mimetypes as $extension => $mimeType) {
 			if (str_starts_with((string)$extension, '_comment')) {
 				continue;
 			}
@@ -146,7 +146,7 @@ class Detection implements IMimeTypeDetector {
 	}
 
 	/**
-	 * @return array<list{string, string|null}>
+	 * @return array<string, list{string, string|null}>
 	 */
 	public function getAllMappings(): array {
 		$this->loadMappings();
@@ -196,7 +196,7 @@ class Detection implements IMimeTypeDetector {
 			if ($extension !== false) {
 				$extension = strtolower($extension);
 				$extension = substr($extension, 1); // remove leading .
-				return $this->mimeTypes[$extension][0] ?? 'application/octet-stream';
+				return $this->mimetypes[$extension][0] ?? 'application/octet-stream';
 			}
 		}
 
@@ -251,11 +251,11 @@ class Detection implements IMimeTypeDetector {
 			// it looks like we have a 'file' command,
 			// lets see if it does have mime support
 			$path = escapeshellarg($path);
-			$fp = popen("test -f $path && $program -b --mime-type $path", 'r');
+			$fp = popen("test -f $path && file -b --mime-type $path", 'r');
 			if ($fp !== false) {
 				$mimeType = fgets($fp);
 				pclose($fp);
-				if ($mimeType) {
+				if ($mimeType !== false) {
 					//trim the newline
 					$mimeType = trim($mimeType);
 					$mimeType = $this->getSecureMimeType($mimeType);

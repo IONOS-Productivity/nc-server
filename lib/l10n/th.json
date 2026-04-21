@@ -151,6 +151,7 @@
     "Storage connection timeout. %s" : "หมดเวลาการเชื่อมต่อพื้นที่จัดเก็บข้อมูล %s",
     "Images" : "รูปภาพ",
     "Text" : "ข้อความ",
-    "Translate" : "แปลภาษา"
+    "Translate" : "แปลภาษา",
+    "File is currently busy, please try again later" : "ไฟล์กำลังใช้งานอยู่ โปรดลองอีกครั้งในภายหลัง"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

@@ -7,7 +7,6 @@ OC.L10N.register(
     "Current version" : "Huidige versie",
     "Initial version" : "Initiële versie",
     "You" : "Jij",
-    "Actions for version from {versionHumanExplicitDate}" : "Acties voor versie van {versionHumanExplicitDate}",
     "Name this version" : "Geef deze versie een naam",
     "Edit version name" : "Bewerk versie naam",
     "Compare to current version" : "Vergelijk met huidige versie",
@@ -23,7 +22,6 @@ OC.L10N.register(
     "Version restored" : "Versie hersteld",
     "Could not restore version" : "Kon versie niet herstellen",
     "Could not set version label" : "Kon versie label niet instellen",
-    "Could not delete version" : "Kon versie niet verwijderen",
-    "File versions" : "Bestandsversies"
+    "Could not delete version" : "Kon versie niet verwijderen"
 },
 "nplurals=2; plural=(n != 1);");

@@ -19,7 +19,6 @@ use OCP\AppFramework\Http\ContentSecurityPolicy;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
-use OCP\Authentication\TwoFactorAuth\IRegistry;
 use OCP\Diagnostics\IEventLogger;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\File;
@@ -64,7 +63,6 @@ class ViewControllerTest extends TestCase {
 	private UserConfig&MockObject $userConfig;
 	private ViewConfig&MockObject $viewConfig;
 	private Router $router;
-	private IRegistry&MockObject $twoFactorRegistry;
 
 	private ViewController&MockObject $viewController;
 
@@ -81,7 +79,6 @@ class ViewControllerTest extends TestCase {
 		$this->userConfig = $this->createMock(UserConfig::class);
 		$this->userSession = $this->createMock(IUserSession::class);
 		$this->viewConfig = $this->createMock(ViewConfig::class);
-		$this->twoFactorRegistry = $this->createMock(IRegistry::class);
 
 		$this->user = $this->getMockBuilder(IUser::class)->getMock();
 		$this->user->expects($this->any())
@@ -98,9 +95,6 @@ class ViewControllerTest extends TestCase {
 		$this->appManager->expects($this->any())
 			->method('getAppPath')
 			->willReturnCallback(fn (string $appid): string => \OC::$SERVERROOT . '/apps/' . $appid);
-		$this->appManager->expects($this->any())
-			->method('isAppLoaded')
-			->willReturn(true);
 
 		$this->cacheFactory = $this->createMock(ICacheFactory::class);
 		$this->logger = $this->createMock(LoggerInterface::class);
@@ -197,7 +191,7 @@ class ViewControllerTest extends TestCase {
 		$this->assertEquals($expected, $this->viewController->index('MyDir', 'MyView'));
 	}
 
-	public static function dataTestShortRedirect(): array {
+	public function dataTestShortRedirect(): array {
 		// openfile is true by default
 		// opendetails is undefined by default
 		// both will be evaluated as truthy
@@ -214,11 +208,43 @@ class ViewControllerTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataTestShortRedirect')]
-	public function testShortRedirect(?string $openfile, ?string $opendetails, string $result): void {
+	/**
+	 * @dataProvider dataTestShortRedirect
+	 */
+	public function testShortRedirect($openfile, $opendetails, $result) {
 		$this->appManager->expects($this->any())
 			->method('isEnabledForUser')
 			->with('files')
+			->willReturn(true);
+
+		$baseFolderFiles = $this->getMockBuilder(Folder::class)->getMock();
+		$this->rootFolder->expects($this->any())
+			->method('getUserFolder')
+			->with('testuser1')
+			->willReturn($baseFolderFiles);
+
+		$parentNode = $this->getMockBuilder(Folder::class)->getMock();
+		$parentNode->expects($this->once())
+			->method('getPath')
+			->willReturn('testuser1/files/Folder');
+
+		$node = $this->getMockBuilder(File::class)->getMock();
+		$node->expects($this->once())
+			->method('getParent')
+			->willReturn($parentNode);
+
+		$baseFolderFiles->expects($this->any())
+			->method('getFirstNodeById')
+			->with(123456)
+			->willReturn($node);
+
+		$response = $this->viewController->showFile(123456, $opendetails, $openfile);
+		$this->assertStringContainsString($result, $response->getHeaders()['Location']);
+	}
+
+	public function testShowFileRouteWithTrashedFile(): void {
+		$this->appManager->expects($this->exactly(2))
+			->method('isEnabledForUser')
 			->willReturn(true);
 
 		$baseFolderFiles = $this->getMockBuilder(Folder::class)->getMock();

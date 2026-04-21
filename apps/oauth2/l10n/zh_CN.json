@@ -11,13 +11,14 @@
     "OAuth 2.0 allows external services to request access to {instanceName}." : "OAuth 2.0 允许外部服务请求访问 {instanceName}。",
     "Name" : "名称",
     "Redirection URI" : "跳转URI",
-    "Client identifier" : "客户端标识",
+    "Client Identifier" : "客户端标识",
+    "Secret key" : "密钥",
     "Delete client" : "删除客户端",
     "Make sure you store the secret key, it cannot be recovered." : "请确保您存储了密钥，它无法恢复。",
     "Add client" : "添加客户端",
     "Add" : "添加",
-    "Client Identifier" : "客户端标识",
     "Show client secret" : "显示客户端密钥",
-    "Hide client secret" : "隐藏客户端密钥"
+    "Hide client secret" : "隐藏客户端密钥",
+    "Delete" : "删除"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

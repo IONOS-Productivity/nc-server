@@ -34,15 +34,50 @@ class SystemTagPluginTest extends \Test\TestCase {
 	public const CANASSIGN_PROPERTYNAME = SystemTagPlugin::CANASSIGN_PROPERTYNAME;
 	public const GROUPS_PROPERTYNAME = SystemTagPlugin::GROUPS_PROPERTYNAME;
 
-	private \Sabre\DAV\Server $server;
-	private \Sabre\DAV\Tree&MockObject $tree;
-	private ISystemTagManager&MockObject $tagManager;
-	private IGroupManager&MockObject $groupManager;
-	private IUserSession&MockObject $userSession;
-	private IRootFolder&MockObject $rootFolder;
-	private IUser&MockObject $user;
-	private ISystemTagObjectMapper&MockObject $tagMapper;
-	private SystemTagPlugin $plugin;
+	/**
+	 * @var \Sabre\DAV\Server
+	 */
+	private $server;
+
+	/**
+	 * @var \Sabre\DAV\Tree
+	 */
+	private $tree;
+
+	/**
+	 * @var ISystemTagManager
+	 */
+	private $tagManager;
+
+	/**
+	 * @var IGroupManager
+	 */
+	private $groupManager;
+
+	/**
+	 * @var IUserSession
+	 */
+	private $userSession;
+
+	/**
+	 * @var IRootFolder
+	 */
+	private $rootFolder;
+
+	/**
+	 * @var IUser
+	 */
+	private $user;
+
+	/**
+	 * @var SystemTagPlugin
+	 */
+	private $plugin;
+
+	/**
+	 * @var ISystemTagObjectMapper
+	 */
+	private $tagMapper;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -63,8 +98,10 @@ class SystemTagPluginTest extends \Test\TestCase {
 			->method('isLoggedIn')
 			->willReturn(true);
 
-		$this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
-		$this->rootFolder = $this->createMock(IRootFolder::class);
+		$this->tagMapper = $this->getMockBuilder(ISystemTagObjectMapper::class)
+			->getMock();
+		$this->rootFolder = $this->getMockBuilder(IRootFolder::class)
+			->getMock();
 
 		$this->plugin = new SystemTagPlugin(
 			$this->tagManager,

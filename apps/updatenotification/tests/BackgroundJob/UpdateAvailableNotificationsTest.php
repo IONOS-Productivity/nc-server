@@ -26,14 +26,14 @@ use Test\TestCase;
 
 class UpdateAvailableNotificationsTest extends TestCase {
 	private ServerVersion&MockObject $serverVersion;
-	private IConfig&MockObject $config;
-	private IManager&MockObject $notificationManager;
-	private IGroupManager&MockObject $groupManager;
-	private IAppManager&MockObject $appManager;
-	private IAppConfig&MockObject $appConfig;
-	private ITimeFactory&MockObject $timeFactory;
-	private Installer&MockObject $installer;
-	private VersionCheck&MockObject $versionCheck;
+	private IConfig|MockObject $config;
+	private IManager|MockObject $notificationManager;
+	private IGroupManager|MockObject $groupManager;
+	private IAppManager|MockObject $appManager;
+	private IAppConfig|MockObject $appConfig;
+	private ITimeFactory|MockObject $timeFactory;
+	private Installer|MockObject $installer;
+	private VersionCheck|MockObject $versionCheck;
 
 	protected function setUp(): void {
 		parent::setUp();

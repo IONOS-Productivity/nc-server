@@ -48,13 +48,13 @@ OC.L10N.register(
     "Select a filter" : "Επιλογή φίλτρου",
     "Select a comparator" : "Επιλέξτε για σύγκριση",
     "Remove filter" : "Αφαίρεση φίλτρου",
-    "Audio" : "Ήχος",
     "Folder" : "Φάκελος",
     "Images" : "Εικόνες",
     "Office documents" : "Έγγραφα γραφείου",
     "PDF documents" : "Έγγραφα PDF",
     "Video" : "Βίντεο",
     "Custom MIME type" : "Προσαρμοσμένος τύπος MIME",
+    "Custom mimetype" : "Προσαρμοσμένος τύπος mime",
     "Select a file type" : "Επιλέξτε τύπο αρχείου",
     "e.g. httpd/unix-directory" : "π.χ. httpd/unix-directory",
     "Please enter a valid time span" : "Εισαγάγετε έγκυρο χρονικό διάστημα",
@@ -78,7 +78,6 @@ OC.L10N.register(
     "Save" : "Αποθήκευση",
     "When" : "Πότε",
     "and" : "και",
-    "Add a new filter" : "Προσθήκη νέου φίλτρου",
     "Cancel" : "Ακύρωση",
     "Delete" : "Διαγραφή",
     "Available flows" : "Διαθέσιμες ροές",
@@ -118,7 +117,6 @@ OC.L10N.register(
     "Request user agent" : "Αιτηθείτε αντιπρόσωπο χρήστη",
     "Group membership" : "Συμμετοχή σε ομάδα",
     "is member of" : "είναι μέλος του",
-    "is not member of" : "δεν είναι μέλος του",
-    "Type to search for group …" : "Πληκτρολογήστε για αναζήτηση ομάδας …"
+    "is not member of" : "δεν είναι μέλος του"
 },
 "nplurals=2; plural=(n != 1);");

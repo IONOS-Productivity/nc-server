@@ -51,7 +51,7 @@
 					<!-- Color picker -->
 					<NcColorPicker v-if="canEditOrCreateTag"
 						:data-cy-systemtags-picker-tag-color="tag.id"
-						:value="`#${tag.color || '000000'}`"
+						:value="`#${tag.color}`"
 						:shown="openedPicker === tag.id"
 						class="systemtags-picker__tag-color"
 						@update:value="onColorChange(tag, $event)"
@@ -95,7 +95,7 @@
 			<!-- Note -->
 			<div class="systemtags-picker__note">
 				<NcNoteCard v-if="!hasChanges" type="info">
-					{{ t('systemtags', 'Choose tags for the selected files') }}
+					{{ canEditOrCreateTag ? t('systemtags', 'Select or create tags to apply to all selected files'): t('systemtags', 'Select tags to apply to all selected files') }}
 				</NcNoteCard>
 				<NcNoteCard v-else type="info">
 					<span v-html="statusMessage" />
@@ -137,7 +137,7 @@ import { emit } from '@nextcloud/event-bus'
 import { getCurrentUser } from '@nextcloud/auth'
 import { getLanguage, n, t } from '@nextcloud/l10n'
 import { loadState } from '@nextcloud/initial-state'
-import { showError } from '@nextcloud/dialogs'
+import { showError, showInfo } from '@nextcloud/dialogs'
 import debounce from 'debounce'
 import domPurify from 'dompurify'
 import escapeHTML from 'escape-html'

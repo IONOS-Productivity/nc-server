@@ -49,13 +49,13 @@ OC.L10N.register(
     "Select a filter" : "Filter auswählen",
     "Select a comparator" : "Wähle einen Komparator",
     "Remove filter" : "Filter entfernen",
-    "Audio" : "Audio",
     "Folder" : "Ordner",
     "Images" : "Bilder",
     "Office documents" : "Office Dokumente",
     "PDF documents" : "PDF-Dokumente",
     "Video" : "Video",
     "Custom MIME type" : "Benutzerdefinierter MIME Typ",
+    "Custom mimetype" : "Benutzerdefinierter Mime-Typ",
     "Select a file type" : "Dateityp auswählen",
     "e.g. httpd/unix-directory" : "z. B. httpd/unix-directory",
     "Please enter a valid time span" : "Bitte einen gültigen Zeitraum angeben",
@@ -119,7 +119,6 @@ OC.L10N.register(
     "Request user agent" : "User-Agent",
     "Group membership" : "Gruppenmitgliedschaft",
     "is member of" : "ist Mitglied von",
-    "is not member of" : "ist kein Mitglied von",
-    "Type to search for group …" : "Tippen um nach einer Gruppe zu suchen …"
+    "is not member of" : "ist kein Mitglied von"
 },
 "nplurals=2; plural=(n != 1);");

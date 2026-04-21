@@ -45,6 +45,10 @@ OC.L10N.register(
     "Old recovery key password" : "Стара лозинка кључа за опоравак",
     "New recovery key password" : "Нова лозинка кључа за опоравак",
     "Repeat new recovery key password" : "Поновите нову лозинку кључа за опоравак",
+    "Change Password" : "Измени лозинку",
+    "Basic encryption module" : "Основни модул за шифровање",
+    "Your private key password no longer matches your log-in password." : "Лозинка вашег личног кључа више није иста као ваша лозинка за пријаву.",
+    "Set your old private key password to your current log-in password:" : "Поставите стару лозинку личног кључа као тренутну лозинку за пријаву:",
     "If you do not remember your old password you can ask your administrator to recover your files." : "Ако се не сећате старе лозинке, можете затражити од администратора да опорави ваше фајлове.",
     "Old log-in password" : "Стара лозинка за пријаву",
     "Current log-in password" : "Тренутна лозинка за пријаву",
@@ -63,7 +67,6 @@ OC.L10N.register(
     "Update Private Key Password" : "Ажурирај лозинку личног кључа",
     "Enable password recovery:" : "Укључи опоравак лозинке:",
     "Enabled" : "укључено",
-    "Disabled" : "искључено",
-    "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss." : "Ова апликација обезбеђује (подразумевану) криптографску имплементацију за Nextcloud функционалност шифровање на серверској страни (SSE) feature.\n\n\t\t\t**Детаљи шифровања**\n\t\t\t*   **Режим шифрирања:** AES-256-CTR (подразумевани)\n\t\t\t*   **Провера идентитета:** HMAC-SHA256\n\n\t\t\t**Важна упозорења**\n\t\t\t*   **ОПАСНОСТ:** немојте да искључујете апликаију све док се сви фајлови не дешифрују (`occ encryption:decrypt-all`).\n\t\t\t*   **УПОЗОРЕЊЕ**: враћање на нешифрирано складиште фајлове након активирања захтева приступ командној линији. Акција је трајна преко Веб КИ.\"\n\n\t\t\t**Напомене за постојеће фајлове**\n\t\t\t*   Укључивање SSE подразумевано не шифрује постојеће фајлове; шифроваће се само нови фајлови.\n\t\t\t*   Ако желите да шифрујете постојеће фајлове, употребите команду `occ encryption:encrypt-all`.\n\n\t\t\t**Пре него што почнете**\n\t\t\t*   **Прочитајте документацију:** пре него што укључите SSE, шифрујете постојеће фајлове, или искључите SSE, веома је \n\t\t\t\tважно да прочитате документацију и у потпуности разумете последице и одговарајуће процедуре и тако спречите губитак података."
+    "Disabled" : "искључено"
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

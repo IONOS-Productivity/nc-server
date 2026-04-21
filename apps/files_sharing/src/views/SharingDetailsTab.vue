@@ -187,14 +187,7 @@
 						:checked.sync="showInGridView">
 						{{ t('files_sharing', 'Show files in grid view') }}
 					</NcCheckboxRadioSwitch>
-
-					<SidebarTabExternalAction v-for="action in sortedExternalShareActions"
-						:key="action.id"
-						ref="externalShareActions"
-						:action="action"
-						:node="fileInfo.node /* TODO: Fix once we have proper Node API */"
-						:share="share" />
-					<SidebarTabExternalActionLegacy v-for="action in externalLegacyShareActions"
+					<ExternalShareAction v-for="action in externalLinkActions"
 						:id="action.id"
 						ref="externalLinkActions"
 						:key="action.id"
@@ -901,6 +894,7 @@ export default {
 			if (this.isNewShare) {
 				if ((this.config.enableLinkPasswordByDefault || this.isPasswordEnforced) && this.isPublicShare) {
 					this.$set(this.share, 'newPassword', await GeneratePassword(true))
+					this.$set(this.share, 'password', this.share.newPassword)
 					this.advancedSectionAccordionExpanded = true
 				}
 				/* Set default expiration dates if configured */
@@ -1056,13 +1050,38 @@ export default {
 					}
 				}
 
+				let share
+				try {
+					this.creating = true
+					share = await this.addShare(incomingShare)
+				} catch (error) {
+					this.creating = false
+					// Error is already handled by ShareRequests mixin
+					return
+				}
+
+				// ugly hack to make code work - we need the id to be set but at the same time we need to keep values we want to update
+				this.share._share.id = share.id
+				await this.queueUpdate(...permissionsAndAttributes)
+				// Also a ugly hack to update the updated permissions
+				for (const prop of permissionsAndAttributes) {
+					if (prop in share && prop in this.share) {
+						try {
+							share[prop] = this.share[prop]
+						} catch {
+							share._share[prop] = this.share[prop]
+						}
+					}
+				}
+
 				this.share = share
 				this.creating = false
 				this.$emit('add:share', this.share)
 			} else {
 				// Let's update after creation as some attrs are only available after creation
-				await this.queueUpdate(...permissionsAndAttributes)
 				this.$emit('update:share', this.share)
+				emit('update:share', this.share)
+				this.queueUpdate(...permissionsAndAttributes)
 			}
 
 			await this.getNode()

@@ -16,8 +16,6 @@ use OC\Files\View;
 use OCA\Files_Sharing\SharedStorage;
 use OCP\Constants;
 use OCP\Files\Cache\IWatcher;
-use OCP\IUserManager;
-use OCP\Server;
 use OCP\Share\IShare;
 
 /**

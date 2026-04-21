@@ -13,8 +13,6 @@ namespace OC\AppFramework\DependencyInjection;
 use OC\AppFramework\Http;
 use OC\AppFramework\Http\Dispatcher;
 use OC\AppFramework\Http\Output;
-use OC\AppFramework\Middleware\AdditionalScriptsMiddleware;
-use OC\AppFramework\Middleware\CompressionMiddleware;
 use OC\AppFramework\Middleware\FlowV2EphemeralSessionsMiddleware;
 use OC\AppFramework\Middleware\MiddlewareDispatcher;
 use OC\AppFramework\Middleware\NotModifiedMiddleware;
@@ -182,12 +180,36 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 
 			$dispatcher = new MiddlewareDispatcher();
 
-			$dispatcher->registerMiddleware($c->get(CompressionMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(NotModifiedMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(ReloadExecutionMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(SameSiteCookieMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(CORSMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(OCSMiddleware::class));
+			$dispatcher->registerMiddleware(
+				$c->get(OC\AppFramework\Middleware\CompressionMiddleware::class)
+			);
+
+			$dispatcher->registerMiddleware($c->get(OC\AppFramework\Middleware\NotModifiedMiddleware::class));
+
+			$dispatcher->registerMiddleware(
+				$c->get(OC\AppFramework\Middleware\Security\ReloadExecutionMiddleware::class)
+			);
+
+			$dispatcher->registerMiddleware(
+				new OC\AppFramework\Middleware\Security\SameSiteCookieMiddleware(
+					$c->get(IRequest::class),
+					$c->get(IControllerMethodReflector::class)
+				)
+			);
+			$dispatcher->registerMiddleware(
+				new CORSMiddleware(
+					$c->get(IRequest::class),
+					$c->get(IControllerMethodReflector::class),
+					$c->get(IUserSession::class),
+					$c->get(IThrottler::class),
+					$c->get(LoggerInterface::class)
+				)
+			);
+			$dispatcher->registerMiddleware(
+				new OCSMiddleware(
+					$c->get(IRequest::class)
+				)
+			);
 
 			$dispatcher->registerMiddleware($c->get(FlowV2EphemeralSessionsMiddleware::class));
 
@@ -208,14 +230,57 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 				$c->get(IRemoteAddress::class),
 			);
 			$dispatcher->registerMiddleware($securityMiddleware);
-			$dispatcher->registerMiddleware($c->get(CSPMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(FeaturePolicyMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(PasswordConfirmationMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(TwoFactorMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(BruteForceMiddleware::class));
+			$dispatcher->registerMiddleware(
+				new OC\AppFramework\Middleware\Security\CSPMiddleware(
+					$server->query(OC\Security\CSP\ContentSecurityPolicyManager::class),
+					$server->query(OC\Security\CSP\ContentSecurityPolicyNonceManager::class),
+				)
+			);
+			$dispatcher->registerMiddleware(
+				$server->query(OC\AppFramework\Middleware\Security\FeaturePolicyMiddleware::class)
+			);
+			$dispatcher->registerMiddleware(
+				new OC\AppFramework\Middleware\Security\PasswordConfirmationMiddleware(
+					$c->get(IControllerMethodReflector::class),
+					$c->get(ISession::class),
+					$c->get(IUserSession::class),
+					$c->get(ITimeFactory::class),
+					$c->get(\OC\Authentication\Token\IProvider::class),
+					$c->get(LoggerInterface::class),
+					$c->get(IRequest::class),
+					$c->get(UserManager::class),
+				)
+			);
+			$dispatcher->registerMiddleware(
+				new TwoFactorMiddleware(
+					$c->get(OC\Authentication\TwoFactorAuth\Manager::class),
+					$c->get(IUserSession::class),
+					$c->get(ISession::class),
+					$c->get(IURLGenerator::class),
+					$c->get(IControllerMethodReflector::class),
+					$c->get(IRequest::class)
+				)
+			);
+			$dispatcher->registerMiddleware(
+				new OC\AppFramework\Middleware\Security\BruteForceMiddleware(
+					$c->get(IControllerMethodReflector::class),
+					$c->get(IThrottler::class),
+					$c->get(IRequest::class),
+					$c->get(LoggerInterface::class)
+				)
+			);
 			$dispatcher->registerMiddleware($c->get(RateLimitingMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(PublicShareMiddleware::class));
-			$dispatcher->registerMiddleware($c->get(AdditionalScriptsMiddleware::class));
+			$dispatcher->registerMiddleware(
+				new OC\AppFramework\Middleware\PublicShare\PublicShareMiddleware(
+					$c->get(IRequest::class),
+					$c->get(ISession::class),
+					$c->get(IConfig::class),
+					$c->get(IThrottler::class)
+				)
+			);
+			$dispatcher->registerMiddleware(
+				$c->get(\OC\AppFramework\Middleware\AdditionalScriptsMiddleware::class)
+			);
 
 			$coordinator = $c->get(\OC\AppFramework\Bootstrap\Coordinator::class);
 			$registrationContext = $coordinator->getRegistrationContext();

@@ -190,8 +190,8 @@ class Setup {
 		if (\OC_Util::runningOnMac()) {
 			$errors[] = [
 				'error' => $this->l10n->t(
-					'Mac OS X is not supported and %s will not work properly on this platform. '
-					. 'Use it at your own risk!',
+					'Mac OS X is not supported and %s will not work properly on this platform. ' .
+					'Use it at your own risk!',
 					[$this->defaults->getProductName()]
 				),
 				'hint' => $this->l10n->t('For the best results, please consider using a GNU/Linux server instead.'),

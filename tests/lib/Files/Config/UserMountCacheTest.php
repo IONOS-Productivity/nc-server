@@ -10,7 +10,6 @@ namespace Test\Files\Config;
 
 use OC\DB\Exceptions\DbalException;
 use OC\DB\QueryBuilder\Literal;
-use OC\Files\Cache\Cache;
 use OC\Files\Config\UserMountCache;
 use OC\Files\Mount\MountPoint;
 use OC\Files\Storage\Storage;
@@ -47,7 +46,7 @@ class UserMountCacheTest extends TestCase {
 
 		$this->fileIds = [];
 
-		$this->connection = Server::get(IDBConnection::class);
+		$this->connection = \OC::$server->getDatabaseConnection();
 
 		$config = $this->getMockBuilder(IConfig::class)
 			->disableOriginalConstructor()

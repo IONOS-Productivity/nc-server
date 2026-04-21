@@ -62,7 +62,7 @@ class AccountManagerTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
-		$this->connection = Server::get(IDBConnection::class);
+		$this->connection = \OCP\Server::get(IDBConnection::class);
 		$this->phoneNumberUtil = new PhoneNumberUtil();
 
 		$this->eventDispatcher = $this->createMock(IEventDispatcher::class);
@@ -688,7 +688,9 @@ class AccountManagerTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataParsePhoneNumber')]
+	/**
+	 * @dataProvider dataParsePhoneNumber
+	 */
 	public function testSanitizePhoneNumberOnUpdateAccount(string $phoneInput, string $defaultRegion, ?string $phoneNumber): void {
 		$this->config->method('getSystemValueString')
 			->willReturn($defaultRegion);
@@ -740,7 +742,9 @@ class AccountManagerTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataSanitizeOnUpdate')]
+	/**
+	 * @dataProvider dataSanitizeOnUpdate
+	 */
 	public function testSanitizingOnUpdateAccount(string $property, string $input, ?string $output): void {
 
 		if ($property === IAccountManager::PROPERTY_FEDIVERSE) {
@@ -772,6 +776,113 @@ class AccountManagerTest extends TestCase {
 
 		if ($output !== null) {
 			self::assertEquals($output, $account->getProperty($property)->getValue());
+		}
+	}
+
+	public static function dataSanitizeFediverseServer(): array {
+		return [
+			'no internet' => [
+				'@foo@example.com',
+				'foo@example.com',
+				false,
+				null,
+			],
+			'no internet - no at' => [
+				'foo@example.com',
+				'foo@example.com',
+				false,
+				null,
+			],
+			'valid response' => [
+				'@foo@example.com',
+				'foo@example.com',
+				true,
+				json_encode(['username' => 'foo']),
+			],
+			'valid response - no at' => [
+				'foo@example.com',
+				'foo@example.com',
+				true,
+				json_encode(['username' => 'foo']),
+			],
+			// failures
+			'invalid response' => [
+				'@foo@example.com',
+				null,
+				true,
+				json_encode(['not found']),
+			],
+			'no response' => [
+				'@foo@example.com',
+				null,
+				true,
+				null,
+			],
+			'wrong user' => [
+				'@foo@example.com',
+				null,
+				true,
+				json_encode(['username' => 'foo@other.example.com']),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSanitizeFediverseServer
+	 */
+	public function testSanitizingFediverseServer(string $input, ?string $output, bool $hasInternet, ?string $serverResponse): void {
+		$this->config->expects(self::once())
+			->method('getSystemValueBool')
+			->with('has_internet_connection', true)
+			->willReturn($hasInternet);
+
+		if ($hasInternet) {
+			$client = $this->createMock(IClient::class);
+			if ($serverResponse !== null) {
+				$response = $this->createMock(IResponse::class);
+				$response->method('getBody')
+					->willReturn($serverResponse);
+				$client->expects(self::once())
+					->method('get')
+					->with('https://example.com/api/v1/accounts/lookup?acct=foo@example.com')
+					->willReturn($response);
+			} else {
+				$client->expects(self::once())
+					->method('get')
+					->with('https://example.com/api/v1/accounts/lookup?acct=foo@example.com')
+					->willThrowException(new \Exception('404'));
+			}
+
+			$this->clientService
+				->expects(self::once())
+				->method('newClient')
+				->willReturn($client);
+		} else {
+			$this->clientService
+				->expects(self::never())
+				->method('newClient');
+		}
+
+		$user = $this->createMock(IUser::class);
+		$account = new Account($user);
+		$account->setProperty(IAccountManager::PROPERTY_FEDIVERSE, $input, IAccountManager::SCOPE_LOCAL, IAccountManager::NOT_VERIFIED);
+
+		$manager = $this->getInstance(['getUser', 'updateUser']);
+		$manager->method('getUser')
+			->with($user, false)
+			->willReturn([]);
+		$manager->expects($output === null ? self::never() : self::once())
+			->method('updateUser');
+
+		if ($output === null) {
+			$this->expectException(\InvalidArgumentException::class);
+			$this->expectExceptionMessage(IAccountManager::PROPERTY_FEDIVERSE);
+		}
+
+		$manager->updateAccount($account);
+
+		if ($output !== null) {
+			self::assertEquals($output, $account->getProperty(IAccountManager::PROPERTY_FEDIVERSE)->getValue());
 		}
 	}
 

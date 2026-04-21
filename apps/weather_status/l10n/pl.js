@@ -7,7 +7,6 @@ OC.L10N.register(
     "Error" : "Błąd",
     "Weather status" : "Stan pogody",
     "Weather status in your dashboard" : "Stan pogody na pulpicie",
-    "Weather status integrated in the Dashboard app.\n    The geographic location can be automatically determined or manually defined. A 6 hours forecast is then displayed.\n    This status can also be integrated in other places like the Calendar app." : "Status pogody zintegrowany z aplikacją Panelu.\nPołożenie geograficzne może być automatycznie ustalane lub ręcznie definiowane. Wyświetlana jest prognoza na 6 godzin.\nStatus może być również integrowany z innymi aplikacjami, takimi jak Kalendarz.",
     "{temperature} {unit} clear sky later today" : "{temperature} {unit} bezchmurne niebo później dzisiaj",
     "{temperature} {unit} clear sky" : "{temperature} {unit} czyste niebo",
     "{temperature} {unit} cloudy later today" : "{temperature} {unit} pochmurno później dzisiaj",
@@ -55,7 +54,6 @@ OC.L10N.register(
     "There was an error setting the location." : "Wystąpił błąd podczas ustawiania lokalizacji.",
     "There was an error saving the mode." : "Wystąpił błąd podczas zapisywania trybu.",
     "There was an error using personal address." : "Wystąpił błąd podczas korzystania z własnego adresu.",
-    "Unknown weather code" : "Nieznany kod pogodowy",
     "Detect location" : "Wykryj lokalizację",
     "Set custom address" : "Ustaw adres własny",
     "Favorites" : "Ulubione"

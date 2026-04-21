@@ -174,8 +174,7 @@ Feature: provisioning
       | phone | +4971125242890 |
       | address | Foo Bar Town |
       | website | https://nextcloud.com |
-	  | twitter | Nextcloud |
-	  | bluesky | nextcloud.bsky.social |
+      | twitter | Nextcloud |
     And sending "PUT" to "/cloud/users/brand-new-user" with
       | key | organisation |
       | value | Nextcloud GmbH |
@@ -193,18 +192,6 @@ Feature: provisioning
       | timezone | UTC |
       | timezoneOffset | 0 |
       | pronouns | NULL |
-
-  Scenario: Edit a user with mixed case emails
-    Given As an "admin"
-    And user "brand-new-user" exists
-    And sending "PUT" to "/cloud/users/brand-new-user" with
-      | key | email |
-      | value | mixed-CASE@Nextcloud.com |
-    And the OCS status code should be "100"
-    And the HTTP status code should be "200"
-    Then user "brand-new-user" has
-      | id | brand-new-user |
-      | email | mixed-case@nextcloud.com |
 
   Scenario: Edit a user account properties scopes
     Given user "brand-new-user" exists

@@ -13,6 +13,7 @@ use OCP\Files\AppData\IAppDataFactory;
 use Psr\Log\LoggerInterface;
 
 class RemoveOldTasksBackgroundJob extends TimedJob {
+	public const MAX_TASK_AGE_SECONDS = 60 * 60 * 24 * 30 * 4; // 4 months
 	private \OCP\Files\IAppData $appData;
 
 	public function __construct(

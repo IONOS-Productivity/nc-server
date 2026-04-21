@@ -11,7 +11,6 @@ use OC\Files\Storage\Temporary;
 use OC\Preview\BackgroundCleanupJob;
 use OC\Preview\Storage\Root;
 use OC\PreviewManager;
-use OC\SystemConfig;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\AppData\IAppDataFactory;
@@ -192,7 +191,7 @@ class BackgroundCleanupJobTest extends \Test\TestCase {
 		$appdata->getFolder('/')->newFile('not-a-directory', 'foo');
 		$appdata->getFolder('/')->newFile('133742', 'bar');
 
-		$appdata = Server::get(IAppDataFactory::class)->get('preview');
+		$appdata = \OC::$server->getAppDataDir('preview');
 		// AppData::getDirectoryListing filters all non-folders
 		$this->assertSame(3, count($appdata->getDirectoryListing()));
 		try {
@@ -209,7 +208,7 @@ class BackgroundCleanupJobTest extends \Test\TestCase {
 		$job = new BackgroundCleanupJob($this->timeFactory, $this->connection, $this->getRoot(), $this->mimeTypeLoader, true);
 		$job->run([]);
 
-		$appdata = Server::get(IAppDataFactory::class)->get('preview');
+		$appdata = \OC::$server->getAppDataDir('preview');
 
 		// Check if the files created above are still present
 		// Remember: AppData::getDirectoryListing filters all non-folders

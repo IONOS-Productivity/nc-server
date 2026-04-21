@@ -16,9 +16,7 @@ use OCA\Files_Trashbin\Trashbin;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\IAppConfig;
-use OCP\IUser;
 use OCP\IUserManager;
-use OCP\Lock\ILockingProvider;
 use Psr\Log\LoggerInterface;
 
 class ExpireTrash extends TimedJob {
@@ -32,8 +30,6 @@ class ExpireTrash extends TimedJob {
 		private IUserManager $userManager,
 		private Expiration $expiration,
 		private LoggerInterface $logger,
-		private SetupManager $setupManager,
-		private ILockingProvider $lockingProvider,
 		ITimeFactory $time,
 	) {
 		parent::__construct($time);
@@ -41,8 +37,8 @@ class ExpireTrash extends TimedJob {
 	}
 
 	protected function run($argument) {
-		$backgroundJob = $this->appConfig->getValueBool(Application::APP_ID, self::TOGGLE_CONFIG_KEY_NAME, true);
-		if (!$backgroundJob) {
+		$backgroundJob = $this->appConfig->getValueString('files_trashbin', 'background_job_expire_trash', 'yes');
+		if ($backgroundJob === 'no') {
 			return;
 		}
 
@@ -51,36 +47,33 @@ class ExpireTrash extends TimedJob {
 			return;
 		}
 
-		$startTime = time();
+		$stopTime = time() + 60 * 30; // Stops after 30 minutes.
+		$offset = $this->appConfig->getValueInt('files_trashbin', 'background_job_expire_trash_offset', 0);
+		$users = $this->userManager->getSeenUsers($offset);
 
-		// Process users in batches of 10, but don't run for more than 30 minutes
-		while (time() < $startTime + self::THIRTY_MINUTES) {
-			$offset = $this->getNextOffset();
-			$users = $this->userManager->getSeenUsers($offset, self::USER_BATCH_SIZE);
-			$count = 0;
-
-			foreach ($users as $user) {
+		foreach ($users as $user) {
+			try {
 				$uid = $user->getUID();
-				$count++;
-
-				try {
-					if ($this->setupFS($user)) {
-						$dirContent = Helper::getTrashFiles('/', $uid, 'mtime');
-						Trashbin::deleteExpiredFiles($dirContent, $uid);
-					}
-				} catch (\Throwable $e) {
-					$this->logger->error('Error while expiring trashbin for user ' . $uid, ['exception' => $e]);
-				} finally {
-					$this->setupManager->tearDown();
+				if (!$this->setupFS($uid)) {
+					continue;
 				}
+				$dirContent = Helper::getTrashFiles('/', $uid, 'mtime');
+				Trashbin::deleteExpiredFiles($dirContent, $uid);
+			} catch (\Throwable $e) {
+				$this->logger->error('Error while expiring trashbin for user ' . $user->getUID(), ['exception' => $e]);
 			}
 
-			// If the last batch was not full it means that we reached the end of the user list.
-			if ($count < self::USER_BATCH_SIZE) {
-				$this->resetOffset();
-				break;
+			$offset++;
+
+			if ($stopTime < time()) {
+				$this->appConfig->setValueInt('files_trashbin', 'background_job_expire_trash_offset', $offset);
+				\OC_Util::tearDownFS();
+				return;
 			}
 		}
+
+		$this->appConfig->setValueInt('files_trashbin', 'background_job_expire_trash_offset', 0);
+		\OC_Util::tearDownFS();
 	}
 
 	/**

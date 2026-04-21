@@ -41,27 +41,23 @@ class IpAddress {
 		}
 
 		$config = \OCP\Server::get(IConfig::class);
-		$maskSize = min(64, max(32, $config->getSystemValueInt('security.ipv6_normalized_subnet_size', 56)));
-
-		$binary = inet_pton($ip);
-		if ($binary === false) {
-			return $ip . '/' . $maskSize;
-		}
-
+		$maskSize = min(64, $config->getSystemValueInt('security.ipv6_normalized_subnet_size', 56));
+		$maskSize = max(32, $maskSize);
 		if (PHP_INT_SIZE === 4) {
-			// 32-bit PHP
-			$value = match($maskSize) {
-				64 => -1,
-				63 => PHP_INT_MAX,
-				default => (1 << ($maskSize - 32)) - 1,
-			};
+			if ($maskSize === 64) {
+				$value = -1;
+			} elseif ($maskSize === 63) {
+				$value = PHP_INT_MAX;
+			} else {
+				$value = (1 << $maskSize - 32) - 1;
+			}
 			// as long as we support 32bit PHP we cannot use the `P` pack formatter (and not overflow 32bit integer)
 			$mask = pack('VVVV', -1, $value, 0, 0);
 		} else {
-			// 64-bit PHP
-			$mask = pack('VVP', (1 << 32) - 1, (1 << ($maskSize - 32)) - 1, 0);
+			$mask = pack('VVP', (1 << 32) - 1, (1 << $maskSize - 32) - 1, 0);
 		}
 
+		$binary = \inet_pton($ip);
 		return inet_ntop($binary & $mask) . '/' . $maskSize;
 	}
 

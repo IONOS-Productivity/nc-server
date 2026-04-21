@@ -16,10 +16,7 @@
     "We cannot send you the auto-generated password. Please set a valid email address in your personal settings and try again." : "Δεν μπορούμε να σας στείλουμε το συνθηματικό που δημιουργείται αυτόματα. Ορίστε μια έγκυρη διεύθυνση email στις προσωπικές σας ρυθμίσεις και δοκιμάστε ξανά.",
     "Failed to send share by email. Got an invalid email address" : "Αποτυχία αποστολής της κοινής χρήσης μέσω email. Λάβαμε μια μη έγκυρη διεύθυνση email",
     "Failed to send share by email" : "Αποτυχία αποστολής συνδέσμου διαμοιρασμού μέσω Ηλ.ταχυδρομείου",
-    "%1$s shared %2$s with you" : "Ο/Η %1$s μοιράστηκε το %2$s μαζί σας",
     "Note:" : "Σημείωση:",
-    "This share is valid until %s at midnight" : "Αυτή η κοινή χρήση ισχύει μέχρι τις %s τα μεσάνυχτα",
-    "Expiration:" : "Λήξη:",
     "Open %s" : "Άνοιγμα %s",
     "%1$s via %2$s" : "%1$s μέσω %2$s",
     "%1$s shared %2$s with you. You should have already received a separate mail with a link to access it." : "%1$s κοινοποίησε το %2$s μαζί σας. Θα πρέπει να έχετε ήδη λάβει ξεχωριστό μήνυμα ηλεκτρονικού ταχυδρομείου με έναν σύνδεσμο πρόσβασης.",
@@ -35,9 +32,8 @@
     "This is the password:" : "Αυτό είναι το συνθηματικό:",
     "You can choose a different password at any time in the share dialog." : "Μπορείτε να διαλέξετε ένα διαφορετικό συνθηματικό οποιαδήποτε στιγμή στον διάλογο διαμοιρασμού.",
     "Could not find share" : "Αδυναμία εύρεσης κοινόχρηστου",
-    "Share provider which allows you to share files by mail" : "Πάροχος κοινής χρήσης που σας επιτρέπει να μοιράζεστε αρχεία μέσω ηλεκτρονικού ταχυδρομείου",
-    "Unable to update share by mail config" : "Αδυναμία ενημέρωσης των ρυθμίσεων κοινής χρήσης μέσω ηλεκτρονικού ταχυδρομείου",
-    "Allows people to share a personalized link to a file or folder by putting in an email address." : "Επιτρέπει στους χρήστες να μοιράζονται έναν εξατομικευμένο σύνδεσμο για ένα αρχείο ή φάκελο, εισάγοντας μια διεύθυνση ηλεκτρονικού ταχυδρομείου.",
+    "Share provider which allows you to share files by mail" : "Πάροχος διαμοιρασμού που σας επιτρέπει να διαμοιράζεστε αρχεία μέσω mail",
+    "Unable to update share by mail config" : "Αδυναμία ενημέρωσης των ρυθμίσεων κοινής χρήσης μέσω mail",
     "Send password by mail" : "Αποστολή συνθηματικου με ηλεκτρονική αλληλογραφία",
     "Reply to initiator" : "Απάντηση στον αποστολέα"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"

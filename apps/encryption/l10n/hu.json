@@ -43,7 +43,10 @@
     "Old recovery key password" : "Régi helyreállítási kulcs jelszava",
     "New recovery key password" : "Új helyreállítási kulcs jelszava",
     "Repeat new recovery key password" : "Ismételje meg az új helyreállítási kulcs jelszavát",
-    "If you do not remember your old password you can ask your administrator to recover your files." : "Ha nem emlékszik a régi jelszavára, akkor megkérheti a rendszergazdát, hogy állítsa helyre a fájljait.",
+    "Change Password" : "Jelszó módosítása",
+    "Basic encryption module" : "Alapvető titkosítási modul",
+    "Your private key password no longer matches your log-in password." : "A titkos kulcsa jelszava már nem egyezik meg a bejelentkezési jelszavával. ",
+    "Set your old private key password to your current log-in password:" : "A régi privát kulcsának jelszavának beállítása a jelenlegi bejelentkezési jelszavára:",
     "Old log-in password" : "Régi bejelentkezési jelszó",
     "Current log-in password" : "Jelenlegi bejelentkezési jelszó",
     "Update" : "Frissítés",
@@ -61,7 +64,6 @@
     "Update Private Key Password" : "Titkos kulcs jelszavának frissítése",
     "Enable password recovery:" : "Jelszó-helyreállítás engedélyezése:",
     "Enabled" : "Engedélyezve",
-    "Disabled" : "Letiltva",
-    "This app provides the (default) cryptography implementation for Nextcloud's Server-side Encryption (SSE) feature.\n\n\t\t\t**Encryption Details**\n\t\t\t*   **Cipher Mode:** AES-256-CTR (default)\n\t\t\t*   **Authentication:** HMAC-SHA256\n\n\t\t\t**Important Warnings**\n\t\t\t*   **DANGER:** Do not disable this application until all files have been decrypted (`occ encryption:decrypt-all`).\n\t\t\t*   **WARNING**: Reverting to non-encrypted file storage after activation requires command-line access. The action is permanent via the Web UI.\"\n\n\t\t\t**Notes for Existing Files**\n\t\t\t*   By default, enabling SSE does not encrypt existing files; only new files will be encrypted.\n\t\t\t*   To encrypt all existing files, use the command `occ encryption:encrypt-all`.\n\n\t\t\t**Before You Begin**\n\t\t\t*   **Read the Documentation:** Before you enable SSE, encrypt existing files, or disable SSE, it is critical to \n\t\t\t\tread the documentation to understand implications and the appropriate procedures to avoid data loss." : "Ez az alkalmazás biztosítja az (alapértelmezett) titkosítási megvalósítást a Nextcloud kiszolgálóoldali titkosítási (SSE) funkciójához.\n\n\t\t\t**Titkosítás részletei**\n\t\t\t* **Titkosítási mód:** AES-256-CTR (alapértelmezett)\n\t\t\t* **Hitelesítés:** HMAC-SHA256\n\n\t\t\t**Fontos figyelmeztetések**\n\t\t\t* **VESZÉLY:** Ne tiltsa le az alkalmazást addig, amíg fel nem oldotta az összes fájl titkosítását (`occ encryption:decrypt-all`).\n\t\t\t* **FIGYELMEZTETÉS**: A nem titkosított fájltárolásra visszaálláshoz parancssoros hozzáférés szükséges. A művelet a webes felületen végleges.\"\n\n\t\t\t**Megjegyzés a meglévő fájlokhoz**\n\t\t\t* Alapértelmezés szerint az SSE engedélyezése nem titkosítja a meglévő fájlokat; csak az új fájlok lesznek titkosítva.\n\t\t\t* Az összes meglévő fájl titkosításához használja az `occ encryption:encrypt-all` parancsot.\n\n\t\t\t**Mielőtt nekikezd**\n\t\t\t* **Olvassa el a dokumentációt:** Az SSE engedélyezése, a meglévő fájlok titkosítása vagy az SSE letiltása előtt \n\t\t\t\telengedhetetlen a dokumentáció elolvasása, hogy tisztában legyen a következményekkel, és az adatvesztés\n\t\t\t\telkerülését eredményező folyamatokkal."
+    "Disabled" : "Letiltva"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

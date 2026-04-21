@@ -20,38 +20,8 @@ class UserConfig {
 			'allowed' => [true, false],
 		],
 		[
-			// The view to start the files app in
-			'key' => 'default_view',
-			'default' => 'files',
-			'allowed' => ['files', 'personal'],
-		],
-		[
-			// Whether to show the folder tree
-			'key' => 'folder_tree',
-			'default' => true,
-			'allowed' => [true, false],
-		],
-		[
-			// Whether to show the files list in grid view or not
-			'key' => 'grid_view',
-			'default' => false,
-			'allowed' => [true, false],
-		],
-		[
-			// Whether to show the "confirm file deletion" warning
-			'key' => 'show_dialog_deletion',
-			'default' => false,
-			'allowed' => [true, false],
-		],
-		[
 			// Whether to show the "confirm file extension change" warning
 			'key' => 'show_dialog_file_extension',
-			'default' => true,
-			'allowed' => [true, false],
-		],
-		[
-			// Whether to show the files extensions in the files list or not
-			'key' => 'show_files_extensions',
 			'default' => true,
 			'allowed' => [true, false],
 		],

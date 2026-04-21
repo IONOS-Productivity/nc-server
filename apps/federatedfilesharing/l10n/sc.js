@@ -22,8 +22,7 @@ OC.L10N.register(
     "Federated file sharing" : "Cumpartzidura archìviu federadu",
     "Provide federated file sharing across servers" : "Frunit una cumpartzidura de archìvios federados intre serbidores",
     "Share with me through my #Nextcloud Federated Cloud ID" : "Cumpartzi cun megus tràmite s'ID meu de nue virtuale federada #Nextcloud Federated Cloud ID",
-    "Share with me via Nextcloud" : "Cumpartzi cun megus tràmite Nextcloud",
-    "Copy" : "Còpia",
+    "Copy to clipboard" : "Còpia in is punta de billete",
     "Copied!" : "Copiadu!",
     "Federated Cloud" : "Nue virtuale federada",
     "Share it so your friends can share files with you:" : " Condividilo in modo che i tuoi amici possano condividere file con te:",
@@ -34,10 +33,6 @@ OC.L10N.register(
     "Add remote share" : "Agiunghe cumpartzidura remota",
     "Remote share" : "Cumpartzidura remota",
     "Do you want to add the remote share {name} from {owner}@{remote}?" : "Nche cheres agiùnghere sa cumpartzidura remota {name} dae {owner}@{remote}?",
-    "Remote share password" : "Cumpartzidura remota crae",
-    "Copy to clipboard" : "Còpia in is punta de billete",
-    "You can share with anyone who uses a Nextcloud server or other Open Cloud Mesh (OCM) compatible servers and services! Just put their Federated Cloud ID in the share dialog. It looks like person@cloud.example.com" : "Podes cumpartzire con chie si siat mpreet su serbidore Nextcloud o àteros serbidores Open Cloud Mesh (OCM) cumpatìbiles. Ti bastat de nche insertare s'ID issoro de sa nue virtuale federada in sa bentana de cumpartzidura. Assimìgiat a persone@nue.esempru.com ",
-    "X (formerly Twitter)" : "X (in antis, Twitter)",
-    "formerly Twitter" : "in antis, Twitter"
+    "Remote share password" : "Cumpartzidura remota crae"
 },
 "nplurals=2; plural=(n != 1);");

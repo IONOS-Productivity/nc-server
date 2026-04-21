@@ -20,13 +20,20 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Test\TestCase;
 
 class AjaxControllerTest extends TestCase {
-	private IRequest&MockObject $request;
-	private RSA&MockObject $rsa;
-	private GlobalAuth&MockObject $globalAuth;
-	private IUserSession&MockObject $userSession;
-	private IGroupManager&MockObject $groupManager;
-	private IL10N&MockObject $l10n;
-	private AjaxController $ajaxController;
+	/** @var IRequest */
+	private $request;
+	/** @var RSA */
+	private $rsa;
+	/** @var GlobalAuth */
+	private $globalAuth;
+	/** @var IUserSession */
+	private $userSession;
+	/** @var IGroupManager */
+	private $groupManager;
+	/** @var AjaxController */
+	private $ajaxController;
+	/** @var IL10N */
+	private $l10n;
 
 	protected function setUp(): void {
 		$this->request = $this->createMock(IRequest::class);

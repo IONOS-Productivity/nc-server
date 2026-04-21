@@ -155,10 +155,10 @@ if ($config->getSystemValueBool('installed', false)) {
 	$application->add(Server::get(Command\Config\System\GetConfig::class));
 	$application->add(Server::get(Command\Config\System\SetConfig::class));
 
-	$application->add(Server::get(File::class));
-	$application->add(Server::get(Space::class));
-	$application->add(Server::get(Storage::class));
-	$application->add(Server::get(Storages::class));
+	$application->add(Server::get(Command\Info\File::class));
+	$application->add(Server::get(Command\Info\Space::class));
+	$application->add(Server::get(Command\Info\Storage::class));
+	$application->add(Server::get(Command\Info\Storages::class));
 
 	$application->add(Server::get(ConvertType::class));
 	$application->add(Server::get(ConvertMysqlToMB4::class));

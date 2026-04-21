@@ -70,22 +70,24 @@
 import type { UserConfig } from '../types'
 import type { Node as NcNode } from '@nextcloud/files'
 import type { ComponentPublicInstance, PropType } from 'vue'
+import type { Location } from 'vue-router'
 
-import { Folder, Permission, View, getFileActions, FileType } from '@nextcloud/files'
 import { showError } from '@nextcloud/dialogs'
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
-import { n, t } from '@nextcloud/l10n'
-import { useHotKey } from '@nextcloud/vue/composables/useHotKey'
+import { Folder, Permission, View, getFileActions, FileType } from '@nextcloud/files'
+import { t } from '@nextcloud/l10n'
+import { useHotKey } from '@nextcloud/vue/dist/Composables/useHotKey.js'
 import { defineComponent } from 'vue'
 
 import { action as sidebarAction } from '../actions/sidebarAction.ts'
 import { useActiveStore } from '../store/active.ts'
 import { useFileListHeaders } from '../composables/useFileListHeaders.ts'
 import { useFileListWidth } from '../composables/useFileListWidth.ts'
+import { useFileListHeaders } from '../composables/useFileListHeaders.ts'
 import { useRouteParameters } from '../composables/useRouteParameters.ts'
 import { useSelectionStore } from '../store/selection.js'
 import { useUserConfigStore } from '../store/userconfig.ts'
-import logger from '../logger.ts'
+import { getSummaryFor } from '../utils/fileUtils.ts'
 
 import FileEntry from './FileEntry.vue'
 import FileEntryGrid from './FileEntryGrid.vue'
@@ -95,6 +97,7 @@ import FilesListTableFooter from './FilesListTableFooter.vue'
 import FilesListTableHeader from './FilesListTableHeader.vue'
 import FilesListTableHeaderActions from './FilesListTableHeaderActions.vue'
 import VirtualList from './VirtualList.vue'
+import logger from '../logger.ts'
 
 export default defineComponent({
 	name: 'FilesListVirtual',
@@ -232,14 +235,30 @@ export default defineComponent({
 		isEmpty() {
 			this.handleOpenQueries()
 		},
-		fileId() {
-			this.handleOpenQueries()
+
+		openFile: {
+			handler(openFile) {
+				if (!openFile || !this.fileId) {
+					return
+				}
+
+				this.handleOpenFile(this.fileId)
+			},
+			immediate: true,
 		},
-		openFile() {
-			this.handleOpenQueries()
-		},
-		openDetails() {
-			this.handleOpenQueries()
+
+		openDetails: {
+			handler(openDetails) {
+				// wait for scrolling and updating the actions to settle
+				this.$nextTick(() => {
+					if (!openDetails || !this.fileId) {
+						return
+					}
+
+					this.openSidebarForFile(this.fileId)
+				})
+			},
+			immediate: true,
 		},
 	},
 
@@ -305,7 +324,7 @@ export default defineComponent({
 				sidebarAction.exec(node, this.currentView, this.currentFolder.path)
 				return
 			}
-			logger.warn(`Failed to open sidebar on file ${fileId}, file isn't cached yet !`, { fileId, node })
+			logger.error(`Failed to open sidebar on file ${fileId}, file isn't cached yet !`, { fileId, node })
 		},
 
 		scrollToFile(fileId: number|null, warn = true) {
@@ -386,13 +405,15 @@ export default defineComponent({
 			}
 			// The file is either a folder or has no default action other than downloading
 			// in this case we need to open the details instead and remove the route from the history
+			const query = this.$route.query
+			delete query.openfile
+			query.opendetails = ''
+
 			logger.debug('Ignore `openfile` query and replacing with `opendetails` for ' + node.path, { node })
-			window.OCP.Files.Router.goToRoute(
-				null,
-				this.$route.params,
-				{ ...this.$route.query, openfile: undefined, opendetails: '' },
-				true, // silent update of the URL
-			)
+			await this.$router.replace({
+				...(this.$route as Location),
+				query,
+			})
 		},
 
 		onDragOver(event: DragEvent) {
@@ -724,14 +745,11 @@ export default defineComponent({
 					height: var(--icon-preview-size);
 				}
 
-				// Slightly increase the size of the folder icon
+				// Slightly decrease the size of the folder icon
 				&.folder-icon,
-				&.folder-open-icon {
-					margin: -3px;
-					svg {
-						width: calc(var(--icon-preview-size) + 6px);
-						height: calc(var(--icon-preview-size) + 6px);
-					}
+				&.folder-open-icon svg {
+					width: calc(var(--icon-preview-size) - 6px);
+					height: calc(var(--icon-preview-size) - 6px);
 				}
 			}
 

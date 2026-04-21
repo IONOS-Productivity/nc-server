@@ -31,12 +31,12 @@ class PublicAuthTest extends \Test\TestCase {
 	private ISession&MockObject $session;
 	private IRequest&MockObject $request;
 	private IManager&MockObject $shareManager;
+	private PublicAuth $auth;
 	private IThrottler&MockObject $throttler;
 	private LoggerInterface&MockObject $logger;
 	private IURLGenerator&MockObject $urlGenerator;
-	private PublicAuth $auth;
 
-	private bool|string $oldUser;
+	private string $oldUser;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -135,7 +135,7 @@ class PublicAuthTest extends \Test\TestCase {
 		$this->session->method('exists')->with('public_link_authenticated')->willReturn(true);
 		$this->session->method('get')->with('public_link_authenticated')->willReturn('42');
 
-		$result = self::invokePrivate($this->auth, 'checkToken');
+		$result = $this->invokePrivate($this->auth, 'checkToken');
 		$this->assertSame([true, 'principals/GX9HSGQrGE'], $result);
 	}
 

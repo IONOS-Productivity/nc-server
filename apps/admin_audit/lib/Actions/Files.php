@@ -57,7 +57,7 @@ class Files extends Action {
 			$source = $event->getSource();
 			$params = [
 				'newid' => $target->getId(),
-				'oldpath' => $source->getPath(),
+				'oldpath' => $originalSource->getPath(),
 				'newpath' => $target->getPath(),
 			];
 		} catch (InvalidPathException|NotFoundException $e) {

@@ -41,6 +41,8 @@ OC.L10N.register(
     "Change Password" : "เปลี่ยนรหัสผ่าน",
     "Your private key password no longer matches your log-in password." : "รหัสผ่านคีย์ส่วนตัวของคุณ ไม่ตรงกับรหัสผ่านที่ใช้เข้าสู่ระบบของคุณอีกต่อไป",
     "Set your old private key password to your current log-in password:" : "ตั้งรหัสผ่านคีย์ส่วนตัวเก่าของคุณเป็นรหัสผ่านเข้าสู่ระบบปัจจุบันของคุณ:",
+    "Old log-in password" : "รหัสผ่านเข้าสู่ระบบเดิม",
+    "Current log-in password" : "รหัสผ่านเข้าสู่ระบบปัจจุบัน",
     "Update Private Key Password" : "อัปเดตรหัสผ่านคีย์ส่วนตัว",
     "Enable password recovery:" : "เปิดใช้งานการกู้คืนด้วยรหัสผ่าน:",
     "Enabled" : "เปิดใช้งาน",

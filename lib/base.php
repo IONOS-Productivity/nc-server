@@ -6,15 +6,12 @@ declare(strict_types=1);
  * SPDX-FileCopyrightText: 2013-2016 ownCloud, Inc.
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-
-use OC\Profiler\BuiltInProfiler;
+use OC\Encryption\HookManager;
 use OC\Share20\GroupDeletedListener;
 use OC\Share20\Hooks;
 use OC\Share20\UserDeletedListener;
 use OC\Share20\UserRemovedListener;
-use OC\User\DisabledUserException;
 use OCP\EventDispatcher\IEventDispatcher;
-use OCP\Files\Events\BeforeFileSystemSetupEvent;
 use OCP\Group\Events\GroupDeletedEvent;
 use OCP\Group\Events\UserRemovedEvent;
 use OCP\IConfig;
@@ -27,7 +24,6 @@ use OCP\Server;
 use OCP\Template\ITemplateManager;
 use OCP\User\Events\UserChangedEvent;
 use OCP\User\Events\UserDeletedEvent;
-use OCP\Util;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use function OCP\Log\logger;
@@ -49,7 +45,7 @@ class OC {
 	 */
 	private static string $SUBURI = '';
 	/**
-	 * the Nextcloud root path for http requests (e.g. /nextcloud)
+	 * the Nextcloud root path for http requests (e.g. nextcloud/)
 	 */
 	public static string $WEBROOT = '';
 	/**
@@ -384,6 +380,13 @@ class OC {
 		// prevents javascript from accessing php session cookies
 		ini_set('session.cookie_httponly', 'true');
 
+		// Do not initialize sessions for 'status.php' requests
+		// Monitoring endpoints can quickly flood session handlers
+		// and 'status.php' doesn't require sessions anyway
+		if (str_ends_with($request->getScriptName(), '/status.php')) {
+			return;
+		}
+
 		// set the cookie path to the Nextcloud directory
 		$cookie_path = OC::$WEBROOT ? : '/';
 		ini_set('session.cookie_path', $cookie_path);
@@ -657,6 +660,9 @@ class OC {
 			error_reporting(E_ALL);
 		}
 
+		$systemConfig = Server::get(\OC\SystemConfig::class);
+		self::registerAutoloaderCache($systemConfig);
+
 		// initialize intl fallback if necessary
 		OC_Util::isSetLocaleWorking();
 
@@ -851,46 +857,16 @@ class OC {
 			$eventLogger->end('request');
 		});
 
-		register_shutdown_function(function () use ($config) {
+		register_shutdown_function(function () {
 			$memoryPeak = memory_get_peak_usage();
-			$debugModeEnabled = $config->getSystemValueBool('debug', false);
-			$memoryLimit = null;
-
-			if (!$debugModeEnabled) {
-				// Use the memory helper to get the real memory limit in bytes if debug mode is disabled
-				try {
-					$memoryInfo = new \OC\MemoryInfo();
-					$memoryLimit = $memoryInfo->getMemoryLimit();
-				} catch (Throwable $e) {
-					// Ignore any errors and fall back to hardcoded thresholds
-				}
-			}
-
-			// Check if a memory limit is configured and can be retrieved and determine log level if debug mode is disabled
-			if (!$debugModeEnabled && $memoryLimit !== null && $memoryLimit !== -1) {
-				$logLevel = match (true) {
-					$memoryPeak > $memoryLimit * 0.9 => ILogger::FATAL,
-					$memoryPeak > $memoryLimit * 0.75 => ILogger::ERROR,
-					$memoryPeak > $memoryLimit * 0.5 => ILogger::WARN,
-					default => null,
-				};
-
-				$memoryLimitIni = @ini_get('memory_limit');
-				$message = 'Request used ' . Util::humanFileSize($memoryPeak) . ' of memory. Memory limit: ' . ($memoryLimitIni ?: 'unknown');
-			} else {
-				// Fall back to hardcoded thresholds if memory_limit cannot be determined or if debug mode is enabled
-				$logLevel = match (true) {
-					$memoryPeak > 500_000_000 => ILogger::FATAL,
-					$memoryPeak > 400_000_000 => ILogger::ERROR,
-					$memoryPeak > 300_000_000 => ILogger::WARN,
-					default => null,
-				};
-
-				$message = 'Request used more than 300 MB of RAM: ' . Util::humanFileSize($memoryPeak);
-			}
-
-			// Log the message
+			$logLevel = match (true) {
+				$memoryPeak > 500_000_000 => ILogger::FATAL,
+				$memoryPeak > 400_000_000 => ILogger::ERROR,
+				$memoryPeak > 300_000_000 => ILogger::WARN,
+				default => null,
+			};
 			if ($logLevel !== null) {
+				$message = 'Request used more than 300 MB of RAM: ' . \OCP\Util::humanFileSize($memoryPeak);
 				$logger = Server::get(LoggerInterface::class);
 				$logger->log($logLevel, $message, ['app' => 'core']);
 			}
@@ -1002,6 +978,23 @@ class OC {
 		}
 	}
 
+	protected static function registerAutoloaderCache(\OC\SystemConfig $systemConfig): void {
+		// The class loader takes an optional low-latency cache, which MUST be
+		// namespaced. The instanceid is used for namespacing, but might be
+		// unavailable at this point. Furthermore, it might not be possible to
+		// generate an instanceid via \OC_Util::getInstanceId() because the
+		// config file may not be writable. As such, we only register a class
+		// loader cache if instanceid is available without trying to create one.
+		$instanceId = $systemConfig->getValue('instanceid', null);
+		if ($instanceId) {
+			try {
+				$memcacheFactory = Server::get(\OCP\ICacheFactory::class);
+				self::$loader->setMemoryCache($memcacheFactory->createLocal('Autoloader'));
+			} catch (\Exception $ex) {
+			}
+		}
+	}
+
 	/**
 	 * Handle the request
 	 */
@@ -1088,7 +1081,27 @@ class OC {
 					$appManager->loadApps(['filesystem', 'logging']);
 					$appManager->loadApps();
 				}
-				Server::get(\OC\Route\Router::class)->match($request->getRawPathInfo());
+				$requestPath = $request->getRawPathInfo();
+				$redirects = $systemConfig->getValue('redirects', []);
+
+				if ($redirects) {
+					foreach ($redirects as $fromPattern => $toLocator) {
+						if (!preg_match('/' . $fromPattern . '/', $requestPath)) {
+							continue;
+						}
+
+						try {
+							$targetLocation = Server::get(IURLGenerator::class)->linkToRouteAbsolute($toLocator);
+							header('Location: ' . $targetLocation);
+							return;
+						} catch (\Exception) {
+							// In case of container exceptions or
+							// route not found exceptions we proceed as usual.
+						}
+					}
+				}
+
+				Server::get(\OC\Route\Router::class)->match($requestPath);
 				return;
 			} catch (Symfony\Component\Routing\Exception\ResourceNotFoundException $e) {
 				//header('HTTP/1.0 404 Not Found');

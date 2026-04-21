@@ -14,7 +14,7 @@ OC.L10N.register(
     "Redirection URI" : "تغییر مسیر URI",
     "Add client" : "افزودن مشتری",
     "Add" : "افزودن",
-    "Client Identifier" : "شناسه مشتری",
-    "Show client secret" : "راز مشتری را نشان دهید"
+    "Show client secret" : "راز مشتری را نشان دهید",
+    "Delete" : "حذف"
 },
 "nplurals=2; plural=(n > 1);");

@@ -19,8 +19,6 @@ OC.L10N.register(
     "New comment" : "Нов коментар",
     "Write a comment …" : "Напиши коментар …",
     "Post comment" : "Објави коментар",
-    "@ for mentions, : for emoji, / for smart picker" : "@ за спомнување, : за емоција, / за паметен избор",
-    "Could not reload comments" : "Неможе да се вчитаат коментарите",
     "Failed to mark comments as read" : "Неуспешно означување на коментарот како прочитан",
     "Unable to load the comments list" : "Неможе да се вчита листата на коментари",
     "No comments yet, start the conversation!" : "Сеуште нема коментари, започнете разговор!",
@@ -31,7 +29,6 @@ OC.L10N.register(
     "An error occurred while trying to edit the comment" : "Настана грешка при обид за ажурирање на коментар",
     "Comment deleted" : "Коментарот е избришан",
     "An error occurred while trying to delete the comment" : "Настана грешка при обидот за бришење на коментар",
-    "An error occurred while trying to create the comment" : "Настана грешка при обидот за креирање на коментар",
-    "Write a comment …" : "Напиши коментар ..."
+    "An error occurred while trying to create the comment" : "Настана грешка при обидот за креирање на коментар"
 },
 "nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;");

@@ -9,14 +9,13 @@ declare(strict_types=1);
 
 namespace OCA\Theming\Tests\Migration;
 
+use NCU\Config\IUserConfig;
 use OCA\Theming\Migration\Version2006Date20240905111627;
 use OCP\BackgroundJob\IJobList;
-use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use OCP\Migration\IOutput;
-use OCP\Server;
 use PHPUnit\Framework\MockObject\MockObject;
 use Test\TestCase;
 
@@ -89,11 +88,11 @@ class Version2006Date20240905111627Test extends TestCase {
 			->willReturn(false);
 
 		// Create a user
-		$manager = Server::get(IUserManager::class);
+		$manager = \OCP\Server::get(IUserManager::class);
 		$user = $manager->createUser('theming_legacy', 'theming_legacy');
 		self::assertNotFalse($user);
 		// Set the users theming value to legacy key
-		$config = Server::get(IUserConfig::class);
+		$config = \OCP\Server::get(IUserConfig::class);
 		$config->setValueString('theming_legacy', 'theming', 'background_color', 'ffab00');
 
 		// expect some output
@@ -110,7 +109,7 @@ class Version2006Date20240905111627Test extends TestCase {
 		$migration = new Version2006Date20240905111627(
 			$this->jobList,
 			$this->appConfig,
-			Server::get(IDBConnection::class),
+			\OCP\Server::get(IDBConnection::class),
 		);
 		// Run the migration
 		$migration->changeSchema($output, fn () => null, []);
@@ -139,13 +138,13 @@ class Version2006Date20240905111627Test extends TestCase {
 			->willReturn(false);
 
 		// Create a user
-		$manager = Server::get(IUserManager::class);
+		$manager = \OCP\Server::get(IUserManager::class);
 		$legacyUser = $manager->createUser('theming_legacy', 'theming_legacy');
 		self::assertNotFalse($legacyUser);
 		$user = $manager->createUser('theming_no_legacy', 'theming_no_legacy');
 		self::assertNotFalse($user);
 		// Set the users theming value to legacy key
-		$config = Server::get(IUserConfig::class);
+		$config = \OCP\Server::get(IUserConfig::class);
 		$config->setValueString($user->getUID(), 'theming', 'primary_color', '999999');
 		$config->setValueString($user->getUID(), 'theming', 'background_color', '111111');
 		$config->setValueString($legacyUser->getUID(), 'theming', 'background_color', 'ffab00');
@@ -164,7 +163,7 @@ class Version2006Date20240905111627Test extends TestCase {
 		$migration = new Version2006Date20240905111627(
 			$this->jobList,
 			$this->appConfig,
-			Server::get(IDBConnection::class),
+			\OCP\Server::get(IDBConnection::class),
 		);
 		// Run the migration
 		$migration->changeSchema($output, fn () => null, []);

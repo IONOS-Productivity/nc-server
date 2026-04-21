@@ -1506,7 +1506,6 @@
       <code><![CDATA[encrypt]]></code>
       <code><![CDATA[setIV]]></code>
       <code><![CDATA[setIV]]></code>
-      <code><![CDATA[setKey]]></code>
     </InternalMethod>
   </file>
   <file src="apps/files_external/lib/Service/BackendService.php">
@@ -1568,6 +1567,12 @@
       <code><![CDATA[new QueryException()]]></code>
       <code><![CDATA[new QueryException()]]></code>
     </DeprecatedClass>
+  </file>
+  <file src="apps/files_reminders/lib/Model/RichReminder.php">
+    <ConstructorSignatureMismatch>
+      <code><![CDATA[public function __construct(]]></code>
+      <code><![CDATA[public function __construct(]]></code>
+    </ConstructorSignatureMismatch>
   </file>
   <file src="apps/files_sharing/lib/Controller/ShareAPIController.php">
     <DeprecatedClass>
@@ -1634,62 +1639,6 @@
     <MoreSpecificReturnType>
       <code><![CDATA[Mount]]></code>
     </MoreSpecificReturnType>
-  </file>
-  <file src="apps/files_sharing/lib/External/Scanner.php">
-    <DeprecatedInterface>
-      <code><![CDATA[Scanner]]></code>
-    </DeprecatedInterface>
-  </file>
-  <file src="apps/files_sharing/lib/External/Storage.php">
-    <DeprecatedInterface>
-      <code><![CDATA[Storage]]></code>
-    </DeprecatedInterface>
-    <DeprecatedMethod>
-      <code><![CDATA[Util::isSharingDisabledForUser()]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/files_sharing/lib/Helper.php">
-    <DeprecatedMethod>
-      <code><![CDATA[Util::connectHook('OC_Filesystem', 'post_delete', '\OCA\Files_Sharing\Hooks', 'unshareChildren')]]></code>
-      <code><![CDATA[Util::connectHook('OC_Filesystem', 'post_rename', '\OCA\Files_Sharing\Updater', 'renameHook')]]></code>
-      <code><![CDATA[Util::connectHook('OC_User', 'post_deleteUser', '\OCA\Files_Sharing\Hooks', 'deleteUser')]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/files_sharing/lib/Middleware/SharingCheckMiddleware.php">
-    <DeprecatedInterface>
-      <code><![CDATA[protected]]></code>
-    </DeprecatedInterface>
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[hasAnnotation]]></code>
-      <code><![CDATA[hasAnnotation]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/files_sharing/lib/Migration/OwncloudGuestShareType.php">
-    <DeprecatedMethod>
-      <code><![CDATA[execute]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/files_sharing/lib/Migration/SetAcceptedStatus.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/files_sharing/lib/Migration/SetPasswordColumn.php">
-    <DeprecatedMethod>
-      <code><![CDATA[execute]]></code>
-      <code><![CDATA[execute]]></code>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/files_sharing/lib/Migration/Version11300Date20201120141438.php">
-    <DeprecatedMethod>
-      <code><![CDATA[execute]]></code>
-      <code><![CDATA[getName]]></code>
-    </DeprecatedMethod>
   </file>
   <file src="apps/files_sharing/lib/MountProvider.php">
     <RedundantFunctionCall>
@@ -1946,14 +1895,6 @@
       <code><![CDATA[dispatch]]></code>
     </DeprecatedMethod>
   </file>
-  <file src="apps/lookup_server_connector/lib/BackgroundJobs/RetryJob.php">
-    <DeprecatedConstant>
-      <code><![CDATA[IAccountManager::PROPERTY_TWITTER]]></code>
-      <code><![CDATA[IAccountManager::PROPERTY_TWITTER]]></code>
-      <code><![CDATA[IAccountManager::PROPERTY_TWITTER]]></code>
-      <code><![CDATA[IAccountManager::PROPERTY_TWITTER]]></code>
-    </DeprecatedConstant>
-  </file>
   <file src="apps/oauth2/lib/Controller/OauthApiController.php">
     <NoInterfaceProperties>
       <code><![CDATA[$this->request->server]]></code>
@@ -2127,88 +2068,10 @@
       <code><![CDATA[isReady]]></code>
     </UndefinedInterfaceMethod>
   </file>
-  <file src="apps/settings/lib/Settings/Admin/Server.php">
-    <DeprecatedMethod>
-      <code><![CDATA[execute]]></code>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/Settings/Admin/Sharing.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
   <file src="apps/settings/lib/Settings/Personal/PersonalInfo.php">
-    <DeprecatedClass>
-      <code><![CDATA[\OC_Util::setupFS($user->getUID())]]></code>
-    </DeprecatedClass>
-    <DeprecatedConstant>
-      <code><![CDATA[IAccountManager::PROPERTY_TWITTER]]></code>
-      <code><![CDATA[IAccountManager::PROPERTY_TWITTER]]></code>
-    </DeprecatedConstant>
-  </file>
-  <file src="apps/settings/lib/Settings/Personal/Security/Authtokens.php">
-    <DeprecatedClass>
-      <code><![CDATA[IToken::WIPE_TOKEN]]></code>
-    </DeprecatedClass>
-    <DeprecatedInterface>
-      <code><![CDATA[IToken]]></code>
-    </DeprecatedInterface>
-  </file>
-  <file src="apps/settings/lib/Settings/Personal/Security/WebAuthn.php">
-    <DeprecatedInterface>
-      <code><![CDATA[private]]></code>
-    </DeprecatedInterface>
-    <DeprecatedMethod>
-      <code><![CDATA[provideInitialState]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/Settings/Personal/ServerDevNotice.php">
-    <DeprecatedMethod>
-      <code><![CDATA[dispatch]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/SetupChecks/CheckUserCertificates.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/SetupChecks/CronErrors.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/SetupChecks/EmailTestSuccessful.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/SetupChecks/PushService.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/settings/lib/SetupChecks/SupportedDatabase.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getDatabasePlatform]]></code>
-    </DeprecatedMethod>
-  </file>
-  <file src="apps/sharebymail/lib/Settings/SettingsManager.php">
-    <DeprecatedMethod>
-      <code><![CDATA[getAppValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
-    </DeprecatedMethod>
+    <UndefinedInterfaceMethod>
+      <code><![CDATA[canChangeEmail]]></code>
+    </UndefinedInterfaceMethod>
   </file>
   <file src="apps/sharebymail/lib/ShareByMailProvider.php">
     <DeprecatedMethod>
@@ -3663,6 +3526,9 @@
     <InvalidNullableReturnType>
       <code><![CDATA[array]]></code>
     </InvalidNullableReturnType>
+    <InvalidScalarArgument>
+      <code><![CDATA[\OC_Util::normalizeUnicode($path)]]></code>
+    </InvalidScalarArgument>
     <NullableReturnStatement>
       <code><![CDATA[null]]></code>
       <code><![CDATA[null]]></code>
@@ -4313,6 +4179,11 @@
     <FalsableReturnStatement>
       <code><![CDATA[false]]></code>
     </FalsableReturnStatement>
+  </file>
+  <file src="lib/private/User/LazyUser.php">
+    <UndefinedInterfaceMethod>
+      <code><![CDATA[canChangeEmail]]></code>
+    </UndefinedInterfaceMethod>
   </file>
   <file src="lib/private/User/Manager.php">
     <ImplementedReturnTypeMismatch>

@@ -95,7 +95,7 @@
 				:class="{'comment__message--expanded': expanded}"
 				:text="richContent.message"
 				:arguments="richContent.mentions"
-				@click.native="onExpand" />
+				@click="onExpand" />
 		</div>
 	</component>
 </template>
@@ -104,14 +104,14 @@
 import { getCurrentUser } from '@nextcloud/auth'
 import { translate as t } from '@nextcloud/l10n'
 
-import NcActionButton from '@nextcloud/vue/components/NcActionButton'
-import NcActions from '@nextcloud/vue/components/NcActions'
-import NcActionSeparator from '@nextcloud/vue/components/NcActionSeparator'
-import NcAvatar from '@nextcloud/vue/components/NcAvatar'
-import NcButton from '@nextcloud/vue/components/NcButton'
-import NcDateTime from '@nextcloud/vue/components/NcDateTime'
-import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
-import NcUserBubble from '@nextcloud/vue/components/NcUserBubble'
+import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
+import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
+import NcActionSeparator from '@nextcloud/vue/dist/Components/NcActionSeparator.js'
+import NcAvatar from '@nextcloud/vue/dist/Components/NcAvatar.js'
+import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcDateTime from '@nextcloud/vue/dist/Components/NcDateTime.js'
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcUserBubble from '@nextcloud/vue/dist/Components/NcUserBubble.js'
 
 import IconArrowRight from 'vue-material-design-icons/ArrowRight.vue'
 import IconClose from 'vue-material-design-icons/Close.vue'
@@ -123,8 +123,8 @@ import { mapStores } from 'pinia'
 import { useDeletedCommentLimbo } from '../store/deletedCommentLimbo.js'
 
 // Dynamic loading
-const NcRichContenteditable = () => import('@nextcloud/vue/components/NcRichContenteditable')
-const NcRichText = () => import('@nextcloud/vue/components/NcRichText')
+const NcRichContenteditable = () => import('@nextcloud/vue/dist/Components/NcRichContenteditable.js')
+const NcRichText = () => import('@nextcloud/vue/dist/Components/NcRichText.js')
 
 export default {
 	name: 'Comment',
@@ -365,7 +365,7 @@ $comment-padding: 10px;
 
 	&__message {
 		white-space: pre-wrap;
-		word-break: normal;
+		overflow-wrap: break-word;
 		max-height: 70px;
 		overflow: hidden;
 		margin-top: -6px;

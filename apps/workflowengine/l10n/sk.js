@@ -48,13 +48,13 @@ OC.L10N.register(
     "Select a filter" : "Vybrať filter",
     "Select a comparator" : "Vybrať porovnávač",
     "Remove filter" : "Odstrániť filter",
-    "Audio" : "Zvuk",
     "Folder" : "Priečinok",
     "Images" : "Obrázky",
     "Office documents" : "Dokumenty Office",
     "PDF documents" : "Dokumenty PDF",
     "Video" : "Video",
     "Custom MIME type" : "Vlastný typ MIME",
+    "Custom mimetype" : "Vlastné typy mime",
     "Select a file type" : "Vyberte typ súboru",
     "e.g. httpd/unix-directory" : "napr. adresár  httpd/unix",
     "Please enter a valid time span" : "Zadajte prosím platné časové rozmedzie",
@@ -117,7 +117,6 @@ OC.L10N.register(
     "Request user agent" : "User agent požiadavky",
     "Group membership" : "Skupinové členstvo",
     "is member of" : "Je členom",
-    "is not member of" : "Nie je členom",
-    "Type to search for group …" : "Začnite písať pre vyhľadanie skupiny ..."
+    "is not member of" : "Nie je členom"
 },
 "nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);");

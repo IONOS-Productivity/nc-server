@@ -372,10 +372,6 @@ class IMipPluginTest extends TestCase {
 		$this->service->expects(self::once())
 			->method('getLastOccurrence')
 			->willReturn(1496912700);
-		$this->config->expects(self::once())
-			->method('getValueBool')
-			->with('dav', 'caldav_external_attendees_disabled', false)
-			->willReturn(false);
 		$this->mailer->expects(self::once())
 			->method('validateMailAddress')
 			->with('circle+82utEV1Fle8wvxndZLK5TVAPtxj8IIe@middle.earth')

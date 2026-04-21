@@ -35,6 +35,8 @@ class PreviewControllerTest extends TestCase {
 	private IMimeIconProvider&MockObject $mimeIconProvider;
 	private PreviewController $controller;
 
+	private IMimeIconProvider&MockObject $mimeIconProvider;
+
 	protected function setUp(): void {
 		parent::setUp();
 

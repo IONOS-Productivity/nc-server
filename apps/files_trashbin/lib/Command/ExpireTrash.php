@@ -85,7 +85,8 @@ class ExpireTrash extends Command {
 			if (!$this->setupFS($uid)) {
 				return;
 			}
-			Trashbin::expire($uid);
+			$dirContent = Helper::getTrashFiles('/', $uid, 'mtime');
+			Trashbin::deleteExpiredFiles($dirContent, $uid);
 		} catch (\Throwable $e) {
 			$this->logger->error('Error while expiring trashbin for user ' . $user->getUID(), ['exception' => $e]);
 		}

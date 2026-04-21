@@ -55,7 +55,6 @@ OC.L10N.register(
     "There was an error setting the location." : "Hiba történt a tartózkodási hely beállítása során.",
     "There was an error saving the mode." : "Hiba történt a mód mentése során.",
     "There was an error using personal address." : "Hiba történt a személyes cím használata során.",
-    "Unknown weather code" : "Ismeretlen időjárási kód",
     "Detect location" : "Helymeghatározás",
     "Set custom address" : "Egyéni cím beállítása",
     "Favorites" : "Kedvencek"

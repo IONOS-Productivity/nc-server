@@ -14,7 +14,6 @@ use OCA\DAV\CalDAV\InvitationResponse\InvitationResponseServer;
 use OCA\DAV\Connector\Sabre\Server;
 use OCP\Calendar\CalendarExportOptions;
 use OCP\Calendar\Exceptions\CalendarException;
-use OCP\Calendar\ICalendarExport;
 use OCP\Calendar\ICalendarIsEnabled;
 use OCP\Calendar\ICalendarIsShared;
 use OCP\Calendar\ICalendarIsWritable;
@@ -32,7 +31,7 @@ use Sabre\VObject\Reader;
 
 use function Sabre\Uri\split as uriSplit;
 
-class CalendarImpl implements ICreateFromString, IHandleImipMessage, ICalendarIsWritable, ICalendarIsShared, ICalendarExport, ICalendarIsEnabled {
+class CalendarImpl implements ICreateFromString, IHandleImipMessage, ICalendarIsWritable, ICalendarIsShared, ICalendarIsEnabled {
 	public function __construct(
 		private Calendar $calendar,
 		/** @var array<string, mixed> */
@@ -141,7 +140,7 @@ class CalendarImpl implements ICreateFromString, IHandleImipMessage, ICalendarIs
 	}
 
 	/**
-	 * @since 32.0.0
+	 * @since 31.0.6
 	 */
 	public function isEnabled(): bool {
 		return $this->calendarInfo['{http://owncloud.org/ns}calendar-enabled'] ?? true;

@@ -9,6 +9,7 @@ OC.L10N.register(
     "Restore" : "Atkurti",
     "Empty deleted files" : "Išvalyti ištrintus failus",
     "Cancel" : "Atsisakyti",
+    "Deletion cancelled" : "Ištrynimo atsisakyta",
     "Original location" : "Pradinė vieta",
     "Deleted by" : "Ištrynė",
     "Deleted" : "Ištrinta",
@@ -18,7 +19,6 @@ OC.L10N.register(
     "You" : "Jūs",
     "List of files that have been deleted." : "Ištrintų failų sąrašas.",
     "No deleted files" : "Ištrintų failų nėra",
-    "Files and folders you have deleted will show up here" : "Čia bus rodomi failai ir aplankai, kuriuos ištrynėte",
-    "Deletion cancelled" : "Ištrynimo atsisakyta"
+    "Files and folders you have deleted will show up here" : "Čia bus rodomi failai ir aplankai, kuriuos ištrynėte"
 },
 "nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);");

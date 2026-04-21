@@ -152,7 +152,8 @@ class FilesPluginTest extends TestCase {
 			->method('getDisplayName')
 			->willReturn('M. Foo');
 
-		$owner = $this->createMock(Account::class);
+		$owner = $this->getMockBuilder(Account::class)
+			->disableOriginalConstructor()->getMock();
 		$this->accountManager->expects($this->once())
 			->method('getAccount')
 			->with($user)
@@ -165,7 +166,8 @@ class FilesPluginTest extends TestCase {
 			->method('getOwner')
 			->willReturn($user);
 
-		$displayNameProp = $this->createMock(AccountProperty::class);
+		$displayNameProp = $this->getMockBuilder(AccountProperty::class)
+			->disableOriginalConstructor()->getMock();
 		$owner
 			->expects($this->once())
 			->method('getProperty')
@@ -195,7 +197,9 @@ class FilesPluginTest extends TestCase {
 	}
 
 	public function testGetDisplayNamePropertyWhenNotPublished(): void {
-		$node = $this->createTestNode(File::class);
+		/** @var File|\PHPUnit\Framework\MockObject\MockObject $node */
+		$node = $this->createTestNode('\OCA\DAV\Connector\Sabre\File');
+
 		$propFind = new PropFind(
 			'/dummyPath',
 			[
@@ -208,12 +212,15 @@ class FilesPluginTest extends TestCase {
 			->method('getUser')
 			->willReturn(null);
 
-		$user = $this->createMock(User::class);
+		$user = $this->getMockBuilder(User::class)
+			->disableOriginalConstructor()->getMock();
 
-		$user->expects($this->never())
+		$user
+			->expects($this->never())
 			->method('getDisplayName');
 
-		$owner = $this->createMock(Account::class);
+		$owner = $this->getMockBuilder(Account::class)
+			->disableOriginalConstructor()->getMock();
 		$this->accountManager->expects($this->once())
 			->method('getAccount')
 			->with($user)
@@ -223,7 +230,8 @@ class FilesPluginTest extends TestCase {
 			->method('getOwner')
 			->willReturn($user);
 
-		$displayNameProp = $this->createMock(AccountProperty::class);
+		$displayNameProp = $this->getMockBuilder(AccountProperty::class)
+			->disableOriginalConstructor()->getMock();
 		$owner
 			->expects($this->once())
 			->method('getProperty')
@@ -241,9 +249,10 @@ class FilesPluginTest extends TestCase {
 
 		$this->assertEquals(null, $propFind->get(FilesPlugin::OWNER_DISPLAY_NAME_PROPERTYNAME));
 	}
-
+	
 	public function testGetDisplayNamePropertyWhenNotPublishedButLoggedIn(): void {
-		$node = $this->createTestNode(File::class);
+		/** @var File|\PHPUnit\Framework\MockObject\MockObject $node */
+		$node = $this->createTestNode('\OCA\DAV\Connector\Sabre\File');
 
 		$propFind = new PropFind(
 			'/dummyPath',
@@ -253,13 +262,15 @@ class FilesPluginTest extends TestCase {
 			0
 		);
 
-		$user = $this->createMock(User::class);
+		$user = $this->getMockBuilder(User::class)
+			->disableOriginalConstructor()->getMock();
 
 		$node->expects($this->once())
 			->method('getOwner')
 			->willReturn($user);
 
-		$loggedInUser = $this->createMock(User::class);
+		$loggedInUser = $this->getMockBuilder(User::class)
+			->disableOriginalConstructor()->getMock();
 		$this->userSession->expects($this->once())
 			->method('getUser')
 			->willReturn($loggedInUser);

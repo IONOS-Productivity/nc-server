@@ -48,13 +48,13 @@ OC.L10N.register(
     "Select a filter" : "اختر عامل تصفية",
     "Select a comparator" : "اختر أساس المقارنة",
     "Remove filter" : "إزالة عامل التصفية",
-    "Audio" : "صوت",
     "Folder" : "مجلد",
     "Images" : "صور",
     "Office documents" : "مستندات المكتب",
     "PDF documents" : "مستندات PDF",
     "Video" : "الفيديو",
     "Custom MIME type" : "نوع MIME مخصص",
+    "Custom mimetype" : "أنواع ملفات مخصصة",
     "Select a file type" : "اختر نوع الملف",
     "e.g. httpd/unix-directory" : "على سبيل المثال httpd/unix-directory",
     "Please enter a valid time span" : "الرجاء إدخال نطاق زمني صالح",
@@ -117,7 +117,6 @@ OC.L10N.register(
     "Request user agent" : "وكيل المستخدم الخاص بالطلب",
     "Group membership" : "عضوية المجموعة",
     "is member of" : "عضو فى",
-    "is not member of" : "ليس عضو فى",
-    "Type to search for group …" : "أُكتُب اسم المجموعة التي تبحث عنها ..."
+    "is not member of" : "ليس عضو فى"
 },
 "nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;");

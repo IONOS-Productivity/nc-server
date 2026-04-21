@@ -296,7 +296,7 @@ class IMipPlugin extends SabreIMipPlugin {
 				$message->setAttachments((new Attachment(
 					$itip_msg,
 					null,
-					$contentType . '; name=event.ics',
+					'text/calendar; name=event.ics; method=' . $iTipMessage->method,
 					true
 				)));
 				// send message

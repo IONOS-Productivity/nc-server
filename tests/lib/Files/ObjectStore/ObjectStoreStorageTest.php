@@ -275,4 +275,17 @@ class ObjectStoreStorageTest extends Storage {
 
 		$this->assertEquals(3, $cache->get('target')->getSize());
 	}
+
+	public function testCopyFolderSize(): void {
+		$cache = $this->instance->getCache();
+
+		$this->instance->mkdir('source');
+		$this->instance->file_put_contents('source/test.txt', 'foo');
+		$this->instance->getUpdater()->update('source/test.txt');
+		$this->assertEquals(3, $cache->get('source')->getSize());
+
+		$this->assertTrue($this->instance->copy('source', 'target'));
+
+		$this->assertEquals(3, $cache->get('target')->getSize());
+	}
 }

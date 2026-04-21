@@ -22,7 +22,6 @@ OC.L10N.register(
     "Version restored" : "Útgáfa endurheimt",
     "Could not restore version" : "Gat ekki endurheimt útgáfu",
     "Could not set version label" : "Gat ekki sett merkingu á útgáfu",
-    "Could not delete version" : "Gat ekki eytt útgáfu",
-    "File versions" : "Útgáfur skráa"
+    "Could not delete version" : "Gat ekki eytt útgáfu"
 },
 "nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);");

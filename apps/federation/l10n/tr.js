@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "Her sunucunun diğerini doğrulaması gerekir. Bu işlemin tamamlanması için birkaç zamanlanmış görev döngüsünün geçilmesi gerekebilir.",
     "External documentation for Federated Cloud Sharing" : "Birleşik bulut paylaşımı belgeleri",
     "+ Add trusted server" : "+ Güvenilen sunucu ekle",
-    "Trusted server" : "Güvenilen sunucu"
+    "Trusted server" : "Güvenilen sunucu",
+    "Add" : "Ekle"
 },
 "nplurals=2; plural=(n > 1);");

@@ -1062,7 +1062,7 @@ class ManagerTest extends TestCase {
 	 */
 	private function proccessComments(array $data): array {
 		$this->connection->beginTransaction();
-		/** @var array<string, IComment> $comments */
+		/** @var IComment[] */
 		$comments = [];
 		foreach ($data as $comment) {
 			[$message, $actorId, $verb, $parentText] = $comment;

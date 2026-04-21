@@ -25,16 +25,15 @@
 			:open="openedMenu"
 			@close="onMenuClose"
 			@closed="onMenuClosed">
-			<!-- Non-destructive actions list -->
-			<!-- Please keep this block in sync with the destructive actions block below -->
-			<NcActionButton v-for="action, index in renderedNonDestructiveActions"
+			<!-- Default actions list-->
+			<NcActionButton v-for="action, index in enabledMenuActions"
 				:key="action.id"
 				:ref="`action-${action.id}`"
 				class="files-list__row-action"
 				:class="{
 					[`files-list__row-action-${action.id}`]: true,
 					'files-list__row-action--inline': index < enabledInlineActions.length,
-					'files-list__row-action--menu': isValidMenu(action),
+					'files-list__row-action--menu': isValidMenu(action)
 				}"
 				:close-after-click="!isValidMenu(action)"
 				:data-cy-files-list-row-action="action.id"
@@ -118,8 +117,8 @@ import type { FileAction, Node } from '@nextcloud/files'
 
 import { DefaultType, NodeStatus } from '@nextcloud/files'
 import { defineComponent, inject } from 'vue'
-import { t } from '@nextcloud/l10n'
-import { useHotKey } from '@nextcloud/vue/composables/useHotKey'
+import { translate as t } from '@nextcloud/l10n'
+import { useHotKey } from '@nextcloud/vue/dist/Composables/useHotKey.js'
 
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
 import CustomElementRender from '../CustomElementRender.vue'
@@ -242,14 +241,6 @@ export default defineComponent({
 			return actions.filter(action => !(action.parent && topActionsIds.includes(action.parent)))
 		},
 
-		renderedNonDestructiveActions() {
-			return this.enabledMenuActions.filter(action => !action.destructive)
-		},
-
-		renderedDestructiveActions() {
-			return this.enabledMenuActions.filter(action => action.destructive)
-		},
-
 		openedMenu: {
 			get() {
 				return this.opened
@@ -349,8 +340,12 @@ export default defineComponent({
 		},
 
 		onMenuClosed() {
-			// We reset the actions menu state when the menu is finally closed
-			this.openedMenu = false
+			// TODO: remove timeout once https://github.com/nextcloud-libraries/nextcloud-vue/pull/6683 is merged
+			// and updated on server.
+			setTimeout(() => {
+				// We reset the actions menu state when the menu is finally closed
+				this.openedMenu = false
+			}, 100)
 		},
 	},
 })
@@ -387,12 +382,6 @@ main.app-content[style*="mouse-pos-x"] .v-popper__popper {
 	.files-list__row-action-icon :deep(svg) {
 		max-height: var(--max-icon-size) !important;
 		max-width: var(--max-icon-size) !important;
-	}
-
-	&.files-list__row-action--destructive {
-		::deep(button) {
-			color: var(--color-text-error) !important;
-		}
 	}
 }
 

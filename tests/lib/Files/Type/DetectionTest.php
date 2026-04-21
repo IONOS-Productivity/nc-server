@@ -102,7 +102,7 @@ class DetectionTest extends \Test\TestCase {
 		$this->assertEquals($expected, $result);
 	}
 
-	public static function dataMimeTypeCustom(): array {
+	public function dataMimeTypeCustom(): array {
 		return [
 			['123', 'foobar/123'],
 			['a123', 'foobar/123'],
@@ -111,11 +111,11 @@ class DetectionTest extends \Test\TestCase {
 	}
 
 	/**
+	 * @dataProvider dataMimeTypeCustom
 	 *
 	 * @param string $ext
 	 * @param string $mime
 	 */
-	#[\PHPUnit\Framework\Attributes\DataProvider('dataMimeTypeCustom')]
 	public function testDetectMimeTypeCustom(string $ext, string $mime): void {
 		$confDir = sys_get_temp_dir();
 		file_put_contents($confDir . '/mimetypemapping.dist.json', json_encode([]));
@@ -137,7 +137,7 @@ class DetectionTest extends \Test\TestCase {
 		$this->assertEquals($mime, $detection->detectPath('foo.' . $ext));
 	}
 
-	public static function dataGetSecureMimeType(): array {
+	public function dataGetSecureMimeType(): array {
 		return [
 			['image/svg+xml', 'text/plain'],
 			['image/png', 'image/png'],

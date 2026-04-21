@@ -192,25 +192,14 @@ export default {
 				lookup = true
 			}
 
+			let shareType = []
+
 			const remoteTypes = [ShareType.Remote, ShareType.RemoteGroup]
-			const shareType = []
 
-			const showFederatedAsInternal = this.config.showFederatedSharesAsInternal
-				|| this.config.showFederatedSharesToTrustedServersAsInternal
-
-			// For internal users, add remote types if config says to show them as internal
-			const shouldAddRemoteTypes = (!this.isExternal && showFederatedAsInternal)
-				// For external users, add them if config *doesn't* say to show them as internal
-				|| (this.isExternal && !showFederatedAsInternal)
-				// Edge case: federated-to-trusted is a separate "add" trigger for external users
-				|| (this.isExternal && this.config.showFederatedSharesToTrustedServersAsInternal)
-
-			if (this.isExternal) {
-				if (getCapabilities().files_sharing.public.enabled === true) {
-					shareType.push(ShareType.Email)
-				}
+			if (this.isExternal && !this.config.showFederatedSharesAsInternal) {
+				shareType.push(...remoteTypes)
 			} else {
-				shareType.push(
+				shareType = shareType.concat([
 					ShareType.User,
 					ShareType.Group,
 					ShareType.Team,
@@ -218,11 +207,15 @@ export default {
 					ShareType.Guest,
 					ShareType.Deck,
 					ShareType.ScienceMesh,
-				)
+				])
+
+				if (this.config.showFederatedSharesAsInternal) {
+					shareType.push(...remoteTypes)
+				}
 			}
 
-			if (shouldAddRemoteTypes) {
-				shareType.push(...remoteTypes)
+			if (getCapabilities().files_sharing.public.enabled === true && this.isExternal) {
+				shareType.push(ShareType.Email)
 			}
 
 			let request = null

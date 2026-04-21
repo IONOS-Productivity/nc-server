@@ -17,8 +17,8 @@ OC.L10N.register(
     "Make sure you store the secret key, it cannot be recovered." : "Sørg for at gemme den hemmelige nøgle, den kan ikke gendannes.",
     "Add client" : "Tilføj klient",
     "Add" : "Tilføj",
-    "Client Identifier" : "Klient ID",
     "Show client secret" : "Vis klient hemmelighed",
-    "Hide client secret" : "Skjul klient hemmelighed"
+    "Hide client secret" : "Skjul klient hemmelighed",
+    "Delete" : "Slet"
 },
 "nplurals=2; plural=(n != 1);");

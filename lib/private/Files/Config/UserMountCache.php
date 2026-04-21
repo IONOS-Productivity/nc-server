@@ -29,7 +29,6 @@ use Psr\Log\LoggerInterface;
  * Cache mounts points per user in the cache so we can easily look them up
  */
 class UserMountCache implements IUserMountCache {
-
 	/**
 	 * Cached mount info.
 	 * @var CappedMemoryCache<ICachedMountInfo[]>
@@ -116,7 +115,6 @@ class UserMountCache implements IUserMountCache {
 				}
 				foreach ($changedMounts as $mountPair) {
 					$newMount = $mountPair[1];
-					$this->logger->debug("Updating mount '{$newMount->getKey()}' for user '$userUID'", ['app' => 'files', 'mount_provider' => $newMount->getMountProvider()]);
 					$this->updateCachedMount($newMount);
 					/** @psalm-suppress InvalidArgument */
 					$this->mountsForUsers[$userUID][$newMount->getKey()] = $newMount;

@@ -19,13 +19,26 @@ use Sabre\VObject\Property\Text;
 use Test\TestCase;
 
 class AddressBookImplTest extends TestCase {
-	private array $addressBookInfo;
-	private AddressBook&MockObject $addressBook;
-	private IURLGenerator&MockObject $urlGenerator;
-	private CardDavBackend&MockObject $backend;
-	private PropertyMapper&MockObject $propertyMapper;
-	private VCard&MockObject $vCard;
-	private AddressBookImpl $addressBookImpl;
+	/** @var AddressBookImpl */
+	private $addressBookImpl;
+
+	/** @var array */
+	private $addressBookInfo;
+
+	/** @var AddressBook | \PHPUnit\Framework\MockObject\MockObject */
+	private $addressBook;
+
+	/** @var IURLGenerator | \PHPUnit\Framework\MockObject\MockObject */
+	private $urlGenerator;
+
+	/** @var CardDavBackend | \PHPUnit\Framework\MockObject\MockObject */
+	private $backend;
+
+	/** @var PropertyMapper | \PHPUnit\Framework\MockObject\MockObject */
+	private $propertyMapper;
+
+	/** @var VCard | \PHPUnit\Framework\MockObject\MockObject */
+	private $vCard;
 
 	protected function setUp(): void {
 		parent::setUp();

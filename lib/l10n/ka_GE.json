@@ -147,6 +147,7 @@
     "Text" : "ტექსტი",
     "Summary" : "შეჯამება",
     "Translate" : "გადათარგმნეთ",
-    "Result" : "შედეგი"
+    "Result" : "შედეგი",
+    "File is currently busy, please try again later" : "ფაილი ამჟამად დაკავებულია, გთხოვთ მოგვიანებით სცადოთ ახლიდან"
 },"pluralForm" :"nplurals=2; plural=(n!=1);"
 }

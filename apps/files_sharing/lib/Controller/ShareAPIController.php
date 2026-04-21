@@ -10,8 +10,6 @@ declare(strict_types=1);
 namespace OCA\Files_Sharing\Controller;
 
 use Exception;
-use OC\Core\AppInfo\ConfigLexicon;
-use OC\Files\FileInfo;
 use OC\Files\Storage\Wrapper\Wrapper;
 use OCA\Circles\Api\v1\Circles;
 use OCA\Deck\Sharing\ShareAPIHelper;
@@ -507,7 +505,7 @@ class ShareAPIController extends OCSController {
 				$share = $this->formatShare($share);
 
 				if ($include_tags) {
-					$share = $this->populateTags([$share]);
+					$share = Helper::populateTags([$share], \OCP\Server::get(ITagManager::class));
 				} else {
 					$share = [$share];
 				}
@@ -632,7 +630,7 @@ class ShareAPIController extends OCSController {
 		// combine all permissions to determine if the user can share this file
 		$nodes = $userFolder->getById($node->getId());
 		foreach ($nodes as $nodeById) {
-			/** @var FileInfo $fileInfo */
+			/** @var \OC\Files\FileInfo $fileInfo */
 			$fileInfo = $node->getFileInfo();
 			$fileInfo['permissions'] |= $nodeById->getPermissions();
 		}
@@ -793,7 +791,7 @@ class ShareAPIController extends OCSController {
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
 		} elseif ($shareType === IShare::TYPE_CIRCLE) {
-			if (!Server::get(IAppManager::class)->isEnabledForUser('circles') || !class_exists('\OCA\Circles\ShareByCircleProvider')) {
+			if (!\OCP\Server::get(IAppManager::class)->isEnabledForUser('circles') || !class_exists('\OCA\Circles\ShareByCircleProvider')) {
 				throw new OCSNotFoundException($this->l->t('You cannot share to a Team if the app is not enabled'));
 			}
 
@@ -884,7 +882,7 @@ class ShareAPIController extends OCSController {
 		}
 
 		if ($includeTags) {
-			$formatted = $this->populateTags($formatted);
+			$formatted = Helper::populateTags($formatted, \OCP\Server::get(ITagManager::class));
 		}
 
 		return $formatted;
@@ -1003,9 +1001,9 @@ class ShareAPIController extends OCSController {
 				: Constants::PERMISSION_READ;
 		}
 
+		// TODO: It might make sense to have a dedicated setting to allow/deny converting link shares into federated ones
 		if ($this->hasPermission($permissions, Constants::PERMISSION_READ)
-			&& $this->shareManager->outgoingServer2ServerSharesAllowed()
-			&& $this->appConfig->getValueBool('core', ConfigLexicon::SHAREAPI_ALLOW_FEDERATION_ON_PUBLIC_SHARES)) {
+			&& $this->shareManager->outgoingServer2ServerSharesAllowed()) {
 			$permissions |= Constants::PERMISSION_SHARE;
 		}
 
@@ -1137,7 +1135,8 @@ class ShareAPIController extends OCSController {
 		$formatted = $this->fixMissingDisplayName($formatted);
 
 		if ($includeTags) {
-			$formatted = $this->populateTags($formatted);
+			$formatted =
+				Helper::populateTags($formatted, \OCP\Server::get(ITagManager::class));
 		}
 
 		return $formatted;
@@ -1344,13 +1343,10 @@ class ShareAPIController extends OCSController {
 				$share->setPermissions($permissions);
 			}
 
-			$passwordParamSent = $password !== null;
-			if ($passwordParamSent) {
-				if ($password === '') {
-					$share->setPassword(null);
-				} else {
-					$share->setPassword($password);
-				}
+			if ($password === '') {
+				$share->setPassword(null);
+			} elseif ($password !== null) {
+				$share->setPassword($password);
 			}
 
 			if ($label !== null) {
@@ -1829,7 +1825,7 @@ class ShareAPIController extends OCSController {
 	 * If the Deck application is not enabled or the helper is not available
 	 * a ContainerExceptionInterface is thrown instead.
 	 *
-	 * @return ShareAPIHelper
+	 * @return \OCA\Deck\Sharing\ShareAPIHelper
 	 * @throws ContainerExceptionInterface
 	 */
 	private function getDeckShareHelper() {
@@ -1846,7 +1842,7 @@ class ShareAPIController extends OCSController {
 	 * If the sciencemesh application is not enabled or the helper is not available
 	 * a ContainerExceptionInterface is thrown instead.
 	 *
-	 * @return ShareAPIHelper
+	 * @return \OCA\Deck\Sharing\ShareAPIHelper
 	 * @throws ContainerExceptionInterface
 	 */
 	private function getSciencemeshShareHelper() {
@@ -1980,7 +1976,7 @@ class ShareAPIController extends OCSController {
 			return true;
 		}
 
-		if ($share->getShareType() === IShare::TYPE_CIRCLE && Server::get(IAppManager::class)->isEnabledForUser('circles')
+		if ($share->getShareType() === IShare::TYPE_CIRCLE && \OCP\Server::get(IAppManager::class)->isEnabledForUser('circles')
 			&& class_exists('\OCA\Circles\Api\v1\Circles')) {
 			$hasCircleId = (str_ends_with($share->getSharedWith(), ']'));
 			$shareWithStart = ($hasCircleId ? strrpos($share->getSharedWith(), '[') + 1 : 0);
@@ -2098,15 +2094,14 @@ class ShareAPIController extends OCSController {
 
 		$canDownload = false;
 		$hideDownload = true;
-		$userExplicitlySetHideDownload = $share->getHideDownload(); // Capture user's explicit choice
 
 		$userFolder = $this->rootFolder->getUserFolder($share->getSharedBy());
 		$nodes = $userFolder->getById($share->getNodeId());
 		foreach ($nodes as $node) {
-			// Owner always can download it - so allow it, but respect their explicit choice about hiding downloads
+			// Owner always can download it - so allow it and break
 			if ($node->getOwner()?->getUID() === $share->getSharedBy()) {
 				$canDownload = true;
-				$hideDownload = $userExplicitlySetHideDownload;
+				$hideDownload = false;
 				break;
 			}
 
@@ -2124,44 +2119,23 @@ class ShareAPIController extends OCSController {
 				/** @var SharedStorage $storage */
 				$originalShare = $storage->getShare();
 				$inheritedAttributes = $originalShare->getAttributes();
-
-				// For federated shares: users can only be MORE restrictive, never LESS restrictive
-				// If parent has hideDownload=true, child MUST have hideDownload=true
-				$parentHidesDownload = $originalShare->getHideDownload();
-
-				// Check if download permission is available from parent
-				$parentAllowsDownload = $inheritedAttributes === null || $inheritedAttributes->getAttribute('permissions', 'download') !== false;
-
-				// Apply inheritance rules:
-				// 1. If parent hides download, child must hide download
-				// 2. If parent allows download, child can choose to hide or allow
-				// 3. If parent forbids download, child cannot allow download
-				$hideDownload = $parentHidesDownload || $userExplicitlySetHideDownload;
-
-				$canDownload = $canDownload || $parentAllowsDownload;
-
+				// hide if hidden and also the current share enforces hide (can only be false if one share is false or user is owner)
+				$hideDownload = $hideDownload && $originalShare->getHideDownload();
+				// allow download if already allowed by previous share or when the current share allows downloading
+				$canDownload = $canDownload || $inheritedAttributes === null || $inheritedAttributes->getAttribute('permissions', 'download') !== false;
 			} elseif ($node->getStorage()->instanceOfStorage(Storage::class)) {
 				$canDownload = true; // in case of federation storage, we can expect the download to be activated by default
-				// For external federation storage, respect user's choice if downloads are available
-				$hideDownload = $userExplicitlySetHideDownload;
 			}
 		}
 
-		// Apply the final restrictions:
-		// 1. If parent doesn't allow downloads at all, force hide and disable download attribute
-		// 2. If parent allows downloads, respect user's hideDownload choice
-		if (!$canDownload) {
-			// Parent completely forbids downloads - must enforce this restriction
+		if ($hideDownload || !$canDownload) {
 			$share->setHideDownload(true);
-			$attributes = $share->getAttributes() ?? $share->newAttributes();
-			$attributes->setAttribute('permissions', 'download', false);
-			$share->setAttributes($attributes);
-		} elseif ($hideDownload) {
-			// Either parent forces hide, or user chooses to hide - respect this
-			$share->setHideDownload(true);
-		} else {
-			// User explicitly wants to allow downloads and parent permits it
-			$share->setHideDownload(false);
+
+			if (!$canDownload) {
+				$attributes = $share->getAttributes() ?? $share->newAttributes();
+				$attributes->setAttribute('permissions', 'download', false);
+				$share->setAttributes($attributes);
+			}
 		}
 	}
 

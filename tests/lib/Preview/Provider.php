@@ -15,9 +15,7 @@ use OC\Files\Storage\Temporary;
 use OC\Files\View;
 use OC\Preview\TXT;
 use OCP\Files\IRootFolder;
-use OCP\IImage;
 use OCP\IUserManager;
-use OCP\Server;
 
 abstract class Provider extends \Test\TestCase {
 	protected string $imgPath;
@@ -29,13 +27,13 @@ abstract class Provider extends \Test\TestCase {
 	protected int $maxHeight = 1024;
 	protected bool $scalingUp = false;
 	protected string $userId;
-	protected View $rootView;
-	protected Storage $storage;
+	protected \OC\Files\View $rootView;
+	protected \OC\Files\Storage\Storage $storage;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$userManager = Server::get(IUserManager::class);
+		$userManager = \OCP\Server::get(IUserManager::class);
 		$userManager->clearBackends();
 		$backend = new \Test\Util\User\Dummy();
 		$userManager->registerBackend($backend);

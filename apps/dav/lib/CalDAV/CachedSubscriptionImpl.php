@@ -78,7 +78,7 @@ class CachedSubscriptionImpl implements ICalendar, ICalendarIsEnabled, ICalendar
 	}
 
 	/**
-	 * @since 32.0.0
+	 * @since 31.0.6
 	 */
 	public function isEnabled(): bool {
 		return $this->calendarInfo['{http://owncloud.org/ns}calendar-enabled'] ?? true;

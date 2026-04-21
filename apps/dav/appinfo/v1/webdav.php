@@ -59,10 +59,10 @@ $authBackend = new Auth(
 );
 $authPlugin = new \Sabre\DAV\Auth\Plugin($authBackend);
 $bearerAuthPlugin = new BearerAuth(
-	Server::get(IUserSession::class),
-	Server::get(ISession::class),
-	Server::get(IRequest::class),
-	Server::get(IConfig::class),
+	\OC::$server->getUserSession(),
+	\OC::$server->getSession(),
+	\OC::$server->getRequest(),
+	\OC::$server->getConfig(),
 );
 $authPlugin->addBackend($bearerAuthPlugin);
 

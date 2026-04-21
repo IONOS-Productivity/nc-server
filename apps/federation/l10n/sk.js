@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "Každý server musí overiť ostatné. Tento proces môže vyžadovať pár cyklov v crone.",
     "External documentation for Federated Cloud Sharing" : "Externá dokumentácia pre Federatívne zdieľanie v cloude",
     "+ Add trusted server" : "Pridať dôveryhodný server",
-    "Trusted server" : "Dôveryhodný server"
+    "Trusted server" : "Dôveryhodný server",
+    "Add" : "Pridať"
 },
 "nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);");

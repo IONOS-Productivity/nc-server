@@ -17,7 +17,7 @@ use OCP\EventDispatcher\Event;
  * @package OCA\DAV\Events
  * @since 20.0.0
  *
- * @psalm-import-type CalendarInfo from CalDavBackend
+ * @psalm-import-type CalendarInfo from \OCA\DAV\CalDAV\CalDavBackend
  */
 class CalendarShareUpdatedEvent extends Event {
 	/**

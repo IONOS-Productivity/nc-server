@@ -49,13 +49,13 @@ OC.L10N.register(
     "Select a filter" : "Одаберите филтер",
     "Select a comparator" : "Одаберите компаратор",
     "Remove filter" : "Уклони филтер",
-    "Audio" : "Звук",
     "Folder" : "Фасцикла",
     "Images" : "Слике",
     "Office documents" : "Канцеларијски документи",
     "PDF documents" : "PDF документи",
     "Video" : "Видео снимак",
     "Custom MIME type" : "Прилагођени MIME тип",
+    "Custom mimetype" : "Произвољни MIME тип",
     "Select a file type" : "Одаберите тип фајла",
     "e.g. httpd/unix-directory" : "нпр. httpd/unix-directory",
     "Please enter a valid time span" : "Унесите исправан временски распон",
@@ -119,7 +119,6 @@ OC.L10N.register(
     "Request user agent" : "Кориснички агент захтева",
     "Group membership" : "Припадност групи",
     "is member of" : "је члан групе",
-    "is not member of" : "није члан групе",
-    "Type to search for group …" : "Куцајте да претражите групу"
+    "is not member of" : "није члан групе"
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

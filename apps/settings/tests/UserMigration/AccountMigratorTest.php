@@ -59,11 +59,11 @@ class AccountMigratorTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
-		Server::get(IConfig::class)->setSystemValue('has_internet_connection', true);
+		\OCP\Server::get(IConfig::class)->setSystemValue('has_internet_connection', true);
 		parent::tearDown();
 	}
 
-	public static function dataImportExportAccount(): array {
+	public function dataImportExportAccount(): array {
 		return array_map(
 			static function (string $filename): array {
 				$dataPath = static::ASSETS_DIR . $filename;

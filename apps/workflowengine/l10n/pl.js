@@ -48,13 +48,13 @@ OC.L10N.register(
     "Select a filter" : "Wybierz filtr",
     "Select a comparator" : "Wybierz komparator",
     "Remove filter" : "Usuń filtr",
-    "Audio" : "Dźwięk",
     "Folder" : "Katalog",
     "Images" : "Obrazy",
     "Office documents" : "Dokumenty biurowe",
     "PDF documents" : "Dokumenty PDF",
     "Video" : "Film",
     "Custom MIME type" : "Niestandardowy typ MIME",
+    "Custom mimetype" : "Niestandardowy typ MIME",
     "Select a file type" : "Wybierz typ pliku",
     "e.g. httpd/unix-directory" : "np. httpd/unix-directory",
     "Please enter a valid time span" : "Podaj prawidłowy przedział czasu",
@@ -77,7 +77,6 @@ OC.L10N.register(
     "Save" : "Zapisz",
     "When" : "Kiedy",
     "and" : "i",
-    "Add a new filter" : "Dodaj nowy filtr",
     "Cancel" : "Anuluj",
     "Delete" : "Usuń",
     "Available flows" : "Dostępne przepływy",
@@ -114,7 +113,6 @@ OC.L10N.register(
     "Request user agent" : "Żądanie agenta użytkownika",
     "Group membership" : "Członkostwo grupy",
     "is member of" : "jest członkiem w",
-    "is not member of" : "nie jest członkiem w",
-    "Type to search for group …" : "Wpisz, aby wyszukać grupę …"
+    "is not member of" : "nie jest członkiem w"
 },
 "nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);");

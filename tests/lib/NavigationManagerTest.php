@@ -729,7 +729,9 @@ class NavigationManagerTest extends TestCase {
 		];
 	}
 
-	#[\PHPUnit\Framework\Attributes\DataProvider('provideDefaultEntries')]
+	/**
+	 * @dataProvider provideDefaultEntries
+	 */
 	public function testGetDefaultEntryIdForUser(string $defaultApps, string $userDefaultApps, string $userApporder, bool $withFallbacks, string $expectedApp): void {
 		$this->navigationManager->add([
 			'id' => 'files',

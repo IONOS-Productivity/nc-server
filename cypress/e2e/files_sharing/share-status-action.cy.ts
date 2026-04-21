@@ -4,7 +4,7 @@
  */
 import type { User } from '@nextcloud/cypress'
 import { createShare } from './FilesSharingUtils.ts'
-import { closeSidebar, enableGridMode, getActionButtonForFile, getInlineActionEntryForFile, getRowForFile } from '../files/FilesUtils.ts'
+import { closeSidebar, enableGridMode, getActionButtonForFile, getRowForFile } from '../files/FilesUtils.ts'
 
 describe('files_sharing: Sharing status action', { testIsolation: true }, () => {
 	/**
@@ -40,7 +40,7 @@ describe('files_sharing: Sharing status action', { testIsolation: true }, () => 
 		getRowForFile('folder')
 			.should('be.visible')
 			.find('[data-cy-files-list-row-actions]')
-			.findByRole('button', { name: /Sharing options/ })
+			.findByRole('button', { name: /Show sharing options/ })
 			.should('be.visible')
 			.click()
 
@@ -78,9 +78,10 @@ describe('files_sharing: Sharing status action', { testIsolation: true }, () => 
 			cy.login(user)
 			cy.visit('/apps/files')
 
-			getInlineActionEntryForFile('folder', 'sharing-status')
-				.should('have.attr', 'aria-label', `Shared with ${sharee.userId}`)
-				.should('have.attr', 'title', `Shared with ${sharee.userId}`)
+			getRowForFile('folder')
+				.should('be.visible')
+				.find('[data-cy-files-list-row-actions]')
+				.findByRole('button', { name: /^Shared with/i })
 				.should('be.visible')
 		})
 
@@ -102,8 +103,10 @@ describe('files_sharing: Sharing status action', { testIsolation: true }, () => 
 			cy.login(sharee)
 			cy.visit('/apps/files')
 
-			getInlineActionEntryForFile('folder', 'sharing-status')
-				.should('have.attr', 'aria-label', `Shared by ${user.userId}`)
+			getRowForFile('folder')
+				.should('be.visible')
+				.find('[data-cy-files-list-row-actions]')
+				.findByRole('button', { name: `Shared by ${user.userId}` })
 				.should('be.visible')
 		})
 

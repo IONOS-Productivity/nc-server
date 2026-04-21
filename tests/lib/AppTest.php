@@ -20,7 +20,6 @@ use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\IUserSession;
-use OCP\Server;
 use OCP\ServerVersion;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
@@ -187,8 +186,8 @@ class AppTest extends \Test\TestCase {
 	 */
 	#[\PHPUnit\Framework\Attributes\DataProvider('appConfigValuesProvider')]
 	public function testEnabledApps($user, $expectedApps, $forceAll): void {
-		$userManager = Server::get(IUserManager::class);
-		$groupManager = Server::get(IGroupManager::class);
+		$userManager = \OCP\Server::get(IUserManager::class);
+		$groupManager = \OCP\Server::get(IGroupManager::class);
 		$user1 = $userManager->createUser(self::TEST_USER1, 'NotAnEasyPassword123456+');
 		$user2 = $userManager->createUser(self::TEST_USER2, 'NotAnEasyPassword123456_');
 		$user3 = $userManager->createUser(self::TEST_USER3, 'NotAnEasyPassword123456?');
@@ -235,7 +234,7 @@ class AppTest extends \Test\TestCase {
 	 * enabled apps more than once when a user is set.
 	 */
 	public function testEnabledAppsCache(): void {
-		$userManager = Server::get(IUserManager::class);
+		$userManager = \OCP\Server::get(IUserManager::class);
 		$user1 = $userManager->createUser(self::TEST_USER1, 'NotAnEasyPassword123456+');
 
 		\OC_User::setUserId(self::TEST_USER1);
@@ -266,8 +265,8 @@ class AppTest extends \Test\TestCase {
 	private function setupAppConfigMock() {
 		/** @var AppConfig|MockObject */
 		$appConfig = $this->getMockBuilder(AppConfig::class)
-			->onlyMethods(['searchValues'])
-			->setConstructorArgs([Server::get(IDBConnection::class)])
+			->onlyMethods(['getValues'])
+			->setConstructorArgs([\OCP\Server::get(IDBConnection::class)])
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -283,15 +282,13 @@ class AppTest extends \Test\TestCase {
 	private function registerAppConfig(AppConfig $appConfig) {
 		$this->overwriteService(AppConfig::class, $appConfig);
 		$this->overwriteService(AppManager::class, new AppManager(
-			Server::get(IUserSession::class),
-			Server::get(IConfig::class),
-			Server::get(IGroupManager::class),
-			Server::get(ICacheFactory::class),
-			Server::get(IEventDispatcher::class),
-			Server::get(LoggerInterface::class),
-			Server::get(ServerVersion::class),
-			Server::get(ConfigManager::class),
-			Server::get(DependencyAnalyzer::class),
+			\OCP\Server::get(IUserSession::class),
+			\OCP\Server::get(IConfig::class),
+			\OCP\Server::get(IGroupManager::class),
+			\OCP\Server::get(ICacheFactory::class),
+			\OCP\Server::get(IEventDispatcher::class),
+			\OCP\Server::get(LoggerInterface::class),
+			\OCP\Server::get(ServerVersion::class),
 		));
 	}
 

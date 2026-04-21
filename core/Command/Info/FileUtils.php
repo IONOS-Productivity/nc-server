@@ -23,7 +23,6 @@ use OCP\Files\IRootFolder;
 use OCP\Files\Mount\IMountPoint;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
-use OCP\Files\NotPermittedException;
 use OCP\IDBConnection;
 use OCP\Share\IShare;
 use OCP\Util;

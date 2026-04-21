@@ -53,6 +53,9 @@ use Psr\Log\LoggerInterface;
  * @package OC\User
  */
 class Manager extends PublicEmitter implements IUserManager {
+	/** @see \OC\Config\UserConfig::USER_MAX_LENGTH */
+	public const MAX_USERID_LENGTH = 64;
+
 	/**
 	 * @var UserInterface[] $backends
 	 */
@@ -118,7 +121,7 @@ class Manager extends PublicEmitter implements IUserManager {
 			return $this->cachedUsers[$uid];
 		}
 
-		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
+		if (strlen($uid) > self::MAX_USERID_LENGTH) {
 			return null;
 		}
 
@@ -181,7 +184,7 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * @return bool
 	 */
 	public function userExists($uid) {
-		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
+		if (strlen($uid) > self::MAX_USERID_LENGTH) {
 			return false;
 		}
 
@@ -580,7 +583,7 @@ class Manager extends PublicEmitter implements IUserManager {
 			->andWhere($queryBuilder->expr()->eq('configvalue', $queryBuilder->createNamedParameter('false'), IQueryBuilder::PARAM_STR));
 
 
-		$result = $queryBuilder->executeQuery();
+		$result = $queryBuilder->execute();
 		$count = $result->fetchOne();
 		$result->closeCursor();
 
@@ -714,9 +717,8 @@ class Manager extends PublicEmitter implements IUserManager {
 		}
 
 		// User ID is too long
-		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
-			// TRANSLATORS User ID is too long
-			throw new \InvalidArgumentException($l->t('Username is too long'));
+		if (strlen($uid) > self::MAX_USERID_LENGTH) {
+			throw new \InvalidArgumentException($l->t('Login is too long'));
 		}
 
 		if (!$this->verifyUid($uid, $checkDataDirectory)) {
@@ -804,29 +806,29 @@ class Manager extends PublicEmitter implements IUserManager {
 		return $this->displayNameCache;
 	}
 
-	public function getSeenUsers(int $offset = 0, ?int $limit = null): \Iterator {
-		$maxBatchSize = 1000;
+	/**
+	 * Gets the list of users sorted by lastLogin, from most recent to least recent
+	 *
+	 * @param int $offset from which offset to fetch
+	 * @return \Iterator<IUser> list of user IDs
+	 * @since 30.0.0
+	 */
+	public function getSeenUsers(int $offset = 0): \Iterator {
+		$limit = 1000;
 
 		do {
-			if ($limit !== null) {
-				$batchSize = min($limit, $maxBatchSize);
-				$limit -= $batchSize;
-			} else {
-				$batchSize = $maxBatchSize;
-			}
-
-			$userIds = $this->getSeenUserIds($batchSize, $offset);
-			$offset += $batchSize;
+			$userIds = $this->getSeenUserIds($limit, $offset);
+			$offset += $limit;
 
 			foreach ($userIds as $userId) {
 				foreach ($this->backends as $backend) {
 					if ($backend->userExists($userId)) {
-						$user = new LazyUser($userId, $this, null, $backend);
+						$user = $this->getUserObject($userId, $backend, false);
 						yield $user;
 						break;
 					}
 				}
 			}
-		} while (count($userIds) === $batchSize && $limit !== 0);
+		} while (count($userIds) === $limit);
 	}
 }

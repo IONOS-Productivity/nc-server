@@ -20,7 +20,6 @@ use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\StreamResponse;
-use OCP\AppFramework\OCSController;
 use OCP\Files\File;
 use OCP\Files\IAppData;
 use OCP\Files\IMimeTypeDetector;
@@ -387,7 +386,7 @@ class TaskProcessingApiController extends OCSController {
 	 * @return StreamResponse<Http::STATUS_OK, array{}>|DataResponse<Http::STATUS_INTERNAL_SERVER_ERROR|Http::STATUS_NOT_FOUND, array{message: string}, array{}>
 	 */
 	private function getFileContentsInternal(Task $task, int $fileId): StreamResponse|DataResponse {
-		$ids = $this->taskProcessingManager->extractFileIdsFromTask($task);
+		$ids = $this->extractFileIdsFromTask($task);
 		if (!in_array($fileId, $ids)) {
 			return new DataResponse(['message' => $this->l->t('Not found')], Http::STATUS_NOT_FOUND);
 		}
@@ -403,6 +402,26 @@ class TaskProcessingApiController extends OCSController {
 		} elseif (!$node instanceof File) {
 			throw new NotFoundException('Node is not a file');
 		}
+
+		$contentType = $node->getMimeType();
+		if (function_exists('mime_content_type')) {
+			$mimeType = mime_content_type($node->fopen('rb'));
+			if ($mimeType !== false) {
+				$mimeType = $this->mimeTypeDetector->getSecureMimeType($mimeType);
+				if ($mimeType !== 'application/octet-stream') {
+					$contentType = $mimeType;
+				}
+			}
+		}
+
+		$response = new StreamResponse($node->fopen('rb'));
+		$response->addHeader(
+			'Content-Disposition',
+			'attachment; filename="' . rawurldecode($node->getName()) . '"'
+		);
+		$response->addHeader('Content-Type', $contentType);
+		return $response;
+	}
 
 		$contentType = $node->getMimeType();
 		if (function_exists('mime_content_type')) {

@@ -28,6 +28,7 @@ OC.L10N.register(
     "Each server must validate the other. This process may require a few cron cycles." : "每個伺服器都必須驗證其他伺服器。這個過程可能需要幾個 cron 循環。",
     "External documentation for Federated Cloud Sharing" : "聯邦雲端分享的外部文件",
     "+ Add trusted server" : "+ 新增信任的伺服器",
-    "Trusted server" : "信任的伺服器"
+    "Trusted server" : "信任的伺服器",
+    "Add" : "新增"
 },
 "nplurals=1; plural=0;");

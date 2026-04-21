@@ -25,8 +25,8 @@ OC.L10N.register(
     "Unable to update federated files sharing config" : "Не може да се актуализира конфигурацията за споделяне на обединени файлове",
     "Share with me through my #Nextcloud Federated Cloud ID, see {url}" : "Споделете с мен чрез моя #Nextcloud Federated Cloud ID, вижте {url}",
     "Share with me through my #Nextcloud Federated Cloud ID" : "Споделете с мен, чрез моя #Nextcloud Federated Cloud ID",
-    "Share with me via Nextcloud" : "Споделете с мен, чрез Nextcloud",
-    "Copy" : "Копие",
+    "Cloud ID copied to the clipboard" : "Cloud идентификатора е копиран в клипборда",
+    "Copy to clipboard" : "Копиране в клипборда",
     "Copied!" : "Копирано!",
     "Federated Cloud" : "Федериран облак",
     "Share it so your friends can share files with you:" : "Споделете, за да могат приятелите ви да споделят файлове, с вас:",
@@ -39,10 +39,6 @@ OC.L10N.register(
     "Add remote share" : "Добави отдалечено споделяне",
     "Remote share" : "Отдалечено споделяне",
     "Do you want to add the remote share {name} from {owner}@{remote}?" : "Искате ли да добавите отдалечено споделяне {name} от {owner}@{remote}?",
-    "Remote share password" : "Парола за отдалечено споделяне",
-    "Cloud ID copied to the clipboard" : "Cloud идентификатора е копиран в клипборда",
-    "Copy to clipboard" : "Копиране в клипборда",
-    "You can share with anyone who uses a Nextcloud server or other Open Cloud Mesh (OCM) compatible servers and services! Just put their Federated Cloud ID in the share dialog. It looks like person@cloud.example.com" : "Можете да споделяте с всеки, който използва сървър Nextcloud или други сървъри и услуги, съвместими с Open Cloud Mesh (OCM)! Просто поставете техния идентификатор за Федериран облак в диалоговия прозорец за споделяне. Изглежда като person@cloud.example.com",
-    "X (formerly Twitter)" : "X (преди Twitter)"
+    "Remote share password" : "Парола за отдалечено споделяне"
 },
 "nplurals=2; plural=(n != 1);");

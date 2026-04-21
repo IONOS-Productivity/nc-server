@@ -157,6 +157,13 @@ export default defineComponent({
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
-	margin: 0;
+
+	:deep(label) {
+		text-align: initial;
+	}
+}
+
+.update {
+	margin: 0 auto;
 }
 </style>

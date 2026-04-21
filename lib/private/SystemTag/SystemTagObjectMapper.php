@@ -311,9 +311,6 @@ class SystemTagObjectMapper implements ISystemTagObjectMapper {
 				[(int)$tagId]
 			));
 		}
-		if (!empty($removedObjectIds)) {
-			$this->dispatcher->dispatchTyped(new TagUnassignedEvent($objectType, array_map(fn ($objectId) => (string)$objectId, $removedObjectIds), [(int)$tagId]));
-		}
 
 		if (empty($objectIds)) {
 			return;
@@ -344,9 +341,6 @@ class SystemTagObjectMapper implements ISystemTagObjectMapper {
 				(string)$objectId,
 				[(int)$tagId]
 			));
-		}
-		if (!empty($addedObjectIds)) {
-			$this->dispatcher->dispatchTyped(new TagAssignedEvent($objectType, array_map(fn ($objectId) => (string)$objectId, $addedObjectIds), [(int)$tagId]));
 		}
 
 		// Dispatch unassign events for removed object ids

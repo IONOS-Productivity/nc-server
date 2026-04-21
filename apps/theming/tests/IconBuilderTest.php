@@ -16,7 +16,6 @@ use OCP\App\IAppManager;
 use OCP\Files\NotFoundException;
 use OCP\IConfig;
 use OCP\ServerVersion;
-use PHPUnit\Framework\MockObject\MockObject;
 use Test\TestCase;
 
 class IconBuilderTest extends TestCase {

@@ -402,17 +402,7 @@ class ThemingController extends Controller {
 			$css = ":root { $variables } " . $customCss;
 		} else {
 			// If not set, we'll rely on the body class
-			// We need to separate @-rules from normal selectors, as they can't be nested
-			// This is a replacement for the SCSS compiler that did this automatically before f1448fcf0777db7d4254cb0a3ef94d63be9f7a24
-			// We need a better way to handle this, but for now we just remove comments and split the at-rules
-			// from the rest of the CSS.
-			$customCssWithoutComments = preg_replace('!/\*.*?\*/!s', '', $customCss);
-			$customCssWithoutComments = preg_replace('!//.*!', '', $customCssWithoutComments);
-			preg_match_all('/(@[^{]+{(?:[^{}]*|(?R))*})/', $customCssWithoutComments, $atRules);
-			$atRulesCss = implode('', $atRules[0]);
-			$scopedCss = preg_replace('/(@[^{]+{(?:[^{}]*|(?R))*})/', '', $customCssWithoutComments);
-
-			$css = "$atRulesCss [data-theme-$themeId] { $variables $scopedCss }";
+			$css = "[data-theme-$themeId] { $variables $customCss }";
 		}
 
 		try {
@@ -488,7 +478,6 @@ class ThemingController extends Controller {
 						'sizes' => '16x16'
 					]
 				],
-			'display_override' => [$this->config->getSystemValueBool('theming.standalone_window.enabled', true) ? 'minimal-ui' : ''],
 			'display' => $this->config->getSystemValueBool('theming.standalone_window.enabled', true) ? 'standalone' : 'browser'
 		];
 		$response = new JSONResponse($responseJS);

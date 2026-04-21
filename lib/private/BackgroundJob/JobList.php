@@ -219,10 +219,6 @@ class JobList implements IJobList {
 				return $this->getNext($onlyTimeSensitive, $jobClasses);
 			}
 
-			if ($job !== null && isset($this->alreadyVisitedParallelBlocked[get_class($job)])) {
-				unset($this->alreadyVisitedParallelBlocked[get_class($job)]);
-			}
-
 			if ($job instanceof \OCP\BackgroundJob\TimedJob) {
 				$now = $this->timeFactory->getTime();
 				$nextPossibleRun = $job->getLastRun() + $job->getInterval();

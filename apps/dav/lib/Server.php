@@ -71,7 +71,6 @@ use OCA\DAV\Upload\ChunkingV2Plugin;
 use OCA\DAV\Upload\UploadAutoMkcolPlugin;
 use OCA\Theming\ThemingDefaults;
 use OCP\Accounts\IAccountManager;
-use OCP\App\IAppManager;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\ICommentsManager;
@@ -164,10 +163,10 @@ class Server {
 		$eventDispatcher->dispatchTyped($newAuthEvent);
 
 		$bearerAuthBackend = new BearerAuth(
-			\OCP\Server::get(IUserSession::class),
-			\OCP\Server::get(ISession::class),
-			\OCP\Server::get(IRequest::class),
-			\OCP\Server::get(IConfig::class),
+			\OC::$server->getUserSession(),
+			\OC::$server->getSession(),
+			\OC::$server->getRequest(),
+			\OC::$server->getConfig(),
 		);
 		$authPlugin->addBackend($bearerAuthBackend);
 		// because we are throwing exceptions this plugin has to be the last one

@@ -4,7 +4,7 @@
  */
 
 import { getCurrentUser } from '@nextcloud/auth'
-import { showError, showSuccess } from '@nextcloud/dialogs'
+import { DialogBuilder, showError, showSuccess } from '@nextcloud/dialogs'
 import { ShareType } from '@nextcloud/sharing'
 import { emit } from '@nextcloud/event-bus'
 
@@ -167,22 +167,16 @@ export default {
 		 */
 		isPasswordProtected: {
 			get() {
-				if (this.config.enforcePasswordForPublicLink) {
-					return true
-				}
-				if (this.passwordProtectedState !== undefined) {
-					return this.passwordProtectedState
-				}
-				return typeof this.share.newPassword === 'string'
-					|| typeof this.share.password === 'string'
+				return this.config.enforcePasswordForPublicLink
+							|| !!this.share.password
 			},
 			async set(enabled) {
 				if (enabled) {
-					this.passwordProtectedState = true
-					this.$set(this.share, 'newPassword', await GeneratePassword(true))
+					this.share.password = await GeneratePassword(true)
+					this.$set(this.share, 'newPassword', this.share.password)
 				} else {
-					this.passwordProtectedState = false
-					this.$set(this.share, 'newPassword', '')
+					this.share.password = ''
+					this.$delete(this.share, 'newPassword')
 				}
 			},
 		},
@@ -279,9 +273,44 @@ export default {
 		},
 
 		/**
+		 * Display delete share confirmation dialog
+		 * @returns {Promise<boolean>}
+		 */
+		async askDeleteConfirmation() {
+			let confirmed = false
+			await new DialogBuilder()
+				.setName(t('files_sharing', 'Confirm deletion'))
+				.setText(t('files_sharing', 'You are about to delete this share'))
+				.setButtons([
+					{
+						label: t('core', 'Cancel'),
+					},
+					{
+						label: t('files_sharing', 'Delete share'),
+						type: 'error',
+						callback: () => {
+							confirmed = true
+						},
+					},
+				])
+				.build()
+				.show()
+
+			return confirmed
+		},
+		/**
 		 * Delete share button handler
 		 */
 		async onDelete() {
+			console.debug('Deleting share', this.share.id)
+			this.open = false
+			const deletionConfirmed = await this.askDeleteConfirmation()
+
+			if (!deletionConfirmed) {
+				console.debug('Deletion aborted', this.share.id)
+				return
+			}
+
 			try {
 				this.loading = true
 				this.open = false
@@ -317,14 +346,7 @@ export default {
 				const properties = {}
 				// force value to string because that is what our
 				// share api controller accepts
-				for (const name of propertyNames) {
-					if (name === 'password') {
-						if (this.share.newPassword !== undefined) {
-							properties[name] = this.share.newPassword
-						}
-						continue
-					}
-
+				propertyNames.forEach(name => {
 					if (this.share[name] === null || this.share[name] === undefined) {
 						properties[name] = ''
 					} else if ((typeof this.share[name]) === 'object') {

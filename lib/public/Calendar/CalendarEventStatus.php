@@ -7,9 +7,11 @@ declare(strict_types=1);
  */
 namespace OCP\Calendar;
 
-use OCP\AppFramework\Attribute\Listenable;
-
-#[Listenable(since: '32.0.0')]
+/**
+ * The status of a calendar event.
+ *
+ * @since 32.0.0
+ */
 enum CalendarEventStatus: string {
 	case TENTATIVE = 'TENTATIVE';
 	case CONFIRMED = 'CONFIRMED';

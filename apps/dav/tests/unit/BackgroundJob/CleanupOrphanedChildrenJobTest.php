@@ -103,13 +103,14 @@ class CleanupOrphanedChildrenJobTest extends TestCase {
 		$deleteQb = $this->getMockQueryBuilder();
 		$result = $this->createMock(IResult::class);
 
-		$calls = [
-			$selectQb,
-			$deleteQb,
-		];
-		$this->connection->method('getQueryBuilder')
-			->willReturnCallback(function () use (&$calls) {
-				return array_shift($calls);
+		$qbInvocationCount = self::exactly(2);
+		$this->connection->expects($qbInvocationCount)
+			->method('getQueryBuilder')
+			->willReturnCallback(function () use ($qbInvocationCount, $selectQb, $deleteQb) {
+				return match ($qbInvocationCount->getInvocationCount()) {
+					1 => $selectQb,
+					2 => $deleteQb,
+				};
 			});
 		$selectQb->expects(self::once())
 			->method('executeQuery')
@@ -139,15 +140,15 @@ class CleanupOrphanedChildrenJobTest extends TestCase {
 		$deleteQb = $this->getMockQueryBuilder();
 		$result = $this->createMock(IResult::class);
 
-		$calls = [
-			$selectQb,
-			$deleteQb,
-		];
-		$this->connection->method('getQueryBuilder')
-			->willReturnCallback(function () use (&$calls) {
-				return array_shift($calls);
+		$qbInvocationCount = self::exactly(2);
+		$this->connection->expects($qbInvocationCount)
+			->method('getQueryBuilder')
+			->willReturnCallback(function () use ($qbInvocationCount, $selectQb, $deleteQb) {
+				return match ($qbInvocationCount->getInvocationCount()) {
+					1 => $selectQb,
+					2 => $deleteQb,
+				};
 			});
-
 		$selectQb->expects(self::once())
 			->method('executeQuery')
 			->willReturn($result);

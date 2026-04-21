@@ -20,8 +20,6 @@ use OCA\DAV\Files\Sharing\RootCollection;
 use OCA\DAV\Upload\CleanupService;
 use OCA\Theming\ThemingDefaults;
 use OCP\Accounts\IAccountManager;
-use OCP\App\IAppManager;
-use OCP\Comments\ICommentsManager;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Folder;
 use OCP\Files\IFilenameValidator;
@@ -163,8 +161,8 @@ class ServerFactory {
 					$this->userSession,
 					\OCP\Server::get(IFilenameValidator::class),
 					\OCP\Server::get(IAccountManager::class),
-					$isPublicShare,
-					!$debugEnabled
+					false,
+					!$this->config->getSystemValue('debug', false)
 				)
 			);
 			$server->addPlugin(new QuotaPlugin($view));

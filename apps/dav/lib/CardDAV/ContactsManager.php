@@ -24,7 +24,6 @@ class ContactsManager {
 		private CardDavBackend $backend,
 		private IL10N $l10n,
 		private PropertyMapper $propertyMapper,
-		private IAppConfig $appConfig,
 	) {
 	}
 
@@ -45,11 +44,6 @@ class ContactsManager {
 	 * @param IURLGenerator $urlGenerator
 	 */
 	public function setupSystemContactsProvider(IManager $cm, ?string $userId, IURLGenerator $urlGenerator) {
-		$systemAddressBookExposed = $this->appConfig->getValueBool('dav', 'system_addressbook_exposed', true);
-		if (!$systemAddressBookExposed) {
-			return;
-		}
-
 		$addressBooks = $this->backend->getAddressBooksForUser('principals/system/system');
 		$this->register($cm, $addressBooks, $urlGenerator, $userId);
 	}

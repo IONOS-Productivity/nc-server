@@ -14,7 +14,7 @@ OC.L10N.register(
     "Redirection URI" : "URI para redirección",
     "Add client" : "Agregar cliente",
     "Add" : "Agregar",
-    "Client Identifier" : "Identificador del cliente",
-    "Show client secret" : "Mostrar el secreto del cliente"
+    "Show client secret" : "Mostrar el secreto del cliente",
+    "Delete" : "Borrar"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

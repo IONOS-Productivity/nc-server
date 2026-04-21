@@ -22,7 +22,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @template-extends Proxy<User_LDAP>
  */
-class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP, ILimitAwareCountUsersBackend, ICountMappedUsersBackend, IProvideEnabledStateBackend, IGetDisplayNameBackend {
+class User_Proxy extends Proxy implements IUserBackend, UserInterface, IUserLDAP, ILimitAwareCountUsersBackend, ICountMappedUsersBackend, IProvideEnabledStateBackend {
 	public function __construct(
 		private Helper $helper,
 		ILDAPWrapper $ldap,

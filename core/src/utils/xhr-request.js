@@ -66,7 +66,7 @@ async function checkLoginStatus() {
 
 /**
  * Clear all Browser storages connected to current origin.
- * @return {Promise<void>}
+ * @returns {Promise<void>}
  */
 export async function wipeBrowserStorages() {
 	try {

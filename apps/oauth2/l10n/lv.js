@@ -12,6 +12,6 @@ OC.L10N.register(
     "Redirection URI" : "Pārvirzāmais URI",
     "Add client" : "Pievienot klientu",
     "Add" : "Pievienot",
-    "Client Identifier" : "Klienta identifikators"
+    "Delete" : "Izdzēst"
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);");

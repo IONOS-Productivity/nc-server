@@ -97,17 +97,17 @@
 </template>
 
 <script setup lang="ts">
-import { mdiAccountOutline, mdiAccountOffOutline, mdiCogOutline, mdiPlus, mdiShieldAccountOutline, mdiHistory } from '@mdi/js'
+import { mdiAccount, mdiAccountOff, mdiCog, mdiPlus, mdiShieldAccount, mdiHistory } from '@mdi/js'
 import { translate as t } from '@nextcloud/l10n'
 import { computed, ref } from 'vue'
 
-import NcAppNavigation from '@nextcloud/vue/components/NcAppNavigation'
-import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
-import NcAppNavigationList from '@nextcloud/vue/components/NcAppNavigationList'
-import NcAppNavigationNew from '@nextcloud/vue/components/NcAppNavigationNew'
-import NcButton from '@nextcloud/vue/components/NcButton'
-import NcCounterBubble from '@nextcloud/vue/components/NcCounterBubble'
-import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcAppNavigation from '@nextcloud/vue/dist/Components/NcAppNavigation.js'
+import NcAppNavigationItem from '@nextcloud/vue/dist/Components/NcAppNavigationItem.js'
+import NcAppNavigationList from '@nextcloud/vue/dist/Components/NcAppNavigationList.js'
+import NcAppNavigationNew from '@nextcloud/vue/dist/Components/NcAppNavigationNew.js'
+import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcCounterBubble from '@nextcloud/vue/dist/Components/NcCounterBubble.js'
+import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
 
 import UserSettingsDialog from '../components/Users/UserSettingsDialog.vue'
 import AppNavigationGroupList from '../components/AppNavigationGroupList.vue'

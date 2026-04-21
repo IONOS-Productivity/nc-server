@@ -22,7 +22,7 @@ export function registerPersonalFilesView(): void {
 
 	const Navigation = getNavigation()
 	Navigation.register(new View({
-		id: VIEW_ID,
+		id: 'personal',
 		name: t('files', 'Personal files'),
 		caption: t('files', 'List of your files and folders that are not shared.'),
 

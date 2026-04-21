@@ -82,10 +82,13 @@ class LookupPluginTest extends TestCase {
 			->willReturn('yes');
 		$this->config->expects($this->exactly(2))
 			->method('getSystemValueBool')
-			->willReturnMap([
-				['gs.enabled', false, true],
-				['has_internet_connection', true, true],
-			]);
+			->withConsecutive(
+				['gs.enabled', false],
+				['has_internet_connection', true],
+			)->willReturnOnConsecutiveCalls(
+				true,
+				true,
+			);
 
 		$this->config->expects($this->once())
 			->method('getSystemValueString')
@@ -141,10 +144,13 @@ class LookupPluginTest extends TestCase {
 			->willReturn('yes');
 		$this->config->expects($this->exactly(2))
 			->method('getSystemValueBool')
-			->willReturnMap([
-				['gs.enabled', false, true],
-				['has_internet_connection', true, true],
-			]);
+			->withConsecutive(
+				['gs.enabled', false],
+				['has_internet_connection', true],
+			)->willReturnOnConsecutiveCalls(
+				true,
+				true,
+			);
 
 		$this->config->expects($this->once())
 			->method('getSystemValueString')
@@ -477,9 +483,7 @@ class LookupPluginTest extends TestCase {
 						'value' => [
 							'shareType' => IShare::TYPE_REMOTE,
 							'globalScale' => true,
-							'shareWith' => $fedIDs[0],
-							'server' => 'enceladus.moon',
-							'isTrustedServer' => false,
+							'shareWith' => $fedIDs[0]
 						],
 						'extra' => ['federationId' => $fedIDs[0]],
 					],
@@ -488,9 +492,7 @@ class LookupPluginTest extends TestCase {
 						'value' => [
 							'shareType' => IShare::TYPE_REMOTE,
 							'globalScale' => true,
-							'shareWith' => $fedIDs[1],
-							'server' => 'enceladus.moon',
-							'isTrustedServer' => false,
+							'shareWith' => $fedIDs[1]
 						],
 						'extra' => ['federationId' => $fedIDs[1]],
 					],
@@ -499,9 +501,7 @@ class LookupPluginTest extends TestCase {
 						'value' => [
 							'shareType' => IShare::TYPE_REMOTE,
 							'globalScale' => true,
-							'shareWith' => $fedIDs[2],
-							'server' => 'enceladus.moon',
-							'isTrustedServer' => false,
+							'shareWith' => $fedIDs[2]
 						],
 						'extra' => ['federationId' => $fedIDs[2]],
 					],

@@ -77,10 +77,10 @@ import { translate } from '@nextcloud/l10n'
 import { defineComponent } from 'vue'
 
 import ArrowLeftIcon from 'vue-material-design-icons/ArrowLeft.vue'
-import NcActionButton from '@nextcloud/vue/components/NcActionButton'
-import NcActions from '@nextcloud/vue/components/NcActions'
-import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
-import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
+import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
+import NcIconSvgWrapper from '@nextcloud/vue/dist/Components/NcIconSvgWrapper.js'
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 
 import { useRouteParameters } from '../composables/useRouteParameters.ts'
 import { useFileListWidth } from '../composables/useFileListWidth.ts'
@@ -151,10 +151,6 @@ export default defineComponent({
 				.filter(action => !action.renderInline)
 				// We don't handle actions that are not visible
 				.filter(action => action.default !== DefaultType.HIDDEN)
-				// We allow top-level actions that have no execBatch method
-				// but children actions always need to have it
-				.filter(action => action.execBatch || !action.parent)
-				// We filter out actions that are not enabled for the current selection
 				.filter(action => !action.enabled || action.enabled(this.nodes, this.currentView))
 				.sort((a, b) => (a.order || 0) - (b.order || 0))
 		},
@@ -194,11 +190,7 @@ export default defineComponent({
 			})
 
 			// Generate list of all top-level actions ids
-			const childrenActionsIds = actions
-				.filter(action => action.parent)
-				// Filter out all actions that are not batch actions
-				.filter(action => action.execBatch)
-				.map(action => action.parent) as string[]
+			const childrenActionsIds = actions.filter(action => action.parent).map(action => action.parent) as string[]
 
 			const menuActions = actions
 				.filter(action => {
@@ -313,7 +305,7 @@ export default defineComponent({
 						return
 					}
 
-					showError(this.t('files', '{displayName}: failed on some elements', { displayName }))
+					showError(this.t('files', '"{displayName}" failed on some elements', { displayName }))
 					return
 				}
 

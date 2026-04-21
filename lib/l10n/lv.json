@@ -38,8 +38,6 @@
     "_%n minute ago_::_%n minutes ago_" : ["pirms %n minūtēm","pirms %n minūtes","pirms %n minūtēm"],
     "seconds ago" : "pirms vairākām sekundēm",
     "Empty file" : "Tukša datne",
-    "%1$s (renamed)" : "%1$s (pārdēvēta)",
-    "renamed file" : "pārdēvēja datni",
     "File already exists" : "Datne jau pastāv",
     "Filename contains at least one invalid character" : "Datnes nosaukums satur vismaz vienu nederīgu rakstzīmi",
     "Empty filename is not allowed" : "Tukšs datnes nosaukums nav atļauts",
@@ -135,6 +133,7 @@
     "Send this along with the next interaction." : "Nosūtīt šo kopā ar nākamo mijiedarbību.",
     "Text" : "Teksts",
     "Summary" : "Kopsavilkums",
-    "Translate" : "Tulkot"
+    "Translate" : "Tulkot",
+    "File is currently busy, please try again later" : "Datne pašlaik ir aizņemta. Lūgums vēlāk mēģināt vēlreiz"
 },"pluralForm" :"nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);"
 }

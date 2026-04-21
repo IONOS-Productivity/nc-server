@@ -65,8 +65,7 @@ class UserConfig implements IUserConfig {
 	private array $lazyLoaded = [];
 	/** @var array<string, array{entries: array<string, Entry>, aliases: array<string, string>, strictness: Strictness}> ['app_id' => ['strictness' => ConfigLexiconStrictness, 'entries' => ['config_key' => ConfigLexiconEntry[]]] */
 	private array $configLexiconDetails = [];
-	private bool $ignoreLexiconAliases = false;
-	private array $strictnessApplied = [];
+	private bool $upgradedTo31 = false;
 
 	public function __construct(
 		protected IDBConnection $connection,
@@ -362,8 +361,12 @@ class UserConfig implements IUserConfig {
 		$this->matchAndApplyLexiconDefinition('', $app, $key);
 
 		$qb = $this->connection->getQueryBuilder();
-		$qb->select('userid', 'configvalue', 'type')
-			->from('preferences')
+		if ($this->isUpgradedTo31()) {
+			$qb->select('userid', 'configvalue', 'type');
+		} else {
+			$qb->select('userid', 'configvalue');
+		}
+		$qb->from('preferences')
 			->where($qb->expr()->eq('appid', $qb->createNamedParameter($app)))
 			->andWhere($qb->expr()->eq('configkey', $qb->createNamedParameter($key)));
 
@@ -374,7 +377,7 @@ class UserConfig implements IUserConfig {
 			while ($row = $result->fetch()) {
 				$value = $row['configvalue'];
 				try {
-					$value = $this->convertTypedValue($value, $typedAs ?? ValueType::from((int)$row['type']));
+					$value = $this->convertTypedValue($value, $typedAs ?? ValueType::from((int)($row['type'] ?? 0)));
 				} catch (IncorrectTypeException) {
 				}
 				$values[$row['userid']] = $value;
@@ -489,43 +492,41 @@ class UserConfig implements IUserConfig {
 		$qb->andWhere($qb->expr()->eq('configkey', $qb->createNamedParameter($key)));
 
 		$configValueColumn = ($this->connection->getDatabaseProvider() === IDBConnection::PLATFORM_ORACLE) ? $qb->expr()->castColumn('configvalue', IQueryBuilder::PARAM_STR) : 'configvalue';
-		if (is_array($value)) {
-			$where = $qb->expr()->in('indexed', $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR_ARRAY));
-			// in case lexicon does not exist for this key - or is not set as indexed - we keep searching for non-index entries if 'flags' is set as not indexed
-			if ($lexiconEntry?->isFlagged(self::FLAG_INDEXED) !== true) {
+		if ($this->isUpgradedTo31()) {
+			// search within 'indexed' OR 'configvalue' only if 'flags' is set as not indexed
+			// TODO: when implementing config lexicon remove the searches on 'configvalue' if value is set as indexed
+			if (is_array($value)) {
 				$where = $qb->expr()->orX(
-					$where,
+					$qb->expr()->in('indexed', $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR_ARRAY)),
 					$qb->expr()->andX(
 						$qb->expr()->neq($qb->expr()->bitwiseAnd('flags', self::FLAG_INDEXED), $qb->createNamedParameter(self::FLAG_INDEXED, IQueryBuilder::PARAM_INT)),
 						$qb->expr()->in($configValueColumn, $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR_ARRAY))
 					)
 				);
-			}
-		} else {
-			if ($caseInsensitive) {
-				$where = $qb->expr()->eq($qb->func()->lower('indexed'), $qb->createNamedParameter(strtolower($value)));
-				// in case lexicon does not exist for this key - or is not set as indexed - we keep searching for non-index entries if 'flags' is set as not indexed
-				if ($lexiconEntry?->isFlagged(self::FLAG_INDEXED) !== true) {
+			} else {
+				if ($caseInsensitive) {
 					$where = $qb->expr()->orX(
-						$where,
+						$qb->expr()->eq($qb->func()->lower('indexed'), $qb->createNamedParameter(strtolower($value))),
 						$qb->expr()->andX(
 							$qb->expr()->neq($qb->expr()->bitwiseAnd('flags', self::FLAG_INDEXED), $qb->createNamedParameter(self::FLAG_INDEXED, IQueryBuilder::PARAM_INT)),
 							$qb->expr()->eq($qb->func()->lower($configValueColumn), $qb->createNamedParameter(strtolower($value)))
 						)
 					);
-				}
-			} else {
-				$where = $qb->expr()->eq('indexed', $qb->createNamedParameter($value));
-				// in case lexicon does not exist for this key - or is not set as indexed - we keep searching for non-index entries if 'flags' is set as not indexed
-				if ($lexiconEntry?->isFlagged(self::FLAG_INDEXED) !== true) {
+				} else {
 					$where = $qb->expr()->orX(
-						$where,
+						$qb->expr()->eq('indexed', $qb->createNamedParameter($value)),
 						$qb->expr()->andX(
 							$qb->expr()->neq($qb->expr()->bitwiseAnd('flags', self::FLAG_INDEXED), $qb->createNamedParameter(self::FLAG_INDEXED, IQueryBuilder::PARAM_INT)),
 							$qb->expr()->eq($configValueColumn, $qb->createNamedParameter($value))
 						)
 					);
 				}
+			}
+		} else {
+			if ($caseInsensitive) {
+				$where = $qb->expr()->eq($qb->func()->lower($configValueColumn), $qb->createNamedParameter(strtolower($value)));
+			} else {
+				$where = $qb->expr()->eq($configValueColumn, $qb->createNamedParameter($value));
 			}
 		}
 
@@ -1139,15 +1140,23 @@ class UserConfig implements IUserConfig {
 			 */
 			try {
 				$insert = $this->connection->getQueryBuilder();
-				$insert->insert('preferences')
-					->setValue('userid', $insert->createNamedParameter($userId))
-					->setValue('appid', $insert->createNamedParameter($app))
-					->setValue('lazy', $insert->createNamedParameter(($lazy) ? 1 : 0, IQueryBuilder::PARAM_INT))
-					->setValue('type', $insert->createNamedParameter($type->value, IQueryBuilder::PARAM_INT))
-					->setValue('flags', $insert->createNamedParameter($flags, IQueryBuilder::PARAM_INT))
-					->setValue('indexed', $insert->createNamedParameter($indexed))
-					->setValue('configkey', $insert->createNamedParameter($key))
-					->setValue('configvalue', $insert->createNamedParameter($value));
+				if ($this->isUpgradedTo31()) {
+					$insert->insert('preferences')
+						->setValue('userid', $insert->createNamedParameter($userId))
+						->setValue('appid', $insert->createNamedParameter($app))
+						->setValue('lazy', $insert->createNamedParameter(($lazy) ? 1 : 0, IQueryBuilder::PARAM_INT))
+						->setValue('type', $insert->createNamedParameter($type->value, IQueryBuilder::PARAM_INT))
+						->setValue('flags', $insert->createNamedParameter($flags, IQueryBuilder::PARAM_INT))
+						->setValue('indexed', $insert->createNamedParameter($indexed))
+						->setValue('configkey', $insert->createNamedParameter($key))
+						->setValue('configvalue', $insert->createNamedParameter($value));
+				} else {
+					$insert->insert('preferences')
+						->setValue('userid', $insert->createNamedParameter($userId))
+						->setValue('appid', $insert->createNamedParameter($app))
+						->setValue('configkey', $insert->createNamedParameter($key))
+						->setValue('configvalue', $insert->createNamedParameter($value));
+				}
 				$insert->executeStatement();
 				$inserted = true;
 			} catch (DBException $e) {
@@ -1197,16 +1206,23 @@ class UserConfig implements IUserConfig {
 			}
 
 			$update = $this->connection->getQueryBuilder();
-			$update->update('preferences')
-				->set('configvalue', $update->createNamedParameter($value))
-				->set('lazy', $update->createNamedParameter(($lazy) ? 1 : 0, IQueryBuilder::PARAM_INT))
-				->set('type', $update->createNamedParameter($type->value, IQueryBuilder::PARAM_INT))
-				->set('flags', $update->createNamedParameter($flags, IQueryBuilder::PARAM_INT))
-				->set('indexed', $update->createNamedParameter($indexed))
-				->where($update->expr()->eq('userid', $update->createNamedParameter($userId)))
-				->andWhere($update->expr()->eq('appid', $update->createNamedParameter($app)))
-				->andWhere($update->expr()->eq('configkey', $update->createNamedParameter($key)));
-
+			if ($this->isUpgradedTo31()) {
+				$update->update('preferences')
+					->set('configvalue', $update->createNamedParameter($value))
+					->set('lazy', $update->createNamedParameter(($lazy) ? 1 : 0, IQueryBuilder::PARAM_INT))
+					->set('type', $update->createNamedParameter($type->value, IQueryBuilder::PARAM_INT))
+					->set('flags', $update->createNamedParameter($flags, IQueryBuilder::PARAM_INT))
+					->set('indexed', $update->createNamedParameter($indexed))
+					->where($update->expr()->eq('userid', $update->createNamedParameter($userId)))
+					->andWhere($update->expr()->eq('appid', $update->createNamedParameter($app)))
+					->andWhere($update->expr()->eq('configkey', $update->createNamedParameter($key)));
+			} else {
+				$update->update('preferences')
+					->set('configvalue', $update->createNamedParameter($value))
+					->where($update->expr()->eq('userid', $update->createNamedParameter($userId)))
+					->andWhere($update->expr()->eq('appid', $update->createNamedParameter($app)))
+					->andWhere($update->expr()->eq('configkey', $update->createNamedParameter($key)));
+			}
 			$update->executeStatement();
 		}
 
@@ -1754,14 +1770,20 @@ class UserConfig implements IUserConfig {
 
 		$qb = $this->connection->getQueryBuilder();
 		$qb->from('preferences');
-		$qb->select('appid', 'configkey', 'configvalue', 'type', 'flags');
+		if ($this->isUpgradedTo31()) {
+			$qb->select('appid', 'configkey', 'configvalue', 'type', 'flags');
+		} else {
+			$qb->select('appid', 'configkey', 'configvalue');
+		}
 		$qb->where($qb->expr()->eq('userid', $qb->createNamedParameter($userId)));
 
-		// we only need value from lazy when loadConfig does not specify it
-		if ($lazy !== null) {
-			$qb->andWhere($qb->expr()->eq('lazy', $qb->createNamedParameter($lazy ? 1 : 0, IQueryBuilder::PARAM_INT)));
-		} else {
-			$qb->addSelect('lazy');
+		if ($this->isUpgradedTo31()) {
+			// we only need value from lazy when loadConfig does not specify it
+			if ($lazy !== null) {
+				$qb->andWhere($qb->expr()->eq('lazy', $qb->createNamedParameter($lazy ? 1 : 0, IQueryBuilder::PARAM_INT)));
+			} else {
+				$qb->addSelect('lazy');
+			}
 		}
 
 		$result = $qb->executeQuery();
@@ -2067,21 +2089,18 @@ class UserConfig implements IUserConfig {
 	}
 
 	/**
-	 * get Lexicon Entry using appId and config key entry
+	 * This is a temporary method that MUST be removed on NC32/NC32+
+	 * It seems that some apps might want to check user preferences before initiating
+	 * the upgrade process resulting in locking instance.
 	 *
-	 * @return Entry|null NULL if entry does not exist in user's Lexicon
-	 * @internal
+	 * @return bool
 	 */
-	public function getLexiconEntry(string $appId, string $key): ?Entry {
-		return $this->getConfigDetailsFromLexicon($appId)['entries'][$key] ?? null;
-	}
+	private function isUpgradedTo31(): bool {
+		if (!$this->upgradedTo31) {
+			$this->upgradedTo31 = (str_starts_with($this->config->getSystemValue('version'), '31.')
+								   || str_starts_with($this->config->getSystemValue('version'), '32.'));
+		}
 
-	/**
-	 * if set to TRUE, ignore aliases defined in Config Lexicon during the use of the methods of this class
-	 *
-	 * @internal
-	 */
-	public function ignoreLexiconAliases(bool $ignore): void {
-		$this->ignoreLexiconAliases = $ignore;
+		return $this->upgradedTo31;
 	}
 }

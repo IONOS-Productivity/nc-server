@@ -10,7 +10,6 @@ namespace OCA\Files_External\Lib\Backend;
 
 use Icewind\SMB\BasicAuth;
 use Icewind\SMB\KerberosAuth;
-use Icewind\SMB\KerberosTicket;
 use Icewind\SMB\Native\NativeServer;
 use Icewind\SMB\Wrapped\Server;
 use OCA\Files_External\Lib\Auth\AuthMechanism;
@@ -122,7 +121,7 @@ class SMB extends Backend {
 		$storage->setBackendOption('auth', $smbAuth);
 	}
 
-	public function checkDependencies(): array {
+	public function checkDependencies() {
 		$system = \OCP\Server::get(SystemBridge::class);
 		if (NativeServer::available($system)) {
 			return [];

@@ -11,7 +11,6 @@ import Vue from 'vue'
 
 import FileListFilterAccount from '../components/FileListFilterAccount.vue'
 import { isPublicShare } from '@nextcloud/sharing/public'
-import { TRASHBIN_VIEW_ID } from '../../../files_trashbin/src/files_views/trashbinView'
 
 export interface IAccountData {
 	uid: string
@@ -150,15 +149,6 @@ class AccountFilter extends FileListFilter {
 						displayName: sharee['display-name'],
 					})
 				}
-			}
-
-			// lets also handle trashbin
-			const deletedBy = node.attributes?.['trashbin-deleted-by-id']
-			if (deletedBy) {
-				available.set(deletedBy, {
-					uid: deletedBy,
-					displayName: node.attributes?.['trashbin-deleted-by-display-name'] || deletedBy,
-				})
 			}
 		}
 

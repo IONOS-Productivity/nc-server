@@ -17,19 +17,14 @@
     "New comment" : "Komentar baru",
     "Write a comment …" : "Tulis komentar …",
     "Post comment" : "Posting komentar",
-    "@ for mentions, : for emoji, / for smart picker" : "@ untuk penyebutan, : untuk emoji, / untuk pemilih cerdas",
-    "Could not reload comments" : "Tidak dapat memuat ulang komentar",
-    "Failed to mark comments as read" : "Gagal menandai komentar sebagai sudah dibaca",
     "Unable to load the comments list" : "Tidak dapat memuat daftar komentar",
     "No comments yet, start the conversation!" : "Belum ada yang berkomentar, mulailah perbincangan!",
     "No more messages" : "Tidak ada pesan lagi",
     "Retry" : "Ulangi",
-    "_1 new comment_::_{unread} new comments_" : ["{unread} komentar baru"],
     "Comment" : "Komentar",
     "An error occurred while trying to edit the comment" : "Terjadi kesalahan ketika mencoba menyunting komentar",
     "Comment deleted" : "Komentar dihapus",
     "An error occurred while trying to delete the comment" : "Terjadi kesalahan ketika mencoba untuk menghapus komentar",
-    "An error occurred while trying to create the comment" : "Terjadi kesalahan ketika mencoba untuk membuat komentar",
-    "Write a comment …" : "Tulis komentar …"
+    "An error occurred while trying to create the comment" : "Terjadi kesalahan ketika mencoba untuk membuat komentar"
 },"pluralForm" :"nplurals=1; plural=0;"
 }

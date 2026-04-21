@@ -39,7 +39,7 @@
 import type { IAccountData } from '../files_filters/AccountFilter.ts'
 
 import { translate as t } from '@nextcloud/l10n'
-import { mdiAccountMultipleOutline } from '@mdi/js'
+import { mdiAccountMultiple } from '@mdi/js'
 import { computed, ref, watch } from 'vue'
 
 import FileListFilter from '../../../files/src/components/FileListFilter/FileListFilter.vue'

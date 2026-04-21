@@ -29,9 +29,9 @@ use OCP\IPreview;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserSession;
+use OCP\Share\IAttributes;
 use OCP\Share\IManager;
 use OCP\Share\IShare;
-use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
 
@@ -182,10 +182,16 @@ class ApiControllerTest extends TestCase {
 	}
 
 	public function testGetThumbnailSharedNoDownload(): void {
+		$attributes = $this->createMock(IAttributes::class);
+		$attributes->expects(self::once())
+			->method('getAttribute')
+			->with('permissions', 'download')
+			->willReturn(false);
+
 		$share = $this->createMock(IShare::class);
 		$share->expects(self::once())
-			->method('canSeeContent')
-			->willReturn(false);
+			->method('getAttributes')
+			->willReturn($attributes);
 
 		$storage = $this->createMock(ISharedStorage::class);
 		$storage->expects(self::once())
@@ -214,8 +220,8 @@ class ApiControllerTest extends TestCase {
 	public function testGetThumbnailShared(): void {
 		$share = $this->createMock(IShare::class);
 		$share->expects(self::once())
-			->method('canSeeContent')
-			->willReturn(true);
+			->method('getAttributes')
+			->willReturn(null);
 
 		$storage = $this->createMock(ISharedStorage::class);
 		$storage->expects(self::once())

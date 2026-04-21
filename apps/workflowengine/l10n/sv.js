@@ -49,13 +49,13 @@ OC.L10N.register(
     "Select a filter" : "Välj ett filter",
     "Select a comparator" : "Välj en jämförelse",
     "Remove filter" : "Ta bort filter",
-    "Audio" : "Ljud",
     "Folder" : "Mapp",
     "Images" : "Bilder",
     "Office documents" : "Office-dokument",
     "PDF documents" : "PDF-dokument",
     "Video" : "Film",
     "Custom MIME type" : "Anpassad MIME-typ",
+    "Custom mimetype" : "Anpassad mimetyp",
     "Select a file type" : "Välj en filtyp",
     "e.g. httpd/unix-directory" : "t.ex. httpd/unix-directory",
     "Please enter a valid time span" : "Ange ett giltigt tidsintervall",
@@ -119,7 +119,6 @@ OC.L10N.register(
     "Request user agent" : "Begär användaragent",
     "Group membership" : "Gruppmedlemskap",
     "is member of" : "är medlem i",
-    "is not member of" : "är inte medlem i",
-    "Type to search for group …" : "Skriv för att söka efter grupp ..."
+    "is not member of" : "är inte medlem i"
 },
 "nplurals=2; plural=(n != 1);");

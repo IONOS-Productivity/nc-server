@@ -8,7 +8,7 @@ import type { OCSResponse } from '@nextcloud/typings/ocs'
 import { emit } from '@nextcloud/event-bus'
 import { generateOcsUrl } from '@nextcloud/router'
 import { showError, showLoading, showSuccess } from '@nextcloud/dialogs'
-import { n, t } from '@nextcloud/l10n'
+import { t } from '@nextcloud/l10n'
 import axios, { isAxiosError } from '@nextcloud/axios'
 import PQueue from 'p-queue'
 
@@ -21,8 +21,8 @@ type ConversionResponse = {
 }
 
 interface PromiseRejectedResult<T> {
-	status: 'rejected'
-	reason: T
+    status: 'rejected'
+    reason: T
 }
 
 type PromiseSettledResult<T, E> = PromiseFulfilledResult<T> | PromiseRejectedResult<E>;

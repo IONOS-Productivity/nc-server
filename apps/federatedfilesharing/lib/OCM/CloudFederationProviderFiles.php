@@ -157,7 +157,7 @@ class CloudFederationProviderFiles implements ISignedCloudFederationProvider {
 				$ownerDisplayName = $this->getUserDisplayName($ownerFederatedId);
 
 				$trustedServers = null;
-				if ($this->appManager->isEnabledForAnyone('federation')
+				if ($this->appManager->isInstalled('federation')
 					&& class_exists(TrustedServers::class)) {
 					try {
 						$trustedServers = Server::get(TrustedServers::class);

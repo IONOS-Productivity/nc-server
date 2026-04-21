@@ -195,7 +195,7 @@ class AdminTest extends TestCase {
 			->method('getSystemValueBool')
 			->with('updatechecker', true)
 			->willReturn(true);
-		$this->appConfig
+		$this->config
 			->expects($this->once())
 			->method('getValueArray')
 			->with(Application::APP_NAME, 'notify_groups', ['admin'])
@@ -294,11 +294,11 @@ class AdminTest extends TestCase {
 			->method('getSystemValueBool')
 			->with('updatechecker', true)
 			->willReturn(true);
-		$this->appConfig
-			->expects(self::once())
-			->method('getValueArray')
-			->with(Application::APP_NAME, 'notify_groups', ['admin'])
-			->willReturn(['admin']);
+		$this->config
+			->expects($this->once())
+			->method('getAppValue')
+			->with('updatenotification', 'notify_groups', '["admin"]')
+			->willReturn('["admin"]');
 		$this->config
 			->method('getSystemValue')
 			->willReturnMap([

@@ -18,8 +18,8 @@ OC.L10N.register(
     "Make sure you store the secret key, it cannot be recovered." : "مەخپىي ئاچقۇچنى ساقلىغانلىقىڭىزنى جەزملەشتۈرۈڭ ، ئەسلىگە كەلتۈرگىلى بولمايدۇ.",
     "Add client" : "خېرىدار قوشۇڭ",
     "Add" : "قوش",
-    "Client Identifier" : "خېرىدار تونۇغۇچ",
     "Show client secret" : "خېرىدارلارنىڭ مەخپىيىتىنى كۆرسىتىڭ",
-    "Hide client secret" : "خېرىدارلارنىڭ مەخپىيىتىنى يوشۇرۇش"
+    "Hide client secret" : "خېرىدارلارنىڭ مەخپىيىتىنى يوشۇرۇش",
+    "Delete" : "ئۆچۈر"
 },
 "nplurals=2; plural=(n != 1);");

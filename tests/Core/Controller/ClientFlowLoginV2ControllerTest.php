@@ -170,7 +170,7 @@ class ClientFlowLoginV2ControllerTest extends TestCase {
 
 		$result = $this->controller->showAuthPickerPage();
 
-		$this->assertInstanceOf(StandaloneTemplateResponse::class, $result);
+		$this->assertInstanceOf(Http\StandaloneTemplateResponse::class, $result);
 		$this->assertSame(Http::STATUS_FORBIDDEN, $result->getStatus());
 		$this->assertSame('Please use original client', $result->getParams()['message']);
 	}
@@ -249,7 +249,7 @@ class ClientFlowLoginV2ControllerTest extends TestCase {
 
 		$result = $this->controller->grantPage('stateToken');
 
-		$this->assertInstanceOf(StandaloneTemplateResponse::class, $result);
+		$this->assertInstanceOf(Http\StandaloneTemplateResponse::class, $result);
 		$this->assertSame(Http::STATUS_FORBIDDEN, $result->getStatus());
 		$this->assertSame('Please use original client', $result->getParams()['message']);
 	}
@@ -332,7 +332,7 @@ class ClientFlowLoginV2ControllerTest extends TestCase {
 
 		$result = $this->controller->generateAppPassword('stateToken');
 
-		$this->assertInstanceOf(StandaloneTemplateResponse::class, $result);
+		$this->assertInstanceOf(Http\StandaloneTemplateResponse::class, $result);
 		$this->assertSame(Http::STATUS_FORBIDDEN, $result->getStatus());
 		$this->assertSame('Please use original client', $result->getParams()['message']);
 	}

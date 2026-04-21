@@ -24,7 +24,6 @@ use OCP\Files\Config\IUserMountCache;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
 use OCP\Http\Client\IClientService;
-use OCP\IAppConfig;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -616,12 +615,9 @@ class TaskProcessingTest extends \Test\TestCase {
 			Server::get(IRootFolder::class),
 			$text2imageManager,
 			$this->userMountCache,
-			Server::get(IClientService::class),
-			Server::get(IAppManager::class),
-			$userManager,
-			Server::get(IUserSession::class),
-			Server::get(ICacheFactory::class),
-			Server::get(IFactory::class),
+			\OC::$server->get(IClientService::class),
+			\OC::$server->get(IAppManager::class),
+			\OC::$server->get(ICacheFactory::class),
 		);
 	}
 
@@ -1196,7 +1192,6 @@ class TaskProcessingTest extends \Test\TestCase {
 
 		// Assert
 		self::assertArrayHasKey(ExternalTaskType::ID, $availableTypes);
-		self::assertContains(ExternalTaskType::ID, $this->manager->getAvailableTaskTypeIds());
 		self::assertEquals(ExternalTaskType::ID, $externalProvider->getTaskTypeId(), 'Test Sanity: Provider must handle the Task Type');
 		self::assertEquals('External Task Type via Event', $availableTypes[ExternalTaskType::ID]['name']);
 		// Check if shapes match the external type/provider
@@ -1249,14 +1244,11 @@ class TaskProcessingTest extends \Test\TestCase {
 
 		// Act
 		$availableTypes = $this->manager->getAvailableTaskTypes();
-		$availableTypeIds = $this->manager->getAvailableTaskTypeIds();
 
 		// Assert: Both task types should be available
-		self::assertContains(AudioToImage::ID, $availableTypeIds);
 		self::assertArrayHasKey(AudioToImage::ID, $availableTypes);
 		self::assertEquals(AudioToImage::class, $availableTypes[AudioToImage::ID]['name']);
 
-		self::assertContains(ExternalTaskType::ID, $availableTypeIds);
 		self::assertArrayHasKey(ExternalTaskType::ID, $availableTypes);
 		self::assertEquals('External Task Type via Event', $availableTypes[ExternalTaskType::ID]['name']);
 
@@ -1265,37 +1257,34 @@ class TaskProcessingTest extends \Test\TestCase {
 
 	private function createManagerInstance(): Manager {
 		// Clear potentially cached config values if needed
-		$this->appConfig->deleteKey('core', 'ai.taskprocessing_type_preferences');
+		$this->config->deleteAppValue('core', 'ai.taskprocessing_type_preferences');
 
 		// Re-create Text2ImageManager if its state matters or mocks change
 		$text2imageManager = new \OC\TextToImage\Manager(
 			$this->serverContainer,
 			$this->coordinator,
-			Server::get(LoggerInterface::class),
+			\OC::$server->get(LoggerInterface::class),
 			$this->jobList,
-			Server::get(\OC\TextToImage\Db\TaskMapper::class),
+			\OC::$server->get(\OC\TextToImage\Db\TaskMapper::class),
 			$this->config, // Use the shared config mock
-			Server::get(IAppDataFactory::class),
+			\OC::$server->get(IAppDataFactory::class),
 		);
 
 		return new Manager(
-			$this->appConfig,
+			$this->config,
 			$this->coordinator,
 			$this->serverContainer,
-			Server::get(LoggerInterface::class),
+			\OC::$server->get(LoggerInterface::class),
 			$this->taskMapper,
 			$this->jobList,
 			$this->eventDispatcher, // Use the potentially reconfigured mock
-			Server::get(IAppDataFactory::class),
+			\OC::$server->get(IAppDataFactory::class),
 			$this->rootFolder,
 			$text2imageManager,
 			$this->userMountCache,
-			Server::get(IClientService::class),
-			Server::get(IAppManager::class),
-			Server::get(IUserManager::class),
-			Server::get(IUserSession::class),
-			Server::get(ICacheFactory::class),
-			Server::get(IFactory::class),
+			\OC::$server->get(IClientService::class),
+			\OC::$server->get(IAppManager::class),
+			\OC::$server->get(ICacheFactory::class),
 		);
 	}
 
@@ -1308,7 +1297,7 @@ class TaskProcessingTest extends \Test\TestCase {
 
 		$this->eventDispatcher->expects($dispatchExpectation)
 			->method('dispatchTyped')
-			->willReturnCallback(function (object $event) use ($providersToAdd, $taskTypesToAdd): void {
+			->willReturnCallback(function (object $event) use ($providersToAdd, $taskTypesToAdd) {
 				if ($event instanceof GetTaskProcessingProvidersEvent) {
 					foreach ($providersToAdd as $providerInstance) {
 						$event->addProvider($providerInstance);

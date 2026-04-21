@@ -71,10 +71,6 @@ abstract class LogDetails {
 		if ($clientReqId !== '') {
 			$entry['clientReqId'] = $clientReqId;
 		}
-		if (\OC::$CLI) {
-			/* Only logging the command, not the parameters */
-			$entry['occ_command'] = array_slice($_SERVER['argv'] ?? [], 0, 2);
-		}
 
 		if (is_array($message)) {
 			// Exception messages are extracted and the exception is put into a separate field

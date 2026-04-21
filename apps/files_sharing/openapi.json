@@ -1875,7 +1875,6 @@
                                     "publicUpload": {
                                         "type": "string",
                                         "nullable": true,
-                                        "default": null,
                                         "enum": [
                                             "true",
                                             "false"

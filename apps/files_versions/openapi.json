@@ -109,8 +109,12 @@
                         "in": "query",
                         "description": "Whether to fallback to the mime icon if no preview is available",
                         "schema": {
-                            "type": "boolean",
-                            "default": false
+                            "type": "integer",
+                            "default": 0,
+                            "enum": [
+                                0,
+                                1
+                            ]
                         }
                     }
                 ],
@@ -148,24 +152,6 @@
                             "Location": {
                                 "schema": {
                                     "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Current user is not logged in",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": [
-                                        "message"
-                                    ],
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
                                 }
                             }
                         }
