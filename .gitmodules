@@ -16,3 +16,15 @@
 [submodule "custom-npms/nc-nextcloud-vue"]
 	path = custom-npms/nc-nextcloud-vue
 	url = git@github.com:IONOS-Productivity/nc-nextcloud-vue.git
+[submodule "apps-custom/simplesettings"]
+	path = apps-custom/simplesettings
+	url = git@github.com:IONOS-Productivity/nc-simplesettings.git
+[submodule "apps-custom/googleanalytics"]
+	path = apps-custom/googleanalytics
+	url = git@github.com:IONOS-Productivity/nc-googleanalytics.git
+[submodule "apps-custom/nc_theming"]
+	path = apps-custom/nc_theming
+	url = git@github.com:IONOS-Productivity/nc-theming.git
+[submodule "apps-custom/nc_ionos_processes"]
+	path = apps-custom/nc_ionos_processes
+	url = git@github.com:IONOS-Productivity/nc-ionos-processes.git
