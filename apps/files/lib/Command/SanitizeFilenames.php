@@ -11,11 +11,8 @@ namespace OCA\Files\Command;
 use Exception;
 use OC\Core\Command\Base;
 use OC\Files\FilenameValidator;
-<<<<<<< HEAD
 use OCA\Files\Service\SettingsService;
 use OCP\AppFramework\Services\IAppConfig;
-=======
->>>>>>> ionos-dev
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotPermittedException;
@@ -32,14 +29,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SanitizeFilenames extends Base {
 
 	private OutputInterface $output;
-<<<<<<< HEAD
 	private ?string $charReplacement;
 	private bool $dryRun;
 	private bool $errorsOrSkipped = false;
-=======
-	private string $charReplacement;
-	private bool $dryRun;
->>>>>>> ionos-dev
 
 	public function __construct(
 		private IUserManager $userManager,
@@ -47,11 +39,8 @@ class SanitizeFilenames extends Base {
 		private IUserSession $session,
 		private IFactory $l10nFactory,
 		private FilenameValidator $filenameValidator,
-<<<<<<< HEAD
 		private SettingsService $service,
 		private IAppConfig $appConfig,
-=======
->>>>>>> ionos-dev
 	) {
 		parent::__construct();
 	}
@@ -59,13 +48,6 @@ class SanitizeFilenames extends Base {
 	protected function configure(): void {
 		parent::configure();
 
-<<<<<<< HEAD
-=======
-		$forbiddenCharacter = $this->filenameValidator->getForbiddenCharacters();
-		$charReplacement = array_diff([' ', '_', '-'], $forbiddenCharacter);
-		$charReplacement = reset($charReplacement) ?: '';
-
->>>>>>> ionos-dev
 		$this
 			->setName('files:sanitize-filenames')
 			->setDescription('Renames files to match naming constraints')
@@ -84,19 +66,12 @@ class SanitizeFilenames extends Base {
 				'c',
 				mode: InputOption::VALUE_REQUIRED,
 				description: 'Replacement for invalid character (by default space, underscore or dash is used)',
-<<<<<<< HEAD
 			);
 
-=======
-				default: $charReplacement,
-			);
-			
->>>>>>> ionos-dev
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int {
 		$this->charReplacement = $input->getOption('char-replacement');
-<<<<<<< HEAD
 		// check if replacement is needed
 		$c = $this->filenameValidator->getForbiddenCharacters();
 		if (count($c) > 0) {
@@ -110,11 +85,6 @@ class SanitizeFilenames extends Base {
 				}
 				return 1;
 			}
-=======
-		if ($this->charReplacement === '' || mb_strlen($this->charReplacement) > 1) {
-			$output->writeln('<error>No character replacement given</error>');
-			return 1;
->>>>>>> ionos-dev
 		}
 
 		$this->dryRun = $input->getOption('dry-run');
@@ -135,13 +105,10 @@ class SanitizeFilenames extends Base {
 			}
 		} else {
 			$this->userManager->callForSeenUsers($this->sanitizeUserFiles(...));
-<<<<<<< HEAD
 			if ($this->service->hasFilesWindowsSupport() && $this->appConfig->getAppValueInt('sanitize_filenames_status') === 0) {
 				// we are done - if this is for sanitizing all users for windows filename support then set this UI flag
 				$this->appConfig->setAppValueInt('sanitize_filenames_status', SettingsService::STATUS_WCF_DONE);
 			}
-=======
->>>>>>> ionos-dev
 		}
 		return self::SUCCESS;
 	}
@@ -162,13 +129,8 @@ class SanitizeFilenames extends Base {
 
 			try {
 				$oldName = $node->getName();
-<<<<<<< HEAD
 				$newName = $this->filenameValidator->sanitizeFilename($oldName, $this->charReplacement);
 				if ($oldName !== $newName) {
-=======
-				if (!$this->filenameValidator->isFilenameValid($oldName)) {
-					$newName = $this->sanitizeName($oldName);
->>>>>>> ionos-dev
 					$newName = $folder->getNonExistingName($newName);
 					$path = rtrim(dirname($node->getPath()), '/');
 
@@ -184,14 +146,9 @@ class SanitizeFilenames extends Base {
 				$this->output->writeln('<comment>skipping: ' . $node->getPath() . ' (file is locked)</>');
 			} catch (NotPermittedException) {
 				$this->output->writeln('<comment>skipping: ' . $node->getPath() . ' (no permissions)</>');
-<<<<<<< HEAD
 			} catch (Exception $error) {
 				$this->output->writeln('<error>failed: ' . $node->getPath() . '</>');
 				$this->output->writeln('<error>' . $error->getMessage() . '</>', OutputInterface::OUTPUT_NORMAL | OutputInterface::VERBOSITY_VERBOSE);
-=======
-			} catch (Exception) {
-				$this->output->writeln('<error>failed: ' . $node->getPath() . '</>');
->>>>>>> ionos-dev
 			}
 
 			if ($node instanceof Folder) {
@@ -200,30 +157,4 @@ class SanitizeFilenames extends Base {
 		}
 	}
 
-<<<<<<< HEAD
-=======
-	private function sanitizeName(string $name): string {
-		$l10n = $this->l10nFactory->get('files');
-
-		foreach ($this->filenameValidator->getForbiddenExtensions() as $extension) {
-			if (str_ends_with($name, $extension)) {
-				$name = substr($name, 0, strlen($name) - strlen($extension));
-			}
-		}
-
-		$basename = substr($name, 0, strpos($name, '.', 1) ?: null);
-		if (in_array($basename, $this->filenameValidator->getForbiddenBasenames())) {
-			$name = str_replace($basename, $l10n->t('%1$s (renamed)', [$basename]), $name);
-		}
-
-		if ($name === '') {
-			$name = $l10n->t('renamed file');
-		}
-
-		$forbiddenCharacter = $this->filenameValidator->getForbiddenCharacters();
-		$name = str_replace($forbiddenCharacter, $this->charReplacement, $name);
-
-		return $name;
-	}
->>>>>>> ionos-dev
 }

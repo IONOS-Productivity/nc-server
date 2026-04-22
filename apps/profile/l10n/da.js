@@ -7,11 +7,7 @@ OC.L10N.register(
     "You have not added any info yet" : "Du har ikke tilføjet nogen information endnu",
     "{user} has not added any info yet" : "{user} har ikke tilføjet nogen oplysninger endnu",
     "Error opening the user status modal, try hard refreshing the page" : "Fejl ved åbning af brugerstatusmodal. Prøv at opdatere siden",
-<<<<<<< HEAD
-    "Edit Profile" : "Redigér profil",
-=======
     "Edit Profile" : "Rediger profil",
->>>>>>> ionos-dev
     "The headline and about sections will show up here" : "Overskriften og om sektionerne vises her",
     "Profile not found" : "Profil ikke fundet",
     "The profile does not exist." : "Profilen eksisterer ikke.",

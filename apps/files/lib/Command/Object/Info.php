@@ -9,13 +9,8 @@ declare(strict_types=1);
 namespace OCA\Files\Command\Object;
 
 use OC\Core\Command\Base;
-<<<<<<< HEAD
-use OCP\Files\IMimeTypeDetector;
-use OCP\Files\ObjectStore\IObjectStoreMetaData;
-=======
 use OC\Files\ObjectStore\IObjectStoreMetaData;
 use OCP\Files\IMimeTypeDetector;
->>>>>>> ionos-dev
 use OCP\Util;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

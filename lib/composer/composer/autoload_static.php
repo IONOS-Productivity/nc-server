@@ -11,32 +11,32 @@ class ComposerStaticInit749170dad3f5e7f9ca158f5a9f04f6a2
     );
 
     public static $prefixLengthsPsr4 = array (
-        'O' =>
+        'O' => 
         array (
             'OC\\Core\\' => 8,
             'OC\\' => 3,
             'OCP\\' => 4,
         ),
-        'N' =>
+        'N' => 
         array (
             'NCU\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'OC\\Core\\' =>
+        'OC\\Core\\' => 
         array (
             0 => __DIR__ . '/../../..' . '/core',
         ),
-        'OC\\' =>
+        'OC\\' => 
         array (
             0 => __DIR__ . '/../../..' . '/lib/private',
         ),
-        'OCP\\' =>
+        'OCP\\' => 
         array (
             0 => __DIR__ . '/../../..' . '/lib/public',
         ),
-        'NCU\\' =>
+        'NCU\\' => 
         array (
             0 => __DIR__ . '/../../..' . '/lib/unstable',
         ),
@@ -1168,6 +1168,7 @@ class ComposerStaticInit749170dad3f5e7f9ca158f5a9f04f6a2
         'OC\\Authentication\\Exceptions\\PasswordlessTokenException' => __DIR__ . '/../../..' . '/lib/private/Authentication/Exceptions/PasswordlessTokenException.php',
         'OC\\Authentication\\Exceptions\\TokenPasswordExpiredException' => __DIR__ . '/../../..' . '/lib/private/Authentication/Exceptions/TokenPasswordExpiredException.php',
         'OC\\Authentication\\Exceptions\\TwoFactorAuthRequiredException' => __DIR__ . '/../../..' . '/lib/private/Authentication/Exceptions/TwoFactorAuthRequiredException.php',
+        'OC\\Authentication\\Exceptions\\UserAgentForbidden' => __DIR__ . '/../../..' . '/lib/private/Authentication/Exceptions/UserAgentForbidden.php',
         'OC\\Authentication\\Exceptions\\UserAlreadyLoggedInException' => __DIR__ . '/../../..' . '/lib/private/Authentication/Exceptions/UserAlreadyLoggedInException.php',
         'OC\\Authentication\\Exceptions\\WipeTokenException' => __DIR__ . '/../../..' . '/lib/private/Authentication/Exceptions/WipeTokenException.php',
         'OC\\Authentication\\Listeners\\LoginFailedListener' => __DIR__ . '/../../..' . '/lib/private/Authentication/Listeners/LoginFailedListener.php',
@@ -1291,6 +1292,7 @@ class ComposerStaticInit749170dad3f5e7f9ca158f5a9f04f6a2
         'OC\\Core\\AppInfo\\Application' => __DIR__ . '/../../..' . '/core/AppInfo/Application.php',
         'OC\\Core\\AppInfo\\Capabilities' => __DIR__ . '/../../..' . '/core/AppInfo/Capabilities.php',
         'OC\\Core\\AppInfo\\ConfigLexicon' => __DIR__ . '/../../..' . '/core/AppInfo/ConfigLexicon.php',
+        'OC\\Core\\Application' => __DIR__ . '/../../..' . '/core/Application.php',
         'OC\\Core\\BackgroundJobs\\BackgroundCleanupUpdaterBackupsJob' => __DIR__ . '/../../..' . '/core/BackgroundJobs/BackgroundCleanupUpdaterBackupsJob.php',
         'OC\\Core\\BackgroundJobs\\CheckForUserCertificates' => __DIR__ . '/../../..' . '/core/BackgroundJobs/CheckForUserCertificates.php',
         'OC\\Core\\BackgroundJobs\\CleanupLoginFlowV2' => __DIR__ . '/../../..' . '/core/BackgroundJobs/CleanupLoginFlowV2.php',
@@ -1747,6 +1749,7 @@ class ComposerStaticInit749170dad3f5e7f9ca158f5a9f04f6a2
         'OC\\Files\\ObjectStore\\AppdataPreviewObjectStoreStorage' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/AppdataPreviewObjectStoreStorage.php',
         'OC\\Files\\ObjectStore\\Azure' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/Azure.php',
         'OC\\Files\\ObjectStore\\HomeObjectStoreStorage' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/HomeObjectStoreStorage.php',
+        'OC\\Files\\ObjectStore\\IObjectStoreMetaData' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/IObjectStoreMetaData.php',
         'OC\\Files\\ObjectStore\\InvalidObjectStoreConfigurationException' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/InvalidObjectStoreConfigurationException.php',
         'OC\\Files\\ObjectStore\\Mapper' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/Mapper.php',
         'OC\\Files\\ObjectStore\\ObjectStoreScanner' => __DIR__ . '/../../..' . '/lib/private/Files/ObjectStore/ObjectStoreScanner.php',

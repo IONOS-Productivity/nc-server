@@ -12,15 +12,7 @@ use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IWebhookCompatibleEvent;
 
 /**
-<<<<<<<< HEAD:lib/public/Calendar/Events/AbstractCalendarObjectEvent.php
  * @since 32.0.0
-========
- * Class CalendarObjectDeletedEvent
- *
- * @package OCA\DAV\Events
- * @since 20.0.0
- * @deprecated 31.0.2 Use {@see \OCP\Calendar\Events\CalendarObjectDeletedEvent} instead
->>>>>>>> ionos-dev:apps/dav/lib/Events/CalendarObjectDeletedEvent.php
  */
 abstract class AbstractCalendarObjectEvent extends Event implements IWebhookCompatibleEvent {
 

@@ -9,23 +9,17 @@ declare(strict_types=1);
 
 namespace OCA\Theming\Tests\Migration;
 
-<<<<<<< HEAD
 use OCA\Theming\Migration\Version2006Date20240905111627;
 use OCP\BackgroundJob\IJobList;
 use OCP\Config\IUserConfig;
-=======
 use NCU\Config\IUserConfig;
 use OCA\Theming\Migration\Version2006Date20240905111627;
 use OCP\BackgroundJob\IJobList;
->>>>>>> ionos-dev
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use OCP\Migration\IOutput;
-<<<<<<< HEAD
 use OCP\Server;
-=======
->>>>>>> ionos-dev
 use PHPUnit\Framework\MockObject\MockObject;
 use Test\TestCase;
 
@@ -98,19 +92,16 @@ class Version2006Date20240905111627Test extends TestCase {
 			->willReturn(false);
 
 		// Create a user
-<<<<<<< HEAD
 		$manager = Server::get(IUserManager::class);
 		$user = $manager->createUser('theming_legacy', 'theming_legacy');
 		self::assertNotFalse($user);
 		// Set the users theming value to legacy key
 		$config = Server::get(IUserConfig::class);
-=======
 		$manager = \OCP\Server::get(IUserManager::class);
 		$user = $manager->createUser('theming_legacy', 'theming_legacy');
 		self::assertNotFalse($user);
 		// Set the users theming value to legacy key
 		$config = \OCP\Server::get(IUserConfig::class);
->>>>>>> ionos-dev
 		$config->setValueString('theming_legacy', 'theming', 'background_color', 'ffab00');
 
 		// expect some output
@@ -127,11 +118,8 @@ class Version2006Date20240905111627Test extends TestCase {
 		$migration = new Version2006Date20240905111627(
 			$this->jobList,
 			$this->appConfig,
-<<<<<<< HEAD
 			Server::get(IDBConnection::class),
-=======
 			\OCP\Server::get(IDBConnection::class),
->>>>>>> ionos-dev
 		);
 		// Run the migration
 		$migration->changeSchema($output, fn () => null, []);
@@ -160,21 +148,15 @@ class Version2006Date20240905111627Test extends TestCase {
 			->willReturn(false);
 
 		// Create a user
-<<<<<<< HEAD
 		$manager = Server::get(IUserManager::class);
-=======
 		$manager = \OCP\Server::get(IUserManager::class);
->>>>>>> ionos-dev
 		$legacyUser = $manager->createUser('theming_legacy', 'theming_legacy');
 		self::assertNotFalse($legacyUser);
 		$user = $manager->createUser('theming_no_legacy', 'theming_no_legacy');
 		self::assertNotFalse($user);
 		// Set the users theming value to legacy key
-<<<<<<< HEAD
 		$config = Server::get(IUserConfig::class);
-=======
 		$config = \OCP\Server::get(IUserConfig::class);
->>>>>>> ionos-dev
 		$config->setValueString($user->getUID(), 'theming', 'primary_color', '999999');
 		$config->setValueString($user->getUID(), 'theming', 'background_color', '111111');
 		$config->setValueString($legacyUser->getUID(), 'theming', 'background_color', 'ffab00');
@@ -193,11 +175,8 @@ class Version2006Date20240905111627Test extends TestCase {
 		$migration = new Version2006Date20240905111627(
 			$this->jobList,
 			$this->appConfig,
-<<<<<<< HEAD
 			Server::get(IDBConnection::class),
-=======
 			\OCP\Server::get(IDBConnection::class),
->>>>>>> ionos-dev
 		);
 		// Run the migration
 		$migration->changeSchema($output, fn () => null, []);

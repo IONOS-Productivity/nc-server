@@ -18,11 +18,8 @@
 			<template v-if="isAdminOrDelegatedAdmin" #actions>
 				<NcActionText>
 					<template #icon>
-<<<<<<< HEAD
 						<NcIconSvgWrapper :path="mdiAccountGroupOutline" />
-=======
 						<NcIconSvgWrapper :path="mdiAccountGroup" />
->>>>>>> ionos-dev
 					</template>
 					{{ t('settings', 'Create group') }}
 				</NcActionText>
@@ -64,11 +61,7 @@
 import type CancelablePromise from 'cancelable-promise'
 import type { IGroup } from '../views/user-types.d.ts'
 
-<<<<<<< HEAD
-import { mdiAccountGroupOutline, mdiPlus } from '@mdi/js'
-=======
-import { mdiAccountGroup, mdiPlus } from '@mdi/js'
->>>>>>> ionos-dev
+import { mdiAccountGroupOutline, mdiAccountGroup, mdiPlus } from '@mdi/js'
 import { showError } from '@nextcloud/dialogs'
 import { t } from '@nextcloud/l10n'
 import { useElementVisibility } from '@vueuse/core'

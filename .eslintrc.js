@@ -25,7 +25,7 @@ module.exports = {
 		'comma-dangle': 'error',
 		'no-tabs': 'warn',
 		// TODO: make sure we fix this as this is bad vue coding style.
-		// Use proper sync modifier
+		// Use proper sync modifierPOC
 		'vue/no-mutating-props': 'warn',
 		'vue/custom-event-name-casing': ['error', 'kebab-case', {
 			// allows custom xxxx:xxx events formats
