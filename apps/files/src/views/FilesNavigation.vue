@@ -24,7 +24,7 @@
 		<template #footer>
 			<ul class="app-navigation-entry__settings">
 				<!-- User storage usage statistics -->
-				<NavigationQuota />
+				<SidebarQuota />
 
 				<!-- Files settings modal toggle-->
 				<NcAppNavigationItem
@@ -49,7 +49,7 @@ import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
 import IconCog from 'vue-material-design-icons/CogOutline.vue'
 import FilesNavigationList from '../components/FilesNavigationList.vue'
 import FilesNavigationSearch from '../components/FilesNavigationSearch.vue'
-import NavigationQuota from '../components/NavigationQuota.vue'
+import SidebarQuota from '../components/SidebarQuota.vue'
 import FilesAppSettings from './FilesAppSettings.vue'
 import { useViews } from '../composables/useViews.ts'
 import logger from '../logger.ts'
