@@ -15,6 +15,9 @@ node_modules/
 /translationfiles
 /translationtool.phar
 
+# CI/CD generated files
+/.buildnumber
+
 # ignore all apps except core ones
 /apps*/*
 !/apps/cloud_federation_api
@@ -54,6 +57,13 @@ node_modules/
 /apps/files_external/3rdparty/irodsphp/prods/tutorials
 /apps/files_external/3rdparty/irodsphp/prods/test*
 /apps/files_external/tests/config.*.php
+# IONOS: this should not be upstreamed!
+!/apps-external/viewer
+!/apps-external/user_oidc
+!/apps-external/serverinfo
+!/apps-external/groupquota
+!/apps-external/files_downloadlimit
+!/apps-custom/*
 
 # ignore themes except the example and the README
 /themes/*
@@ -130,6 +140,7 @@ nbproject
 # nodejs
 /build/bin
 /build/lib/
+/build/jsdocs/
 /build/integration/output/
 /build/integration/phpserver.log
 /npm-debug.log
