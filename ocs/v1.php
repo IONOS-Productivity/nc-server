@@ -11,6 +11,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/versioncheck.php';
 require_once __DIR__ . '/../lib/base.php';
 
+use OC\Authentication\Exceptions\UserAgentForbidden;
 use OC\OCS\ApiHelper;
 use OC\Route\Router;
 use OC\SystemConfig;
@@ -68,6 +69,8 @@ try {
 } catch (MethodNotAllowedException $e) {
 	ApiHelper::setContentType();
 	http_response_code(405);
+} catch (UserAgentForbidden $ex) {
+	ApiHelper::respond(Http::STATUS_FORBIDDEN, $ex->getMessage());
 } catch (LoginException $e) {
 	ApiHelper::respond(OCSController::RESPOND_UNAUTHORISED, 'Unauthorised');
 } catch (\Exception $e) {
