@@ -36,16 +36,28 @@
 			<legend>{{ t('federatedfilesharing', 'The lookup server is only available for global scale.') }}</legend>
 
 			<NcCheckboxRadioSwitch type="switch"
+<<<<<<< HEAD
 				:checked="lookupServerEnabled"
 				disabled
 				@update:checked="showLookupServerConfirmation">
+=======
+				:checked.sync="lookupServerEnabled"
+				disabled
+				@update:checked="update('lookupServerEnabled', lookupServerEnabled)">
+>>>>>>> ionos-dev
 				{{ t('federatedfilesharing', 'Search global and public address book for people') }}
 			</NcCheckboxRadioSwitch>
 
 			<NcCheckboxRadioSwitch type="switch"
+<<<<<<< HEAD
 				:checked="lookupServerUploadEnabled"
 				disabled
 				@update:checked="showLookupServerUploadConfirmation">
+=======
+				:checked.sync="lookupServerUploadEnabled"
+				disabled
+				@update:checked="update('lookupServerUploadEnabled', lookupServerUploadEnabled)">
+>>>>>>> ionos-dev
 				{{ t('federatedfilesharing', 'Allow people to publish their data to a global and public address book') }}
 			</NcCheckboxRadioSwitch>
 		</fieldset>

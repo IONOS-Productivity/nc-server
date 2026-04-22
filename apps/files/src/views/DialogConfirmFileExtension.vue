@@ -9,8 +9,13 @@ import { t } from '@nextcloud/l10n'
 import { computed, ref } from 'vue'
 import { useUserConfigStore } from '../store/userconfig.ts'
 
+<<<<<<< HEAD
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
+=======
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
+>>>>>>> ionos-dev
 import svgIconCancel from '@mdi/svg/svg/cancel.svg?raw'
 import svgIconCheck from '@mdi/svg/svg/check.svg?raw'
 

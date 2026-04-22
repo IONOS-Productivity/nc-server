@@ -16,7 +16,10 @@ use OCP\EventDispatcher\Event;
 use OCP\IConfig;
 use OCP\L10N\IFactory;
 use OCP\Share\IManager;
+<<<<<<< HEAD
 use OCP\Util;
+=======
+>>>>>>> ionos-dev
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Test\TestCase;
@@ -38,6 +41,7 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->factory = $this->createMock(IFactory::class);
 		$this->initialStateService = $this->createMock(InitialStateService::class);
 		$this->config = $this->createMock(IConfig::class);
+<<<<<<< HEAD
 
 		/* Empty static array to avoid inter-test conflicts */
 		\OC_Util::$styles = [];
@@ -53,6 +57,8 @@ class LoadAdditionalListenerTest extends TestCase {
 		self::invokePrivate(Util::class, 'scripts', [[]]);
 		self::invokePrivate(Util::class, 'scriptDeps', [[]]);
 		self::invokePrivate(Util::class, 'scriptsInit', [[]]);
+=======
+>>>>>>> ionos-dev
 	}
 
 	public function testHandleIgnoresNonMatchingEvent(): void {
@@ -77,7 +83,11 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
 		$this->overwriteService(IConfig::class, $this->config);
 
+<<<<<<< HEAD
 		$scriptsBefore = Util::getScripts();
+=======
+		$scriptsBefore = \OCP\Util::getScripts();
+>>>>>>> ionos-dev
 		$this->assertNotContains('files_sharing/l10n/language_mock', $scriptsBefore);
 		$this->assertNotContains('files_sharing/js/additionalScripts', $scriptsBefore);
 		$this->assertNotContains('files_sharing/js/init', $scriptsBefore);
@@ -87,12 +97,21 @@ class LoadAdditionalListenerTest extends TestCase {
 		$listener->handle($this->event);
 
 		// assert array $scripts contains the expected scripts
+<<<<<<< HEAD
 		$scriptsAfter = Util::getScripts();
+=======
+		$scriptsAfter = \OCP\Util::getScripts();
+>>>>>>> ionos-dev
 		$this->assertContains('files_sharing/l10n/language_mock', $scriptsAfter);
 		$this->assertContains('files_sharing/js/additionalScripts', $scriptsAfter);
 		$this->assertNotContains('files_sharing/js/init', $scriptsAfter);
 
 		$this->assertContains('files_sharing/css/icons', \OC_Util::$styles);
+<<<<<<< HEAD
+=======
+
+		$this->assertTrue(true);
+>>>>>>> ionos-dev
 	}
 
 	public function testHandleWithLoadAdditionalScriptsEventWithShareApiEnabled(): void {
@@ -106,15 +125,60 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->overwriteService(IConfig::class, $this->config);
 		$this->overwriteService(IFactory::class, $this->factory);
 
+<<<<<<< HEAD
 		$scriptsBefore = Util::getScripts();
+=======
+		$scriptsBefore = \OCP\Util::getScripts();
+>>>>>>> ionos-dev
 		$this->assertNotContains('files_sharing/js/init', $scriptsBefore);
 
 		// Util static methods can't be easily mocked, so just ensure no exceptions
 		$listener->handle($this->event);
 
+<<<<<<< HEAD
 		$scriptsAfter = Util::getScripts();
 
 		// assert array $scripts contains the expected scripts
 		$this->assertContains('files_sharing/js/init', $scriptsAfter);
+=======
+		$scriptsAfter = \OCP\Util::getScripts();
+
+		// assert array $scripts contains the expected scripts
+		$this->assertContains('files_sharing/js/init', $scriptsAfter);
+
+		$this->assertTrue(true);
+	}
+
+	public function testProvideInitialStates(): void {
+		$listener = new LoadAdditionalListener();
+
+		// Expect config to be queried for 'sharing.enable_share_accept'
+		$this->config->expects($this->once())
+			->method('getSystemValueBool')
+			->with('sharing.enable_share_accept')
+			->willReturn(true);
+
+		// Expect initial state to be provided with correct values
+		$this->initialStateService->expects($this->once())
+			->method('provideInitialState')
+			->with(
+				'files_sharing',
+				'accept_default',
+				true
+			);
+
+		// Other dependencies required by the listener
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+
+		// Mock the server container to return the correct dependencies
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IConfig::class, $this->config);
+		$this->overwriteService(IFactory::class, $this->factory);
+
+		$listener->handle($this->event);
+
+		$this->assertTrue(true);
+>>>>>>> ionos-dev
 	}
 }

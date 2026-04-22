@@ -12,7 +12,15 @@ use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IWebhookCompatibleEvent;
 
 /**
+<<<<<<<< HEAD:lib/public/Calendar/Events/CalendarObjectMovedEvent.php
  * @since 32.0.0
+========
+ * Class CalendarObjectMovedEvent
+ *
+ * @package OCA\DAV\Events
+ * @since 25.0.0
+ * @deprecated 31.0.2 Use {@see \OCP\Calendar\Events\CalendarObjectMovedEvent} instead
+>>>>>>>> ionos-dev:apps/dav/lib/Events/CalendarObjectMovedEvent.php
  */
 class CalendarObjectMovedEvent extends Event implements IWebhookCompatibleEvent {
 	/**

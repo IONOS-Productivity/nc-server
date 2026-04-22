@@ -115,14 +115,26 @@ describe('files_trashbin: file list actions - empty trashbin', () => {
 
 		it('can cancel the deletion by closing the dialog', async () => {
 			const apiSpy = vi.spyOn(api, 'emptyTrash')
+<<<<<<< HEAD
+=======
+			const dialogSpy = vi.spyOn(ncDialogs, 'showInfo')
+>>>>>>> ionos-dev
 
 			dialogBuilder.build.mockImplementationOnce(() => ({ show: async () => false }))
 			expect(await emptyTrashAction.exec(trashbinView, nodes, root)).toBe(null)
 			expect(apiSpy).not.toBeCalled()
+<<<<<<< HEAD
+=======
+			expect(dialogSpy).toBeCalledWith('Deletion cancelled')
+>>>>>>> ionos-dev
 		})
 
 		it('can cancel the deletion', async () => {
 			const apiSpy = vi.spyOn(api, 'emptyTrash')
+<<<<<<< HEAD
+=======
+			const dialogSpy = vi.spyOn(ncDialogs, 'showInfo')
+>>>>>>> ionos-dev
 
 			dialogBuilder.build.mockImplementationOnce(() => ({
 				show: async () => {
@@ -133,6 +145,10 @@ describe('files_trashbin: file list actions - empty trashbin', () => {
 			}))
 			expect(await emptyTrashAction.exec(trashbinView, nodes, root)).toBe(null)
 			expect(apiSpy).not.toBeCalled()
+<<<<<<< HEAD
+=======
+			expect(dialogSpy).toBeCalledWith('Deletion cancelled')
+>>>>>>> ionos-dev
 		})
 
 		it('will trigger the API request if confirmed', async () => {

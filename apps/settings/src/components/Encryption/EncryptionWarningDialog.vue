@@ -8,8 +8,13 @@ import type { IDialogButton } from '@nextcloud/dialogs'
 
 import { t } from '@nextcloud/l10n'
 import { textExistingFilesNotEncrypted } from './sharedTexts.ts'
+<<<<<<< HEAD
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+=======
+import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
+import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+>>>>>>> ionos-dev
 
 const emit = defineEmits<{
 	(e: 'close', encrypt: boolean): void
@@ -53,9 +58,12 @@ function onUpdateOpen(isOpen: boolean) {
 						{{ t('settings', 'Once encryption is enabled, all files uploaded to the server from that point forward will be encrypted at rest on the server. It will only be possible to disable encryption at a later date if the active encryption module supports that function, and all pre-conditions (e.g. setting a recover key) are met.') }}
 					</li>
 					<li>
+<<<<<<< HEAD
 						{{ t('settings', 'By default a master key for the whole instance will be generated. Please check if that level of access is compliant with your needs.') }}
 					</li>
 					<li>
+=======
+>>>>>>> ionos-dev
 						{{ t('settings', 'Encryption alone does not guarantee security of the system. Please see documentation for more information about how the encryption app works, and the supported use cases.') }}
 					</li>
 					<li>

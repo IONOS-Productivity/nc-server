@@ -7,7 +7,11 @@ import { t } from '@nextcloud/l10n'
 import { deleted, deletedBy, originalLocation } from './columns.ts'
 import { getContents } from '../services/trashbin.ts'
 
+<<<<<<< HEAD
 import svgDelete from '@mdi/svg/svg/trash-can-outline.svg?raw'
+=======
+import svgDelete from '@mdi/svg/svg/delete.svg?raw'
+>>>>>>> ionos-dev
 
 export const TRASHBIN_VIEW_ID = 'trashbin'
 

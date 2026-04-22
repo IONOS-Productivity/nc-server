@@ -5,13 +5,18 @@
 
 <script setup lang="ts">
 import type { OCSResponse } from '@nextcloud/typings/ocs'
+<<<<<<< HEAD
 
 import axios from '@nextcloud/axios'
 import { showError } from '@nextcloud/dialogs'
+=======
+import { showError, spawnDialog } from '@nextcloud/dialogs'
+>>>>>>> ionos-dev
 import { loadState } from '@nextcloud/initial-state'
 import { t } from '@nextcloud/l10n'
 import { confirmPassword } from '@nextcloud/password-confirmation'
 import { generateOcsUrl } from '@nextcloud/router'
+<<<<<<< HEAD
 import { spawnDialog } from '@nextcloud/vue/functions/dialog'
 import { ref } from 'vue'
 import { textExistingFilesNotEncrypted } from './sharedTexts.ts'
@@ -21,6 +26,17 @@ import logger from '../../logger.ts'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcSettingsSection from '@nextcloud/vue/components/NcSettingsSection'
+=======
+import { ref } from 'vue'
+import { textExistingFilesNotEncrypted } from './sharedTexts.ts'
+
+import axios from '@nextcloud/axios'
+import logger from '../../logger.ts'
+
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcSettingsSection from '@nextcloud/vue/dist/Components/NcSettingsSection.js'
+>>>>>>> ionos-dev
 import EncryptionWarningDialog from './EncryptionWarningDialog.vue'
 
 interface EncryptionModule {
