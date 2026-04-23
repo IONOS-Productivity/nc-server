@@ -31,3 +31,9 @@
 [submodule "themes/nc-ionos-theme"]
 	path = themes/nc-ionos-theme
 	url = git@github.com:IONOS-Productivity/nc-ionos-theme.git
+[submodule "apps-external/viewer"]
+	path = apps-external/viewer
+	url = git@github.com:IONOS-Productivity/nc-viewer.git
+[submodule "apps-external/richdocuments"]
+	path = apps-external/richdocuments
+	url = git@github.com:IONOS-Productivity/nc-richdocuments.git
