@@ -28,3 +28,6 @@
 [submodule "apps-custom/nc_ionos_processes"]
 	path = apps-custom/nc_ionos_processes
 	url = git@github.com:IONOS-Productivity/nc-ionos-processes.git
+[submodule "themes/nc-ionos-theme"]
+	path = themes/nc-ionos-theme
+	url = git@github.com:IONOS-Productivity/nc-ionos-theme.git
