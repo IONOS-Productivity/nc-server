@@ -25,18 +25,6 @@
 [submodule "apps-custom/nc_theming"]
 	path = apps-custom/nc_theming
 	url = git@github.com:IONOS-Productivity/nc-theming.git
-[submodule "custom-npms/nc-vue-material-design-icons"]
-	path = custom-npms/nc-vue-material-design-icons
-	url = git@github.com:IONOS-Productivity/nc-vue-material-design-icons.git
-[submodule "custom-npms/nc-mdi-svg"]
-	path = custom-npms/nc-mdi-svg
-	url = git@github.com:IONOS-Productivity/nc-MaterialDesign-SVG.git
-[submodule "custom-npms/nc-mdi-js"]
-	path = custom-npms/nc-mdi-js
-	url = git@github.com:IONOS-Productivity/nc-MaterialDesign-JS.git
-[submodule "custom-npms/nc-nextcloud-vue"]
-	path = custom-npms/nc-nextcloud-vue
-	url = git@github.com:IONOS-Productivity/nc-nextcloud-vue.git
 [submodule "apps-custom/nc_ionos_processes"]
 	path = apps-custom/nc_ionos_processes
 	url = git@github.com:IONOS-Productivity/nc-ionos-processes.git
