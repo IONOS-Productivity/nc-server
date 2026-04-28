@@ -16,7 +16,6 @@ name: SBOM generation (matrix)
 # - Repository secrets:
 #   * DEPENDENCY_TRACK_API_KEY: API key for Dependency Track instance
 #   * IONOS_CA: CA certificate for secure communication
-#   * FONTAWESOME_PACKAGE_TOKEN: Token for FontAwesome packages
 # - Repository variables:
 #   * DEPENDENCY_TRACK_BASE_URL: Base URL of Dependency Track instance
 #   * DT_OBJECT_*: Project IDs for each component in Dependency Track
@@ -259,14 +258,7 @@ jobs:
       - name: Install NPM dependencies
         if: matrix.component.npm_output
         working-directory: ${{ matrix.component.path }}
-        env:
-          FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
         run: |
-          if [ "${{ matrix.component.name }}" == "nextcloud" ]; then
-            cd custom-npms/nc-mdi-js && npm ci && cd ../..
-            cd custom-npms/nc-vue-material-design-icons && npm ci && cd ../..
-            cd custom-npms/nc-nextcloud-vue && npm ci && cd ../..
-          fi
           npm ci
 
       - name: Generate SBOM (NPM)
