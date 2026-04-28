@@ -13,7 +13,6 @@ on:
     paths:
       - '.github/workflows/**'
       - 'src/**'
-      - 'custom-npms/**'
       - 'apps/**'
       - 'apps/**/appinfo/info.xml'
       - 'apps-custom/**'
@@ -199,7 +198,7 @@ jobs:
         run: php -i && php -m
 
       - name: Build Nextcloud
-        run: make -f IONOS/Makefile build_nextcloud FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+        run: make -f IONOS/Makefile build_nextcloud
 
       - name: Install dependencies & build simplesettings app
         env:
