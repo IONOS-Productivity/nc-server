@@ -347,6 +347,16 @@ jobs:
           echo "cache_key=${EFFECTIVE_VERSION}-app-build-${APP_NAME}-${SHORT_SHA}" >> $GITHUB_OUTPUT
           echo "archive_name=${APP_NAME}-${SHORT_SHA}.tar.gz" >> $GITHUB_OUTPUT
 
+      - name: Get Job data
+        id: get_job_data
+        continue-on-error: true
+        uses: ./.github/actions/get-job-data
+        with:
+          job-name: 'build-apps (${{ matrix.app_info.name }}, ${{ matrix.app_info.sha }})'
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
+
       - name: Upload ${{ matrix.app_info.name }} to JFrog
         if: steps.jfrog-creds.outputs.available == 'true'
         run: |
@@ -368,8 +378,18 @@ jobs:
           echo "Archive size: $(ls -lh "$ARCHIVE_NAME" | awk '{print $5}')"
           echo "Uploading to: $JFROG_PATH"
 
-          if jf rt upload "$ARCHIVE_NAME" "$JFROG_PATH" \
-            --target-props "app.name=${APP_NAME};app.sha=${APP_SHA};vcs.branch=${{ github.ref_name }};vcs.revision=${{ github.sha }}"; then
+          JFROG_PROPS_LIST=()
+          JFROG_PROPS_LIST+=("app.name=${APP_NAME}")
+          JFROG_PROPS_LIST+=("app.sha=${APP_SHA}")
+          JFROG_PROPS_LIST+=("vcs.branch=${{ github.ref_name }}")
+          JFROG_PROPS_LIST+=("vcs.revision=${{ github.sha }}")
+          JOB_URL="${{ steps.get_job_data.outputs.job_html_url }}"
+          if [ -n "$JOB_URL" ]; then
+            JFROG_PROPS_LIST+=("job.html_url=${JOB_URL}")
+          fi
+          JFROG_PROPS=$(IFS=';'; printf '%s' "${JFROG_PROPS_LIST[*]}")
+
+          if jf rt upload "$ARCHIVE_NAME" "$JFROG_PATH" --target-props "$JFROG_PROPS"; then
             echo "✅ Uploaded $APP_NAME to JFrog"
             echo "Verifying upload..."
             if jf rt s "$JFROG_PATH" 2>/dev/null | grep -q "$JFROG_PATH"; then
@@ -641,6 +661,12 @@ jobs:
               exit 1
           fi
 
+      # Checkout is required to access the local composite action at ./.github/actions/get-job-data
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        with:
+          fetch-depth: 1
+
       - name: Download artifact zip
         uses: actions/download-artifact@v4
         with:
@@ -657,6 +683,16 @@ jobs:
         run: |
           # Ping the server
           jf rt ping
+
+      - name: Get Job data
+        id: get_job_data
+        continue-on-error: true
+        uses: ./.github/actions/get-job-data
+        with:
+          job-name: 'Push to artifactory'
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
 
       - name: Upload build to artifactory
         id: artifactory_upload
@@ -680,6 +716,16 @@ jobs:
 
           export PATH_TO_LATEST_ARTIFACT="${PATH_TO_DIRECTORY}/${PATH_TO_FILE}"
 
+          JFROG_PROPS_LIST=()
+          JFROG_PROPS_LIST+=("hdnext.nc_version=${{ needs.hidrive-next-build.outputs.NC_VERSION }}")
+          JFROG_PROPS_LIST+=("vcs.branch=${{ github.ref }}")
+          JFROG_PROPS_LIST+=("vcs.revision=${{ github.sha }}")
+          JOB_URL="${{ steps.get_job_data.outputs.job_html_url }}"
+          if [ -n "$JOB_URL" ]; then
+            JFROG_PROPS_LIST+=("job.html_url=${JOB_URL}")
+          fi
+          JFROG_PROPS=$(IFS=';'; printf '%s' "${JFROG_PROPS_LIST[*]}")
+
           # Upload with retry logic (3 attempts with exponential backoff: 10s, 20s)
           MAX_ATTEMPTS=3
           ATTEMPT=1
@@ -692,7 +738,7 @@ jobs:
             if jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" \
               --build-name "${{ env.BUILD_NAME }}" \
               --build-number ${{ github.run_number }} \
-              --target-props "hdnext.nc_version=${{ needs.hidrive-next-build.outputs.NC_VERSION }};vcs.branch=${{ github.ref }};vcs.revision=${{ github.sha }}" \
+              --target-props "$JFROG_PROPS" \
               $PATH_TO_LATEST_ARTIFACT; then
               UPLOAD_SUCCESS=true
               echo "✅ Upload successful on attempt $ATTEMPT"
