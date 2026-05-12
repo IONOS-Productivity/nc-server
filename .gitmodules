@@ -39,4 +39,4 @@
 	url = git@github.com:nextcloud/files_downloadlimit.git
 [submodule "IONOS"]
 	path = IONOS
-	url = git@github.com:IONOS-Productivity/easystorage-config.git
+	url = git@github.com:IONOS-Productivity/nc-config.git
