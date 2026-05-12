@@ -419,6 +419,15 @@ jobs:
           path: ${{ steps.app-config.outputs.path }}
           key: ${{ steps.app-cache-key.outputs.cache_key }}
 
+      - name: Upload ${{ matrix.app_info.name }} build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: app-build-${{ matrix.app_info.name }}
+          path: |
+            ${{ steps.app-config.outputs.path }}
+            !${{ steps.app-config.outputs.path }}/node_modules
+
       - name: Show changes on failure
         if: failure()
         run: |
