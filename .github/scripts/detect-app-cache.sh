@@ -141,15 +141,29 @@ while IFS= read -r app_json; do
   if [ -d "$APP_PATH" ]; then
     CURRENT_SHA=$(git -C "$APP_PATH" rev-parse HEAD 2>/dev/null || echo "")
   else
-    echo "ERROR: $APP_NAME - directory not found at '$APP_PATH'. Submodule not initialised?"
-    echo "| $APP_NAME | N/A | N/A | ❌ Directory not found |" >> "$GITHUB_STEP_SUMMARY"
-    exit 1
+    echo "⊘ $APP_NAME - directory not found at '$APP_PATH' (submodule not initialised?), will build"
+    echo "| $APP_NAME | N/A | N/A | ⊘ Directory not found — will build |" >> "$GITHUB_STEP_SUMMARY"
+    UNKNOWN_SUFFIX="unknown"
+    APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
+      --arg app "$APP_NAME" --arg sha "$UNKNOWN_SUFFIX" \
+      --arg archive_name "${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
+      '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
+    APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
+    continue
   fi
 
   if [ -z "$CURRENT_SHA" ]; then
-    echo "ERROR: $APP_NAME - '$APP_PATH' exists but is not a git repo (cannot determine SHA)."
-    echo "| $APP_NAME | N/A | N/A | ❌ Not a git repo |" >> "$GITHUB_STEP_SUMMARY"
-    exit 1
+    echo "⊘ $APP_NAME - '$APP_PATH' exists but is not a git repo, will build"
+    echo "| $APP_NAME | N/A | N/A | ⊘ Not a git repo — will build |" >> "$GITHUB_STEP_SUMMARY"
+    UNKNOWN_SUFFIX="unknown"
+    APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
+      --arg app "$APP_NAME" --arg sha "$UNKNOWN_SUFFIX" \
+      --arg archive_name "${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
+      '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
+    APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
+    continue
   fi
 
   # Add SHA to the map for all apps (regardless of cache status)
