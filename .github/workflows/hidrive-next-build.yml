@@ -156,10 +156,10 @@ jobs:
               echo "   ✅ Event type is 'push'"
             fi
 
-            VALID_BRANCH_PATTERN='^(ionos-dev|ionos-stable)$'
+            VALID_BRANCH_PATTERN='^(ionos-dev|ionos-stable)$|^rc/.*$|^[^/]+/dev/.*$'
             if [[ ! "${{ github.ref_name }}" =~ $VALID_BRANCH_PATTERN ]]; then
-              echo "- ❌ Branch must be 'ionos-dev' or 'ionos-stable' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
-              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev' or 'ionos-stable')"
+              echo "- ❌ Branch must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
+              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*')"
               WILL_TRIGGER=false
             else
               echo "- ✅ Branch is '\`${{ github.ref_name }}\`'" >> $GITHUB_STEP_SUMMARY
@@ -883,13 +883,14 @@ jobs:
 
     name: Trigger remote workflow
     needs: [ hidrive-next-build, upload-to-artifactory ]
-    # Trigger remote build on "ionos-dev|ionos-stable" branch *push* defined in the on:push:branches
+    # Trigger remote build on "ionos-dev|ionos-stable|rc/*|*/dev/*" branch *push* defined in on:push:branches
     # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable)
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
     if: |
       always() &&
       github.event_name == 'push' &&
-      (github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable') &&
+      (github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.hidrive-next-build.result == 'success' &&
       needs.upload-to-artifactory.result == 'success' &&
       vars.DISABLE_REMOTE_TRIGGER != 'true'
@@ -950,16 +951,22 @@ jobs:
           set -x
 
           # Branch to GitLab Trigger Mapping (see HDNEXT-1373):
-          # | ref_name     | GITLAB_REF | BUILD_TYPE |
-          # |--------------|------------|------------|
-          # | ionos-dev    | main       | dev        |
-          # | ionos-stable | main       | stable     |
+          # | ref_name     | GITLAB_REF | BUILD_TYPE        |
+          # |--------------|------------|-------------------|
+          # | ionos-dev    | main       | dev               |
+          # | ionos-stable | main       | stable            |
+          # | rc/*         | main       | rc                |
+          # | */dev/*      | main       | dev-<branch-pfx>  |
 
           BUILD_TYPE="dev"
 
-          # Override build type for stable branch
-          if [ ${{ github.ref_name }} == "ionos-stable" ]; then
+          if [ "${{ github.ref_name }}" == "ionos-stable" ]; then
               BUILD_TYPE="stable"
+          elif [[ "${{ github.ref_name }}" =~ ^rc/ ]]; then
+              BUILD_TYPE="rc"
+          elif [[ "${{ github.ref_name }}" =~ ^.*/dev/.*$ ]]; then
+              BRANCH_PREFIX=$(echo "${{ github.ref_name }}" | sed 's|/.*||' | sed 's/[^A-Za-z0-9._-]/-/g')
+              BUILD_TYPE="dev-${BRANCH_PREFIX}"
           fi
 
           # Construct source build URL for traceability
