@@ -32,6 +32,8 @@ on:
     branches:
       - ionos-dev
       - ionos-stable
+      - 'rc/**'
+      - '*/dev/*'
   workflow_dispatch:
     inputs:
       force_rebuild:
