@@ -32,6 +32,8 @@ on:
     branches:
       - ionos-dev
       - ionos-stable
+      - 'rc/**'
+      - '*/dev/*'
   workflow_dispatch:
     inputs:
       force_rebuild:
@@ -155,10 +157,10 @@ jobs:
               echo "   ✅ Event type is 'push'"
             fi
 
-            VALID_BRANCH_PATTERN='^(ionos-dev|ionos-stable)$'
+            VALID_BRANCH_PATTERN='^(ionos-dev|ionos-stable)$|^rc/.*$|^[^/]+/dev/.*$'
             if [[ ! "${{ github.ref_name }}" =~ $VALID_BRANCH_PATTERN ]]; then
-              echo "- ❌ Branch must be 'ionos-dev' or 'ionos-stable' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
-              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev' or 'ionos-stable')"
+              echo "- ❌ Branch must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
+              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*')"
               WILL_TRIGGER=false
             else
               echo "- ✅ Branch is '\`${{ github.ref_name }}\`'" >> $GITHUB_STEP_SUMMARY
@@ -656,10 +658,13 @@ jobs:
 
   upload-to-artifactory:
     runs-on: self-hosted
-    # Upload the artifact to the Artifactory repository on PR *OR* on "ionos-dev|ionos-stable" branch push
+    # Upload the artifact to the Artifactory repository on PR *OR* on
+    # "ionos-dev|ionos-stable|rc/*|*/dev/*" branch push *OR* on manual workflow_dispatch
     if: |
       always() &&
-      (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable') &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ||
+       github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.prepare-matrix.result == 'success' &&
       (needs.build-apps.result == 'success' || needs.build-apps.result == 'skipped') &&
       needs.hidrive-next-build.result == 'success'
@@ -735,21 +740,39 @@ jobs:
       - name: Upload build to artifactory
         id: artifactory_upload
         run: |
-          # PR builds are stored in a separate directory as "dev/pr/hidrive-next-pr-<number>.zip"
-          # Push to "ionos-dev" branch is stored as "dev/hidrive-next-<ncVersion>.zip"
+          # Artifactory Build Storage Structure:
+          # | Branch/Event     | Stage Prefix     | Artifact Path                                                                |
+          # |------------------|------------------|------------------------------------------------------------------------------|
+          # | Pull Request     | pr               | pr/hidrive-next-pr-<number>.zip                                              |
+          # | ionos-dev        | dev              | dev/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip         |
+          # | ionos-stable     | stable           | stable/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip      |
+          # | rc/*             | <ref-name>       | rc/<branch>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
+          # | */dev/*          | devs/<prefix>    | devs/<prefix>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
 
           ARTIFACTORY_STAGE_PREFIX="dev"
 
-          # set ARTIFACTORY_STAGE_PREFIX=stable on ionos-stable branch
-          if [ ${{ github.ref_name }} == "ionos-stable" ]; then
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+              ARTIFACTORY_STAGE_PREFIX="pr"
+          elif [ "${{ github.ref_name }}" == "ionos-stable" ]; then
               ARTIFACTORY_STAGE_PREFIX="stable"
+          elif [[ "${{ github.ref_name }}" =~ ^rc/.*$ ]]; then
+              ARTIFACTORY_STAGE_PREFIX="${{ github.ref_name }}"
+          elif [[ "${{ github.ref_name }}" =~ ^.*/dev/.*$ ]]; then
+              BRANCH_PREFIX=$(echo "${{ github.ref_name }}" | sed 's|/.*||' | sed 's/[^A-Za-z0-9._-]/-/g')
+              ARTIFACTORY_STAGE_PREFIX="devs/${BRANCH_PREFIX}"
           fi
 
           export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${ARTIFACTORY_STAGE_PREFIX}"
-          PATH_TO_FILE="pr/hidrive-next-pr-${{ github.event.pull_request.number }}.zip"
 
-          if [ -z "${{ github.event.pull_request.number }}" ]; then
-            PATH_TO_FILE="hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.zip"
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            # PR uploads keep the flat layout (one slot per PR number, top-level pr/)
+            PATH_TO_FILE="hidrive-next-pr-${{ github.event.pull_request.number }}.zip"
+          else
+            # branch uploads nest under <ncVersion>/<shortSha>/ to preserve every build
+            SHORT_SHA="${{ github.sha }}"
+            SHORT_SHA="${SHORT_SHA:0:7}"
+            NC_VERSION="${{ needs.hidrive-next-build.outputs.NC_VERSION }}"
+            PATH_TO_FILE="hidrive-next-${NC_VERSION}/${SHORT_SHA}/hidrive-next-${NC_VERSION}.zip"
           fi
 
           export PATH_TO_LATEST_ARTIFACT="${PATH_TO_DIRECTORY}/${PATH_TO_FILE}"
@@ -818,7 +841,9 @@ jobs:
     needs: [prepare-matrix, build-apps, hidrive-next-build]
     if: |
       always() &&
-      (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable') &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ||
+       github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.prepare-matrix.result == 'success' &&
       (needs.build-apps.result == 'success' || needs.build-apps.result == 'skipped') &&
       needs.hidrive-next-build.result == 'success'
@@ -875,13 +900,14 @@ jobs:
 
     name: Trigger remote workflow
     needs: [ hidrive-next-build, upload-to-artifactory ]
-    # Trigger remote build on "ionos-dev|ionos-stable" branch *push* defined in the on:push:branches
+    # Trigger remote build on "ionos-dev|ionos-stable|rc/*|*/dev/*" branch *push* defined in on:push:branches
     # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable)
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
     if: |
       always() &&
       github.event_name == 'push' &&
-      (github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable') &&
+      (github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.hidrive-next-build.result == 'success' &&
       needs.upload-to-artifactory.result == 'success' &&
       vars.DISABLE_REMOTE_TRIGGER != 'true'
@@ -942,16 +968,22 @@ jobs:
           set -x
 
           # Branch to GitLab Trigger Mapping (see HDNEXT-1373):
-          # | ref_name     | GITLAB_REF | BUILD_TYPE |
-          # |--------------|------------|------------|
-          # | ionos-dev    | main       | dev        |
-          # | ionos-stable | main       | stable     |
+          # | ref_name     | GITLAB_REF | BUILD_TYPE        |
+          # |--------------|------------|-------------------|
+          # | ionos-dev    | main       | dev               |
+          # | ionos-stable | main       | stable            |
+          # | rc/*         | main       | rc                |
+          # | */dev/*      | main       | dev-<branch-pfx>  |
 
           BUILD_TYPE="dev"
 
-          # Override build type for stable branch
-          if [ ${{ github.ref_name }} == "ionos-stable" ]; then
+          if [ "${{ github.ref_name }}" == "ionos-stable" ]; then
               BUILD_TYPE="stable"
+          elif [[ "${{ github.ref_name }}" =~ ^rc/ ]]; then
+              BUILD_TYPE="rc"
+          elif [[ "${{ github.ref_name }}" =~ ^.*/dev/.*$ ]]; then
+              BRANCH_PREFIX=$(echo "${{ github.ref_name }}" | sed 's|/.*||' | sed 's/[^A-Za-z0-9._-]/-/g')
+              BUILD_TYPE="dev-${BRANCH_PREFIX}"
           fi
 
           # Construct source build URL for traceability
