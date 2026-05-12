@@ -316,6 +316,7 @@ jobs:
         if: steps.app-config.outputs.has-composer == 'true'
         uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
         with:
+          php-version: '8.3'
           tools: composer:v2
           extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
         env:
@@ -564,6 +565,7 @@ jobs:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
         with:
+          php-version: '8.3'
           tools: composer:v2
           extensions: gd, zip, curl, xml, xmlrpc, mbstring, sqlite, xdebug, pgsql, intl, imagick, gmp, apcu, bcmath, redis, soap, imap, opcache
         env:
