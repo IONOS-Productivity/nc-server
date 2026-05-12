@@ -50,6 +50,20 @@ on:
         type: string
         default: ''
 
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{
+      github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) ||
+      (
+        (
+          contains(fromJson('["refs/heads/ionos-dev","refs/heads/ionos-stable"]'), github.ref) ||
+          startsWith(github.ref, 'refs/heads/rc/')
+        ) && github.run_id ||
+        github.ref
+      )
+    }}
+  cancel-in-progress: true
+
 env:
   TARGET_PACKAGE_NAME: hidrive-next.zip
   REGISTRY: ghcr.io
