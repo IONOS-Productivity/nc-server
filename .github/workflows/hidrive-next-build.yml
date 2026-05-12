@@ -371,6 +371,12 @@ jobs:
           if jf rt upload "$ARCHIVE_NAME" "$JFROG_PATH" \
             --target-props "app.name=${APP_NAME};app.sha=${APP_SHA};vcs.branch=${{ github.ref_name }};vcs.revision=${{ github.sha }}"; then
             echo "✅ Uploaded $APP_NAME to JFrog"
+            echo "Verifying upload..."
+            if jf rt s "$JFROG_PATH" 2>/dev/null | grep -q "$JFROG_PATH"; then
+              echo "✓ Upload verified — artifact is accessible at $JFROG_PATH"
+            else
+              echo "⚠ Upload reported success but verification search did not find the artifact"
+            fi
           else
             echo "❌ JFrog upload failed"
             exit 1
