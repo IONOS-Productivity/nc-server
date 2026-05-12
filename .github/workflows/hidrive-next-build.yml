@@ -177,6 +177,11 @@ jobs:
           fi
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+      - name: List caches before restore
+        run: gh cache list
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Check JFrog credentials
         id: jfrog-available
         if: github.event.inputs.force_rebuild != 'true'
