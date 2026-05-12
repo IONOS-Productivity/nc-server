@@ -740,13 +740,13 @@ jobs:
         id: artifactory_upload
         run: |
           # Artifactory Build Storage Structure:
-          # | Branch/Event     | Stage Prefix        | Artifact Path                                                  |
-          # |------------------|---------------------|----------------------------------------------------------------|
-          # | Pull Request     | dev                 | dev/pr/hidrive-next-pr-<number>.zip                            |
-          # | ionos-dev        | dev                 | dev/hidrive-next-<ncVersion>.zip                               |
-          # | ionos-stable     | stable              | stable/hidrive-next-<ncVersion>.zip                            |
-          # | rc/*             | <ref-name>          | rc/<branch>/hidrive-next-<ncVersion>.zip                       |
-          # | */dev/*          | dev-<branch-prefix> | dev-<prefix>/hidrive-next-<ncVersion>.zip                      |
+          # | Branch/Event     | Stage Prefix        | Artifact Path                                                                      |
+          # |------------------|---------------------|------------------------------------------------------------------------------------|
+          # | Pull Request     | dev                 | dev/pr/hidrive-next-pr-<number>.zip                                                |
+          # | ionos-dev        | dev                 | dev/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip               |
+          # | ionos-stable     | stable              | stable/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip            |
+          # | rc/*             | <ref-name>          | rc/<branch>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip       |
+          # | */dev/*          | dev-<branch-prefix> | dev-<prefix>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip      |
 
           ARTIFACTORY_STAGE_PREFIX="dev"
 
@@ -760,10 +760,16 @@ jobs:
           fi
 
           export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${ARTIFACTORY_STAGE_PREFIX}"
-          PATH_TO_FILE="pr/hidrive-next-pr-${{ github.event.pull_request.number }}.zip"
 
-          if [ -z "${{ github.event.pull_request.number }}" ]; then
-            PATH_TO_FILE="hidrive-next-${{ needs.hidrive-next-build.outputs.NC_VERSION }}.zip"
+          # PR uploads keep the flat layout (one slot per PR number);
+          # branch uploads nest under <ncVersion>/<shortSha>/ to preserve every build
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            PATH_TO_FILE="pr/hidrive-next-pr-${{ github.event.pull_request.number }}.zip"
+          else
+            SHORT_SHA="${{ github.sha }}"
+            SHORT_SHA="${SHORT_SHA:0:7}"
+            NC_VERSION="${{ needs.hidrive-next-build.outputs.NC_VERSION }}"
+            PATH_TO_FILE="hidrive-next-${NC_VERSION}/${SHORT_SHA}/hidrive-next-${NC_VERSION}.zip"
           fi
 
           export PATH_TO_LATEST_ARTIFACT="${PATH_TO_DIRECTORY}/${PATH_TO_FILE}"
