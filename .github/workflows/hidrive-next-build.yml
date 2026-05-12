@@ -610,6 +610,31 @@ jobs:
       BUILD_NAME: "hidrive_next-snapshot"
 
     steps:
+      - name: Check prerequisites
+        run: |
+          echo "Checking if required secrets are set..."
+          error_count=0
+
+          if [ -z "${{ secrets.JF_ARTIFACTORY_URL }}" ]; then
+            echo "::error::JF_ARTIFACTORY_URL secret is not set"
+            error_count=$((error_count + 1))
+          fi
+
+          if [ -z "${{ secrets.JF_ARTIFACTORY_USER }}" ]; then
+            echo "::error::JF_ARTIFACTORY_USER secret is not set"
+            error_count=$((error_count + 1))
+          fi
+
+          if [ -z "${{ secrets.JF_ACCESS_TOKEN }}" ]; then
+            echo "::error::JF_ACCESS_TOKEN secret is not set"
+            error_count=$((error_count + 1))
+          fi
+
+          if [ $error_count -ne 0 ]; then
+              echo "::error::Required secrets are not set. Aborting."
+              exit 1
+          fi
+
       - name: Download artifact zip
         uses: actions/download-artifact@v4
         with:
@@ -649,12 +674,39 @@ jobs:
 
           export PATH_TO_LATEST_ARTIFACT="${PATH_TO_DIRECTORY}/${PATH_TO_FILE}"
 
-          # Promote current build to the "latest" dev build
-          jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" \
-          --build-name "${{ env.BUILD_NAME }}" \
-          --build-number ${{ github.run_number }} \
-          --target-props "hdnext.nc_version=${{ needs.hidrive-next-build.outputs.NC_VERSION }};vcs.branch=${{ github.ref }};vcs.revision=${{ github.sha }}" \
-          $PATH_TO_LATEST_ARTIFACT
+          # Upload with retry logic (3 attempts with exponential backoff: 10s, 20s)
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          UPLOAD_SUCCESS=false
+          DELAY_SEC=10
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Upload attempt $ATTEMPT of $MAX_ATTEMPTS..."
+
+            if jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" \
+              --build-name "${{ env.BUILD_NAME }}" \
+              --build-number ${{ github.run_number }} \
+              --target-props "hdnext.nc_version=${{ needs.hidrive-next-build.outputs.NC_VERSION }};vcs.branch=${{ github.ref }};vcs.revision=${{ github.sha }}" \
+              $PATH_TO_LATEST_ARTIFACT; then
+              UPLOAD_SUCCESS=true
+              echo "✅ Upload successful on attempt $ATTEMPT"
+              break
+            else
+              echo "⚠️ Upload attempt $ATTEMPT failed"
+              if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+                echo "Waiting $DELAY_SEC seconds before retry..."
+                sleep $DELAY_SEC
+                DELAY_SEC=$((DELAY_SEC * 2))
+              fi
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ "$UPLOAD_SUCCESS" != "true" ]; then
+            echo "❌ Upload failed after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
 
           echo "ARTIFACTORY_LAST_BUILD_PATH=${PATH_TO_LATEST_ARTIFACT}" >> $GITHUB_OUTPUT
 
