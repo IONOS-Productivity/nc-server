@@ -337,6 +337,15 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: make -f IONOS/Makefile ${{ steps.app-config.outputs.makefile-target }}
 
+      - name: Report build completion
+        if: success()
+        run: |
+          echo "### ✅ Built ${{ matrix.app_info.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **SHA:** \`${{ matrix.app_info.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path:** ${{ steps.app-config.outputs.path }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Success" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
       - name: Compute app cache key
         id: app-cache-key
         run: |
