@@ -657,10 +657,13 @@ jobs:
 
   upload-to-artifactory:
     runs-on: self-hosted
-    # Upload the artifact to the Artifactory repository on PR *OR* on "ionos-dev|ionos-stable" branch push
+    # Upload the artifact to the Artifactory repository on PR *OR* on
+    # "ionos-dev|ionos-stable|rc/*|*/dev/*" branch push *OR* on manual workflow_dispatch
     if: |
       always() &&
-      (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable') &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ||
+       github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.prepare-matrix.result == 'success' &&
       (needs.build-apps.result == 'success' || needs.build-apps.result == 'skipped') &&
       needs.hidrive-next-build.result == 'success'
@@ -736,14 +739,24 @@ jobs:
       - name: Upload build to artifactory
         id: artifactory_upload
         run: |
-          # PR builds are stored in a separate directory as "dev/pr/hidrive-next-pr-<number>.zip"
-          # Push to "ionos-dev" branch is stored as "dev/hidrive-next-<ncVersion>.zip"
+          # Artifactory Build Storage Structure:
+          # | Branch/Event     | Stage Prefix        | Artifact Path                                                  |
+          # |------------------|---------------------|----------------------------------------------------------------|
+          # | Pull Request     | dev                 | dev/pr/hidrive-next-pr-<number>.zip                            |
+          # | ionos-dev        | dev                 | dev/hidrive-next-<ncVersion>.zip                               |
+          # | ionos-stable     | stable              | stable/hidrive-next-<ncVersion>.zip                            |
+          # | rc/*             | <ref-name>          | rc/<branch>/hidrive-next-<ncVersion>.zip                       |
+          # | */dev/*          | dev-<branch-prefix> | dev-<prefix>/hidrive-next-<ncVersion>.zip                      |
 
           ARTIFACTORY_STAGE_PREFIX="dev"
 
-          # set ARTIFACTORY_STAGE_PREFIX=stable on ionos-stable branch
-          if [ ${{ github.ref_name }} == "ionos-stable" ]; then
+          if [ "${{ github.ref_name }}" == "ionos-stable" ]; then
               ARTIFACTORY_STAGE_PREFIX="stable"
+          elif [[ "${{ github.ref_name }}" =~ ^rc/.*$ ]]; then
+              ARTIFACTORY_STAGE_PREFIX="${{ github.ref_name }}"
+          elif [[ "${{ github.ref_name }}" =~ ^.*/dev/.*$ ]]; then
+              BRANCH_PREFIX=$(echo "${{ github.ref_name }}" | sed 's|/.*||' | sed 's/[^A-Za-z0-9._-]/-/g')
+              ARTIFACTORY_STAGE_PREFIX="dev-${BRANCH_PREFIX}"
           fi
 
           export PATH_TO_DIRECTORY="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/${ARTIFACTORY_STAGE_PREFIX}"
