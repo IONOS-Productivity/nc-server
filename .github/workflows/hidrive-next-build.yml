@@ -102,7 +102,7 @@ jobs:
           echo "Effective cache version: $EFFECTIVE_VERSION"
 
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           submodules: true
           fetch-depth: 1
@@ -278,7 +278,7 @@ jobs:
           echo "Building $APP_NAME (SHA: ${{ matrix.app_info.sha }})"
 
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           submodules: true
           fetch-depth: 1
@@ -307,7 +307,7 @@ jobs:
 
       - name: Set up node
         if: steps.app-config.outputs.has-npm == 'true'
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: "package.json"
           cache: 'npm'
@@ -453,7 +453,7 @@ jobs:
     name: hidrive-next-build
     steps:
       - name: Checkout server
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           submodules: true
 
@@ -586,7 +586,7 @@ jobs:
           echo "✅ All apps restored"
 
       - name: Set up node with version from package.json's engines
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: "package.json"
           cache: ${{ github.event.inputs.force_rebuild != 'true' && 'npm' || '' }}
@@ -701,12 +701,12 @@ jobs:
 
       # Checkout is required to access the local composite action at ./.github/actions/get-job-data
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           fetch-depth: 1
 
       - name: Download artifact zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: hidrive_next_build_artifact
 
@@ -825,12 +825,12 @@ jobs:
 
     steps:
       - name: Download artifact zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: hidrive_next_build_artifact
 
       - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -838,7 +838,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
           images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
 
