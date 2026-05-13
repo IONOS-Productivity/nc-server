@@ -101,7 +101,7 @@ jobs:
           echo "Effective cache version: $EFFECTIVE_VERSION"
 
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           submodules: true
           fetch-depth: 1
@@ -277,7 +277,7 @@ jobs:
           echo "Building $APP_NAME (SHA: ${{ matrix.app_info.sha }})"
 
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           submodules: true
           fetch-depth: 1
@@ -452,7 +452,7 @@ jobs:
     name: hidrive-next-build
     steps:
       - name: Checkout server
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           submodules: true
 
@@ -700,7 +700,7 @@ jobs:
 
       # Checkout is required to access the local composite action at ./.github/actions/get-job-data
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.7
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           fetch-depth: 1
 
