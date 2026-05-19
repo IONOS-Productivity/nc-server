@@ -117,6 +117,10 @@ jobs:
           echo "### 🔧 Remote Trigger Configuration" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**DISABLE_REMOTE_TRIGGER value:** \`${{ vars.DISABLE_REMOTE_TRIGGER }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**ENABLE_REMOTE_TRIGGER_USER_DEV value:** \`${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}\`" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}" != "true" ]; then
+            echo "  - 💡 To enable the GitLab trigger for \`*/dev/*\` branches, set repository variable \`ENABLE_REMOTE_TRIGGER_USER_DEV\` to \`true\` at [Settings → Variables → Actions](https://github.com/${{ github.repository }}/settings/variables/actions)." >> $GITHUB_STEP_SUMMARY
+          fi
           echo "**Event type:** \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -124,24 +128,29 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🔧 Remote Trigger Configuration"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "DISABLE_REMOTE_TRIGGER = '${{ vars.DISABLE_REMOTE_TRIGGER }}'"
-          echo "Event type             = '${{ github.event_name }}'"
-          echo "Branch                 = '${{ github.ref_name }}'"
+          echo "DISABLE_REMOTE_TRIGGER         = '${{ vars.DISABLE_REMOTE_TRIGGER }}'"
+          echo "ENABLE_REMOTE_TRIGGER_USER_DEV = '${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}'"
+          if [ "${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}" != "true" ]; then
+            echo "  💡 To enable the GitLab trigger for '*/dev/*' branches,"
+            echo "     set repository variable ENABLE_REMOTE_TRIGGER_USER_DEV to 'true' at:"
+            echo "     https://github.com/${{ github.repository }}/settings/variables/actions"
+          fi
+          echo "Event type                     = '${{ github.event_name }}'"
+          echo "Branch                         = '${{ github.ref_name }}'"
           echo ""
 
           if [ "${{ vars.DISABLE_REMOTE_TRIGGER }}" == "true" ]; then
-            echo "⚠️  Remote trigger is DISABLED"
+            echo "⚠️  DISABLE_REMOTE_TRIGGER='true' — remote trigger is force-disabled"
             echo "    The 'trigger-remote-dev-workflow' job will be SKIPPED"
-            echo "**Status:** ⚠️ Remote trigger is **DISABLED**" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** ⚠️ Remote trigger is **force-disabled** via \`DISABLE_REMOTE_TRIGGER='true'\`" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "The \`trigger-remote-dev-workflow\` job will be skipped." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "To enable, delete the variable or set it to a value other than 'true' at:" >> $GITHUB_STEP_SUMMARY
             echo "https://github.com/${{ github.repository }}/settings/variables/actions" >> $GITHUB_STEP_SUMMARY
           else
-            echo "✅ Remote trigger is ENABLED"
-            echo "   Checking if trigger conditions are met..."
-            echo "**Status:** ✅ Remote trigger is **ENABLED**" >> $GITHUB_STEP_SUMMARY
+            echo "ℹ️  DISABLE_REMOTE_TRIGGER not set — checking trigger conditions..."
+            echo "**Status:** \`DISABLE_REMOTE_TRIGGER\` not set — actual outcome determined by conditions below." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
 
             WILL_TRIGGER=true
@@ -158,6 +167,7 @@ jobs:
             fi
 
             VALID_BRANCH_PATTERN='^(ionos-dev|ionos-stable)$|^rc/.*$|^[^/]+/dev/.*$'
+            USER_DEV_PATTERN='^[^/]+/dev/.*$'
             if [[ ! "${{ github.ref_name }}" =~ $VALID_BRANCH_PATTERN ]]; then
               echo "- ❌ Branch must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
               echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*')"
@@ -165,6 +175,17 @@ jobs:
             else
               echo "- ✅ Branch is '\`${{ github.ref_name }}\`'" >> $GITHUB_STEP_SUMMARY
               echo "   ✅ Branch is '${{ github.ref_name }}'"
+            fi
+
+            if [[ "${{ github.ref_name }}" =~ $USER_DEV_PATTERN ]]; then
+              if [ "${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}" == "true" ]; then
+                echo "- ✅ User-dev branch opt-in (\`ENABLE_REMOTE_TRIGGER_USER_DEV='true'\`)" >> $GITHUB_STEP_SUMMARY
+                echo "   ✅ ENABLE_REMOTE_TRIGGER_USER_DEV='true' — '*/dev/*' trigger is opted in"
+              else
+                echo "- ❌ User-dev branch requires \`ENABLE_REMOTE_TRIGGER_USER_DEV='true'\` (current: \`${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}\`)" >> $GITHUB_STEP_SUMMARY
+                echo "   ❌ '*/dev/*' branch requires ENABLE_REMOTE_TRIGGER_USER_DEV='true' (current: '${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}')"
+                WILL_TRIGGER=false
+              fi
             fi
 
             echo "- ℹ️  All dependent jobs must succeed (checked at job runtime)" >> $GITHUB_STEP_SUMMARY
@@ -901,13 +922,16 @@ jobs:
     name: Trigger remote workflow
     needs: [ hidrive-next-build, upload-to-artifactory ]
     # Trigger remote build on "ionos-dev|ionos-stable|rc/*|*/dev/*" branch *push* defined in on:push:branches
-    # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable)
+    # Can be disabled entirely via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable)
+    # The "*/dev/*" branch class is gated by repository variable 'ENABLE_REMOTE_TRIGGER_USER_DEV'
+    #   (default off — set to 'true' to enable once GitLab supports BUILD_TYPE=dev-<prefix>)
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
     if: |
       always() &&
       github.event_name == 'push' &&
       (github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
-       startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
+       startsWith(github.ref_name, 'rc/') ||
+       (contains(github.ref_name, '/dev/') && vars.ENABLE_REMOTE_TRIGGER_USER_DEV == 'true')) &&
       needs.hidrive-next-build.result == 'success' &&
       needs.upload-to-artifactory.result == 'success' &&
       vars.DISABLE_REMOTE_TRIGGER != 'true'
@@ -973,7 +997,7 @@ jobs:
           # | ionos-dev    | main       | dev               |
           # | ionos-stable | main       | stable            |
           # | rc/*         | main       | rc                |
-          # | */dev/*      | main       | dev-<branch-pfx>  |
+          # | */dev/*      | main       | dev-<branch-pfx>  | (opt-in via ENABLE_REMOTE_TRIGGER_USER_DEV)
 
           BUILD_TYPE="dev"
 
