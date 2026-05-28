@@ -265,12 +265,39 @@ jobs:
           fi
           JFROG_PROPS=$(IFS=';'; printf '%s' "${JFROG_PROPS_LIST[*]}")
 
-          # Promote current build to the "latest" dev build
-          jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" \
-          --build-name "${{ env.BUILD_NAME }}" \
-          --build-number ${{ github.run_number }} \
-          --target-props "$JFROG_PROPS" \
-          $PATH_TO_LATEST_ARTIFACT
+          # Upload with retry logic (3 attempts with exponential backoff: 10s, 20s)
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          UPLOAD_SUCCESS=false
+          DELAY_SEC=10
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Upload attempt $ATTEMPT of $MAX_ATTEMPTS..."
+
+            if jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" \
+              --build-name "${{ env.BUILD_NAME }}" \
+              --build-number ${{ github.run_number }} \
+              --target-props "$JFROG_PROPS" \
+              $PATH_TO_LATEST_ARTIFACT; then
+              UPLOAD_SUCCESS=true
+              echo "✅ Upload successful on attempt $ATTEMPT"
+              break
+            else
+              echo "⚠️ Upload attempt $ATTEMPT failed"
+              if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+                echo "Waiting $DELAY_SEC seconds before retry..."
+                sleep $DELAY_SEC
+                DELAY_SEC=$((DELAY_SEC * 2))
+              fi
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ "$UPLOAD_SUCCESS" != "true" ]; then
+            echo "❌ Upload failed after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
 
           echo "ARTIFACTORY_LAST_BUILD_PATH=${PATH_TO_LATEST_ARTIFACT}" >> $GITHUB_OUTPUT
 
