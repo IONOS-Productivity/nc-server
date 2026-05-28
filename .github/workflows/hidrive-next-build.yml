@@ -175,6 +175,31 @@ jobs:
       BUILD_NAME: "hidrive_next-snapshot"
 
     steps:
+      - name: Check prerequisites
+        run: |
+          echo "Checking if required secrets are set..."
+          error_count=0
+
+          if [ -z "${{ secrets.JF_ARTIFACTORY_URL }}" ]; then
+            echo "::error::JF_ARTIFACTORY_URL secret is not set"
+            error_count=$((error_count + 1))
+          fi
+
+          if [ -z "${{ secrets.JF_ARTIFACTORY_USER }}" ]; then
+            echo "::error::JF_ARTIFACTORY_USER secret is not set"
+            error_count=$((error_count + 1))
+          fi
+
+          if [ -z "${{ secrets.JF_ACCESS_TOKEN }}" ]; then
+            echo "::error::JF_ACCESS_TOKEN secret is not set"
+            error_count=$((error_count + 1))
+          fi
+
+          if [ $error_count -ne 0 ]; then
+              echo "::error::Required secrets are not set. Aborting."
+              exit 1
+          fi
+
       - name: Download artifact zip
         uses: actions/download-artifact@v4
         with:
