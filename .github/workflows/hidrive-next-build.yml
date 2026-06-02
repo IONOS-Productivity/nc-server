@@ -30,6 +30,7 @@ on:
       - '.gitmodules'
   push:
     branches:
+      # NC_BRANCH_VERSION literal — env/vars not allowed in `on:` (see env block)
       - ionos-dev-v30
       - ionos-stable-v30
       - 'rc/**'
@@ -39,6 +40,9 @@ on:
 # of the same source branch, so a `*/dev/*` branch with an open PR does not
 # produce two parallel runs. Protected branches (ionos-dev/stable/rc/*) use a
 # unique-per-run-id key so consecutive pushes never cancel each other.
+#
+# NOTE: ionos-dev-v30 / ionos-stable-v30 below are NC_BRANCH_VERSION literals —
+# env/vars are not allowed inside a `concurrency:` expression (see env block).
 concurrency:
   group: >-
     ${{ github.workflow }}-${{
@@ -55,6 +59,21 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
+  # ┌─ NC MAJOR VERSION ──────────────────────────────────────────────────────┐
+  # │ Branch-name version suffix (e.g. "v30" -> ionos-dev-v30/ionos-stable-v30).│
+  # │ Kept in the workflow file (not a repo variable) so each branch can carry  │
+  # │ its own version. Used directly in step run: scripts via env.NC_BRANCH_VERSION.
+  # │                                                                           │
+  # │ GitHub Actions does NOT allow env/vars in `on:`, `concurrency:` or        │
+  # │ job-level `if:`, so the value is ALSO hardcoded in these spots — bump     │
+  # │ them together with the value below:                                       │
+  # │   - on.push.branches            (ionos-dev-v30 / ionos-stable-v30)        │
+  # │   - concurrency.group fromJson  (refs/heads/ionos-dev-v30 / ...-stable-v30)│
+  # │   - upload-to-artifactory  if:  (github.ref_name checks)                  │
+  # │   - push-to-ghcr.io        if:  (github.ref_name checks)                  │
+  # │   - trigger-remote-dev     if:  (github.ref_name checks)                  │
+  # └───────────────────────────────────────────────────────────────────────────┘
+  NC_BRANCH_VERSION: v30
 
 permissions:
   contents: read
@@ -114,10 +133,10 @@ jobs:
               echo "   ✅ Event type is 'push'"
             fi
 
-            VALID_BRANCH_PATTERN='^(ionos-dev-v30|ionos-stable-v30)$'
+            VALID_BRANCH_PATTERN="^(ionos-dev-${{ env.NC_BRANCH_VERSION }}|ionos-stable-${{ env.NC_BRANCH_VERSION }})$"
             if [[ ! "${{ github.ref_name }}" =~ $VALID_BRANCH_PATTERN ]]; then
-              echo "- ❌ Branch must be 'ionos-dev-v30' or 'ionos-stable-v30' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
-              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev' or 'ionos-stable')"
+              echo "- ❌ Branch must be 'ionos-dev-${{ env.NC_BRANCH_VERSION }}' or 'ionos-stable-${{ env.NC_BRANCH_VERSION }}' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
+              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev-${{ env.NC_BRANCH_VERSION }}' or 'ionos-stable-${{ env.NC_BRANCH_VERSION }}')"
               WILL_TRIGGER=false
             else
               echo "- ✅ Branch is '\`${{ github.ref_name }}\`'" >> $GITHUB_STEP_SUMMARY
@@ -261,6 +280,8 @@ jobs:
   upload-to-artifactory:
     runs-on: self-hosted
     # Upload the artifact to the Artifactory repository on PR *OR* on "ionos-dev-v30|ionos-stable-v30" branch push defined in the on:push:branches
+    # NOTE: ionos-dev-v30 / ionos-stable-v30 are NC_BRANCH_VERSION literals —
+    # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
       (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev-v30' || github.ref_name == 'ionos-stable-v30') &&
@@ -350,7 +371,7 @@ jobs:
 
           if [ -n "${{ github.event.pull_request.number }}" ]; then
               ARTIFACTORY_STAGE_PREFIX="pr"
-          elif [ "${{ github.ref_name }}" == "ionos-stable-v30" ]; then
+          elif [ "${{ github.ref_name }}" == "ionos-stable-${{ env.NC_BRANCH_VERSION }}" ]; then
               ARTIFACTORY_STAGE_PREFIX="stable"
           elif [[ "${{ github.ref_name }}" =~ ^rc/.*$ ]]; then
               ARTIFACTORY_STAGE_PREFIX="${{ github.ref_name }}"
@@ -436,6 +457,8 @@ jobs:
 
     name: Push artifact to ghcr.io
     needs: [prepare-matrix, hidrive-next-build]
+    # NOTE: ionos-dev-v30 / ionos-stable-v30 are NC_BRANCH_VERSION literals —
+    # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
       (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev-v30' || github.ref_name == 'ionos-stable-v30') &&
@@ -497,6 +520,8 @@ jobs:
     # Trigger remote build on "ionos-dev|ionos-stable|rc/*|*/dev/*" branch *push* defined in on:push:branches
     # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable)
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
+    # NOTE: ionos-dev-v30 / ionos-stable-v30 are NC_BRANCH_VERSION literals —
+    # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
       github.event_name == 'push' &&
@@ -563,16 +588,16 @@ jobs:
           set -x
 
           # Branch to GitLab Trigger Mapping (see HDNEXT-1373):
-          # | ref_name     | GITLAB_REF | BUILD_TYPE        |
-          # |--------------|------------|-------------------|
-          # | ionos-dev    | main       | dev               |
-          # | ionos-stable | main       | stable            |
-          # | rc/*         | main       | rc                |
-          # | */dev/*      | main       | dev-<branch-pfx>  |
+          # | ref_name         | GITLAB_REF | BUILD_TYPE        |
+          # |------------------|------------|-------------------|
+          # | ionos-dev-v30    | main       | dev               |
+          # | ionos-stable-v30 | main       | stable            |
+          # | rc/*             | main       | rc                |
+          # | */dev/*          | main       | dev-<branch-pfx>  |
 
           BUILD_TYPE="dev"
 
-          if [ "${{ github.ref_name }}" == "ionos-stable" ]; then
+          if [ "${{ github.ref_name }}" == "ionos-stable-${{ env.NC_BRANCH_VERSION }}" ]; then
               BUILD_TYPE="stable"
           elif [[ "${{ github.ref_name }}" =~ ^rc/ ]]; then
               BUILD_TYPE="rc"
@@ -581,7 +606,12 @@ jobs:
               BUILD_TYPE="dev-${BRANCH_PREFIX}"
           fi
 
-          # Call webhook
+          # Disable command echo before the webhook call so the GitLab token
+          # passed via --form is not written to the job logs by xtrace.
+          set +x
+
+          # Call webhook (GitLab pipeline trigger always targets ref "main";
+          # the branch is distinguished downstream via the BUILD_TYPE variable)
           curl \
           --silent \
           --insecure \
@@ -589,15 +619,13 @@ jobs:
           --fail-with-body \
           -o response.json \
           --form token=${{ secrets.GITLAB_TOKEN }} \
-          --form ref="${GITLAB_BRANCH}" \
+          --form ref="main" \
           --form "variables[GITHUB_SHA]=${{ github.sha }}" \
           --form "variables[ARTIFACTORY_LAST_BUILD_PATH]=${{ needs.upload-to-artifactory.outputs.ARTIFACTORY_LAST_BUILD_PATH }}" \
           --form "variables[NC_VERSION]=${{ needs.hidrive-next-build.outputs.NC_VERSION }}" \
           --form "variables[BUILD_ID]=${{ github.run_id }}" \
+          --form "variables[BUILD_TYPE]=${BUILD_TYPE}" \
           "${{ secrets.GITLAB_TRIGGER_URL }}" || ( RETCODE="$?"; jq . response.json; exit "$RETCODE" )
-
-          # Disable command echo
-          set +x
 
           # Print and parse json
           # jq . response.json
