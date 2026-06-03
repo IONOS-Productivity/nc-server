@@ -664,7 +664,7 @@ jobs:
           echo "NC_VERSION=$NC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Upload artifact result for job hidrive-next-build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           retention-days: 30
           name: hidrive_next_build_artifact
@@ -732,12 +732,12 @@ jobs:
           fetch-depth: 1
 
       - name: Download artifact zip
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hidrive_next_build_artifact
 
       # This action sets up the JFrog CLI with the Artifactory URL and access token
-      - uses: jfrog/setup-jfrog-cli@v4
+      - uses: jfrog/setup-jfrog-cli@1641575d87647fb969c0545f0b6a76873e328b7c # v5.0.0
         env:
           JF_URL: ${{ secrets.JF_ARTIFACTORY_URL }}
           JF_USER: ${{ secrets.JF_ARTIFACTORY_USER }}
@@ -871,7 +871,7 @@ jobs:
 
     steps:
       - name: Download artifact zip
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hidrive_next_build_artifact
 
