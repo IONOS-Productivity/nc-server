@@ -621,7 +621,7 @@ jobs:
         run: make --version && node --version && npm --version
 
       - name: Setup PHP with PECL extension
-        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 #v2.31.1
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 # 2.31.1
         with:
           php-version: '8.3'
           tools: composer:v2
@@ -903,7 +903,7 @@ jobs:
           EOF
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           push: true
