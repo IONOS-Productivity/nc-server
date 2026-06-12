@@ -610,10 +610,6 @@ jobs:
           SOURCE_BUILD_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo "Source Build URL: $SOURCE_BUILD_URL"
 
-          # Disable command echo before the webhook call so the GitLab token
-          # passed via --form is not written to the job logs by xtrace.
-          set +x
-
           # Call webhook (GitLab pipeline trigger always targets ref "main";
           # the branch is distinguished downstream via the BUILD_TYPE variable)
           curl \
