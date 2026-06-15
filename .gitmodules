@@ -40,3 +40,6 @@
 [submodule "IONOS"]
 	path = IONOS
 	url = git@github.com:IONOS-Productivity/nc-config.git
+[submodule "apps-external/notify_push"]
+	path = apps-external/notify_push
+	url = git@github.com:nextcloud/notify_push.git
