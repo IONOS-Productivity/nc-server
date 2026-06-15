@@ -233,6 +233,9 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: true
         run: make -f IONOS/Makefile build_dep_ionos_theme
 
+      - name: Install and build notify_push app
+        run: make -f IONOS/Makefile build_notify_push_app
+
       - name: Add config partials
         run: make -f IONOS/Makefile add_config_partials
 
