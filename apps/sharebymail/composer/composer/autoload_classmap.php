@@ -8,6 +8,10 @@ $baseDir = $vendorDir;
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'OCA\\ShareByMail\\Activity' => $baseDir . '/../lib/Activity.php',
+    'OCA\\ShareByMail\\Event\\AbstractBeforeShareMailSentEvent' => $baseDir . '/../lib/Event/AbstractBeforeShareMailSentEvent.php',
+    'OCA\\ShareByMail\\Event\\BeforeShareMailSentEvent' => $baseDir . '/../lib/Event/BeforeShareMailSentEvent.php',
+    'OCA\\ShareByMail\\Event\\BeforeShareNoteMailSentEvent' => $baseDir . '/../lib/Event/BeforeShareNoteMailSentEvent.php',
+    'OCA\\ShareByMail\\Event\\BeforeSharePasswordMailSentEvent' => $baseDir . '/../lib/Event/BeforeSharePasswordMailSentEvent.php',
     'OCA\\ShareByMail\\AppInfo\\Application' => $baseDir . '/../lib/AppInfo/Application.php',
     'OCA\\ShareByMail\\Capabilities' => $baseDir . '/../lib/Capabilities.php',
     'OCA\\ShareByMail\\Settings\\Admin' => $baseDir . '/../lib/Settings/Admin.php',
