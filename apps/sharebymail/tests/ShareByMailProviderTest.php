@@ -23,6 +23,7 @@ use OCP\Mail\IEMailTemplate;
 use OCP\Mail\IMailer;
 use OCP\Mail\IMessage;
 use OCA\ShareByMail\Event\BeforeShareMailSentEvent;
+use OCA\ShareByMail\Event\BeforeShareNoteMailSentEvent;
 use OCA\ShareByMail\Event\BeforeSharePasswordMailSentEvent;
 use OCP\Security\Events\GenerateSecurePasswordEvent;
 use OCP\Security\IHasher;
@@ -1930,5 +1931,43 @@ class ShareByMailProviderTest extends TestCase {
 			'sendMailNotification',
 			[$share]
 		);
+	}
+
+	public function testSendNoteDispatchesBeforeShareNoteMailSentEvent(): void {
+		$provider = $this->getInstance();
+		$user = $this->createMock(IUser::class);
+		$user->method('getDisplayName')->willReturn('Mrs. Owner User');
+		$user->method('getEMailAddress')->willReturn('owner@example.com');
+
+		$this->settingsManager->method('replyToInitiator')->willReturn(true);
+		$this->userManager->method('get')->with('OwnerUser')->willReturn($user);
+
+		$message = $this->createMock(Message::class);
+		$this->mailer->method('createMessage')->willReturn($message);
+		$template = $this->createMock(IEMailTemplate::class);
+		$this->mailer->method('createEMailTemplate')->willReturn($template);
+
+		$this->urlGenerator->method('linkToRouteAbsolute')
+			->with('files_sharing.sharecontroller.showShare', ['token' => 'token'])
+			->willReturn('https://example.com/file.txt');
+		$this->defaults->method('getName')->willReturn('UnitTestCloud');
+		$this->defaults->method('getSlogan')->willReturn('Testing like 1990');
+
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($this->isInstanceOf(BeforeShareNoteMailSentEvent::class));
+		$this->mailer->expects($this->once())->method('send')->with($message);
+
+		$node = $this->getMockBuilder(File::class)->getMock();
+		$node->method('getName')->willReturn('file.txt');
+
+		$share = $this->getMockBuilder(IShare::class)->getMock();
+		$share->method('getSharedWith')->willReturn('john@doe.com');
+		$share->method('getSharedBy')->willReturn('OwnerUser');
+		$share->method('getNode')->willReturn($node);
+		$share->method('getNote')->willReturn('This is a note to the recipient');
+		$share->method('getToken')->willReturn('token');
+
+		self::invokePrivate($provider, 'sendNote', [$share]);
 	}
 }
