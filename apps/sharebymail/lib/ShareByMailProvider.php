@@ -509,12 +509,14 @@ class ShareByMailProvider extends DefaultShareProvider implements IShareProvider
 		$message->useTemplate($emailTemplate);
 		$event = new BeforeSharePasswordMailSentEvent($share, $emails, $message, $templateData);
 		$this->eventDispatcher->dispatchTyped($event);
-		if (!$event->isMailHandled()) {
-			$failedRecipients = $this->mailer->send($message);
-			if (!empty($failedRecipients)) {
-				$this->logger->error('Share password mail could not be sent to: ' . implode(', ', $failedRecipients));
-				return false;
-			}
+		if ($event->isMailHandled()) {
+			return true;
+		}
+
+		$failedRecipients = $this->mailer->send($message);
+		if (!empty($failedRecipients)) {
+			$this->logger->error('Share password mail could not be sent to: ' . implode(', ', $failedRecipients));
+			return false;
 		}
 
 		$this->createPasswordSendActivity($share, $shareWith, false);
@@ -648,10 +650,11 @@ class ShareByMailProvider extends DefaultShareProvider implements IShareProvider
 		$message->useTemplate($emailTemplate);
 		$event = new BeforeSharePasswordMailSentEvent($share, [$initiatorEMailAddress], $message, $templateData);
 		$this->eventDispatcher->dispatchTyped($event);
-		if (!$event->isMailHandled()) {
-			$this->mailer->send($message);
+		if ($event->isMailHandled()) {
+			return true;
 		}
 
+		$this->mailer->send($message);
 		$this->createPasswordSendActivity($share, $shareWith, true);
 
 		return true;
