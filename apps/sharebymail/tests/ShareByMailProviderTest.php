@@ -30,6 +30,7 @@ use OCP\Mail\IEMailTemplate;
 use OCP\Mail\IMailer;
 use OCP\Mail\IMessage;
 use OCA\ShareByMail\Event\BeforeShareMailSentEvent;
+use OCA\ShareByMail\Event\BeforeShareNoteMailSentEvent;
 use OCA\ShareByMail\Event\BeforeSharePasswordMailSentEvent;
 use OCP\Security\Events\GenerateSecurePasswordEvent;
 use OCP\Security\IHasher;
@@ -50,6 +51,7 @@ use Test\Traits\EmailValidatorTrait;
  * Class ShareByMailProviderTest
  *
  * @package OCA\ShareByMail\Tests
+ * @group DB
  */
 #[\PHPUnit\Framework\Attributes\Group(name: 'DB')]
 class ShareByMailProviderTest extends TestCase {
@@ -1908,5 +1910,117 @@ class ShareByMailProviderTest extends TestCase {
 			'sendMailNotification',
 			[$share]
 		);
+	}
+
+	public function testSendNoteDispatchesBeforeShareNoteMailSentEvent(): void {
+		$provider = $this->getInstance();
+		$user = $this->createMock(IUser::class);
+		$user->method('getDisplayName')->willReturn('Mrs. Owner User');
+		$user->method('getEMailAddress')->willReturn('owner@example.com');
+
+		$this->settingsManager->method('replyToInitiator')->willReturn(true);
+		$this->userManager->method('get')->with('OwnerUser')->willReturn($user);
+
+		$message = $this->createMock(Message::class);
+		$this->mailer->method('createMessage')->willReturn($message);
+		$template = $this->createMock(IEMailTemplate::class);
+		$this->mailer->method('createEMailTemplate')->willReturn($template);
+
+		$this->urlGenerator->method('linkToRouteAbsolute')
+			->with('files_sharing.sharecontroller.showShare', ['token' => 'token'])
+			->willReturn('https://example.com/file.txt');
+		$this->defaults->method('getName')->willReturn('UnitTestCloud');
+		$this->defaults->method('getSlogan')->willReturn('Testing like 1990');
+
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($this->isInstanceOf(BeforeShareNoteMailSentEvent::class));
+		$this->mailer->expects($this->once())->method('send')->with($message);
+
+		$node = $this->getMockBuilder(File::class)->getMock();
+		$node->method('getName')->willReturn('file.txt');
+
+		$share = $this->getMockBuilder(IShare::class)->getMock();
+		$share->method('getSharedWith')->willReturn('john@doe.com');
+		$share->method('getSharedBy')->willReturn('OwnerUser');
+		$share->method('getNode')->willReturn($node);
+		$share->method('getNote')->willReturn('This is a note to the recipient');
+		$share->method('getToken')->willReturn('token');
+
+		self::invokePrivate($provider, 'sendNote', [$share]);
+	}
+
+	public function testSendPasswordDoesNotCreateActivityWhenMailHandledByListener(): void {
+		$provider = $this->getInstance(['createPasswordSendActivity']);
+
+		$node = $this->createMock(File::class);
+		$node->method('getName')->willReturn('file.txt');
+
+		$share = $this->createMock(IShare::class);
+		$share->method('getSharedWith')->willReturn('recipient@example.com');
+		$share->method('getSharedBy')->willReturn('sender');
+		$share->method('getNode')->willReturn($node);
+		$share->method('getSendPasswordByTalk')->willReturn(false);
+
+		$this->settingsManager->method('sendPasswordByMail')->willReturn(true);
+		$this->defaults->method('getName')->willReturn('TestCloud');
+		$this->defaults->method('getSlogan')->willReturn('');
+
+		$message = $this->createMock(Message::class);
+		$this->mailer->method('createMessage')->willReturn($message);
+		$template = $this->createMock(IEMailTemplate::class);
+		$this->mailer->method('createEMailTemplate')->willReturn($template);
+
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->willReturnCallback(function ($event): void {
+				if ($event instanceof BeforeSharePasswordMailSentEvent) {
+					$event->markMailHandled();
+				}
+			});
+
+		$provider->expects($this->never())->method('createPasswordSendActivity');
+		$this->mailer->expects($this->never())->method('send');
+
+		self::invokePrivate($provider, 'sendPassword', [$share, 'secret', ['recipient@example.com']]);
+	}
+
+	public function testSendPasswordToOwnerDoesNotCreateActivityWhenMailHandledByListener(): void {
+		$provider = $this->getInstance(['createPasswordSendActivity']);
+
+		$node = $this->createMock(File::class);
+		$node->method('getName')->willReturn('file.txt');
+
+		$initiatorUser = $this->createMock(IUser::class);
+		$initiatorUser->method('getDisplayName')->willReturn('Sender User');
+		$initiatorUser->method('getEMailAddress')->willReturn('sender@example.com');
+
+		$share = $this->createMock(IShare::class);
+		$share->method('getSharedWith')->willReturn('recipient@example.com');
+		$share->method('getSharedBy')->willReturn('sender');
+		$share->method('getNode')->willReturn($node);
+
+		$this->userManager->method('get')->with('sender')->willReturn($initiatorUser);
+		$this->defaults->method('getName')->willReturn('TestCloud');
+		$this->defaults->method('getSlogan')->willReturn('');
+		$this->settingsManager->method('replyToInitiator')->willReturn(false);
+
+		$message = $this->createMock(Message::class);
+		$this->mailer->method('createMessage')->willReturn($message);
+		$template = $this->createMock(IEMailTemplate::class);
+		$this->mailer->method('createEMailTemplate')->willReturn($template);
+
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->willReturnCallback(function ($event): void {
+				if ($event instanceof BeforeSharePasswordMailSentEvent) {
+					$event->markMailHandled();
+				}
+			});
+
+		$provider->expects($this->never())->method('createPasswordSendActivity');
+		$this->mailer->expects($this->never())->method('send');
+
+		self::invokePrivate($provider, 'sendPasswordToOwner', [$share, 'secret']);
 	}
 }
