@@ -473,13 +473,6 @@ jobs:
         with:
           name: hidrive_next_build_artifact
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
@@ -500,13 +493,40 @@ jobs:
           COPY --from=builder /builder /app
           EOF
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Write registry credentials for kaniko
+        run: |
+          mkdir -p /tmp/kaniko-config
+          cat > /tmp/kaniko-config/config.json << EOF
+          {
+            "auths": {
+              "${{ env.REGISTRY }}": {
+                "username": "${{ github.actor }}",
+                "password": "${{ secrets.GITHUB_TOKEN }}"
+              }
+            }
+          }
+          EOF
+          chmod 600 /tmp/kaniko-config/config.json
+
+      - name: Build and push Docker image (kaniko)
+        run: |
+          # Convert newline-separated tags to --destination flags
+          DESTINATIONS=$(echo "${{ steps.meta.outputs.tags }}" | sed 's/^/--destination=/' | tr '\n' ' ')
+
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -v "/tmp/kaniko-config:/kaniko/.docker" \
+            gcr.io/kaniko-project/executor:latest \
+            --context=/workspace \
+            --dockerfile=/workspace/Dockerfile \
+            ${DESTINATIONS} \
+            --cache=true \
+            --cache-repo=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/cache \
+            --cache-ttl=24h
+
+      - name: Cleanup registry credentials
+        if: always()
+        run: rm -rf /tmp/kaniko-config
 
       - name: Show changes on failure
         if: failure()
