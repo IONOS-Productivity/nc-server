@@ -286,7 +286,7 @@ jobs:
     # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
-      (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev-v30' || github.ref_name == 'ionos-stable-v30') &&
+      (github.event_name == 'pull_request' || github.ref_name == 'ionos-dev-v30' || github.ref_name == 'ionos-stable-v30' || startsWith(github.ref_name, 'rc/')) &&
       needs.prepare-matrix.result == 'success' &&
       needs.hidrive-next-build.result == 'success'
     name: Push to artifactory
