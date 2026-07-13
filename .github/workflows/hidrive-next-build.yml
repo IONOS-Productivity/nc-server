@@ -544,20 +544,19 @@ jobs:
     # RC-gate: rc/* branches carry no version suffix, so set 'REMOTE_TRIGGER_RC_BRANCH' to the
     #   exact RC branch that should trigger QA (e.g. "rc/web-3.5"). Only one RC at a time.
     #   When promoting a new RC, update the variable to the new branch name.
-    # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable).
+    # */dev/* branches bypass the version gate and are controlled solely by ENABLE_REMOTE_TRIGGER_USER_DEV.
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
-    # NOTE: ionos-dev-v30 / ionos-stable-v30 are NC_BRANCH_VERSION literals —
-    # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
       github.event_name == 'push' &&
-      (github.ref_name == 'ionos-dev-v30' || github.ref_name == 'ionos-stable-v30' ||
+      (startsWith(github.ref_name, 'ionos-dev-v') || startsWith(github.ref_name, 'ionos-stable-v') ||
        startsWith(github.ref_name, 'rc/') ||
        (contains(github.ref_name, '/dev/') && vars.ENABLE_REMOTE_TRIGGER_USER_DEV == 'true')) &&
       needs.hidrive-next-build.result == 'success' &&
       needs.upload-to-artifactory.result == 'success' &&
       vars.DISABLE_REMOTE_TRIGGER != 'true' &&
-      (vars.REMOTE_TRIGGER_NC_VERSION == '' ||
+      (contains(github.ref_name, '/dev/') ||
+       vars.REMOTE_TRIGGER_NC_VERSION == '' ||
        endsWith(github.ref_name, vars.REMOTE_TRIGGER_NC_VERSION) ||
        github.ref_name == vars.REMOTE_TRIGGER_RC_BRANCH)
     steps:
