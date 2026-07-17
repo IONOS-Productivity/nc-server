@@ -26,8 +26,12 @@ beforeEach(() => {
 })
 
 describe('Sharing views definition', () => {
-	test('Default values', () => {
+	test('Default values with pending shares', () => {
 		vi.spyOn(navigation, 'register')
+		vi.spyOn(ncInitialState, 'loadState').mockImplementation((app, key, defaultValue) => {
+			if (app === 'files_sharing' && key === 'has_pending_shares') return true
+			return defaultValue
+		})
 
 		registerSharingViews()
 		const shareOverviewView = navigation.views.find((view) => view.id === 'shareoverview') as View
@@ -71,9 +75,28 @@ describe('Sharing views definition', () => {
 		})
 	})
 
+	test('Pending shares view is not registered when there are no pending shares', () => {
+		vi.spyOn(navigation, 'register')
+		vi.spyOn(ncInitialState, 'loadState').mockImplementation((app, key, defaultValue) => {
+			if (app === 'files_sharing' && key === 'has_pending_shares') return false
+			return defaultValue
+		})
+
+		registerSharingViews()
+		expect(navigation.register).toHaveBeenCalledTimes(6)
+		expect(navigation.views.length).toBe(6)
+
+		const pendingSharesView = navigation.views.find((view) => view.id === 'pendingshares')
+		expect(pendingSharesView).toBeUndefined()
+	})
+
 	test('Shared with others view is not registered if user has no storage quota', () => {
 		vi.spyOn(navigation, 'register')
-		const spy = vi.spyOn(ncInitialState, 'loadState').mockImplementationOnce(() => ({ quota: 0 }))
+		const spy = vi.spyOn(ncInitialState, 'loadState').mockImplementation((app, key, defaultValue) => {
+			if (app === 'files' && key === 'storageStats') return { quota: 0 }
+			if (app === 'files_sharing' && key === 'has_pending_shares') return true
+			return defaultValue
+		})
 
 		expect(navigation.views.length).toBe(0)
 		registerSharingViews()
@@ -95,6 +118,10 @@ describe('Sharing views definition', () => {
 
 describe('Sharing views contents', () => {
 	test('Sharing overview get contents', async () => {
+		vi.spyOn(ncInitialState, 'loadState').mockImplementation((app, key, defaultValue) => {
+			if (app === 'files_sharing' && key === 'has_pending_shares') return true
+			return defaultValue
+		})
 		vi.spyOn(axios, 'get').mockImplementation(async (): Promise<any> => {
 			return {
 				data: {

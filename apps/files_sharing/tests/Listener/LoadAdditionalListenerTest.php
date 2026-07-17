@@ -11,11 +11,14 @@ namespace OCA\Files_Sharing\Tests\Listener;
 
 use OC\InitialStateService;
 use OCA\Files\Event\LoadAdditionalScriptsEvent;
+use OCA\Files_Sharing\External\Manager as ExternalManager;
 use OCA\Files_Sharing\Listener\LoadAdditionalListener;
 use OCP\EventDispatcher\Event;
-use OCP\IConfig;
+use OCP\IUser;
+use OCP\IUserSession;
 use OCP\L10N\IFactory;
 use OCP\Share\IManager;
+use OCP\Share\IShare;
 use OCP\Util;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
@@ -27,7 +30,8 @@ class LoadAdditionalListenerTest extends TestCase {
 	protected IManager&MockObject $shareManager;
 	protected IFactory&MockObject $factory;
 	protected InitialStateService&MockObject $initialStateService;
-	protected IConfig&MockObject $config;
+	protected IUserSession&MockObject $userSession;
+	protected ExternalManager&MockObject $externalManager;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -37,7 +41,8 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->shareManager = $this->createMock(IManager::class);
 		$this->factory = $this->createMock(IFactory::class);
 		$this->initialStateService = $this->createMock(InitialStateService::class);
-		$this->config = $this->createMock(IConfig::class);
+		$this->userSession = $this->createMock(IUserSession::class);
+		$this->externalManager = $this->createMock(ExternalManager::class);
 
 		/* Empty static array to avoid inter-test conflicts */
 		\OC_Util::$styles = [];
@@ -70,12 +75,13 @@ class LoadAdditionalListenerTest extends TestCase {
 
 		$this->shareManager->method('shareApiEnabled')->willReturn(false);
 		$this->factory->method('findLanguage')->willReturn('language_mock');
-		$this->config->method('getSystemValueBool')->willReturn(true);
+		$this->userSession->method('getUser')->willReturn(null);
 
 		$this->overwriteService(IManager::class, $this->shareManager);
 		$this->overwriteService(IFactory::class, $this->factory);
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
-		$this->overwriteService(IConfig::class, $this->config);
+		$this->overwriteService(IUserSession::class, $this->userSession);
+		$this->overwriteService(ExternalManager::class, $this->externalManager);
 
 		$scriptsBefore = Util::getScripts();
 		$this->assertNotContains('files_sharing/l10n/language_mock', $scriptsBefore);
@@ -99,11 +105,12 @@ class LoadAdditionalListenerTest extends TestCase {
 		$listener = new LoadAdditionalListener();
 
 		$this->shareManager->method('shareApiEnabled')->willReturn(true);
-		$this->config->method('getSystemValueBool')->willReturn(true);
+		$this->userSession->method('getUser')->willReturn(null);
 
 		$this->overwriteService(IManager::class, $this->shareManager);
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
-		$this->overwriteService(IConfig::class, $this->config);
+		$this->overwriteService(IUserSession::class, $this->userSession);
+		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
 
 		$scriptsBefore = Util::getScripts();
@@ -118,35 +125,107 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->assertContains('files_sharing/js/init', $scriptsAfter);
 	}
 
-	public function testProvideInitialStates(): void {
+	public function testProvideInitialStatesWithPendingInternalShares(): void {
 		$listener = new LoadAdditionalListener();
 
-		// Expect config to be queried for 'sharing.enable_share_accept'
-		$this->config->expects($this->once())
-			->method('getSystemValueBool')
-			->with('sharing.enable_share_accept')
-			->willReturn(true);
+		$user = $this->createMock(IUser::class);
+		$user->method('getUID')->willReturn('testuser');
+		$this->userSession->method('getUser')->willReturn($user);
 
-		// Expect initial state to be provided with correct values
+		$share = $this->createMock(IShare::class);
+		$share->method('getStatus')->willReturn(IShare::STATUS_PENDING);
+
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+		$this->shareManager->method('getSharedWith')
+			->willReturnCallback(function (string $userId, int $shareType) use ($share) {
+				if ($shareType === IShare::TYPE_USER) {
+					return [$share];
+				}
+				return [];
+			});
+
+		$this->externalManager->method('getOpenShares')->willReturn([]);
+
 		$this->initialStateService->expects($this->once())
 			->method('provideInitialState')
-			->with(
-				'files_sharing',
-				'accept_default',
-				true
-			);
+			->with('files_sharing', 'has_pending_shares', true);
 
-		// Other dependencies required by the listener
-		$this->shareManager->method('shareApiEnabled')->willReturn(true);
-
-		// Mock the server container to return the correct dependencies
 		$this->overwriteService(IManager::class, $this->shareManager);
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
-		$this->overwriteService(IConfig::class, $this->config);
+		$this->overwriteService(IUserSession::class, $this->userSession);
+		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
 
 		$listener->handle($this->event);
+	}
 
-		$this->assertTrue(true);
+	public function testProvideInitialStatesWithPendingRemoteShares(): void {
+		$listener = new LoadAdditionalListener();
+
+		$user = $this->createMock(IUser::class);
+		$user->method('getUID')->willReturn('testuser');
+		$this->userSession->method('getUser')->willReturn($user);
+
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+		$this->shareManager->method('getSharedWith')->willReturn([]);
+
+		$this->externalManager->method('getOpenShares')->willReturn([['id' => 1, 'remote' => 'example.com']]);
+
+		$this->initialStateService->expects($this->once())
+			->method('provideInitialState')
+			->with('files_sharing', 'has_pending_shares', true);
+
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IUserSession::class, $this->userSession);
+		$this->overwriteService(ExternalManager::class, $this->externalManager);
+		$this->overwriteService(IFactory::class, $this->factory);
+
+		$listener->handle($this->event);
+	}
+
+	public function testProvideInitialStatesWithNoPendingShares(): void {
+		$listener = new LoadAdditionalListener();
+
+		$user = $this->createMock(IUser::class);
+		$user->method('getUID')->willReturn('testuser');
+		$this->userSession->method('getUser')->willReturn($user);
+
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+		$this->shareManager->method('getSharedWith')->willReturn([]);
+
+		$this->externalManager->method('getOpenShares')->willReturn([]);
+
+		$this->initialStateService->expects($this->once())
+			->method('provideInitialState')
+			->with('files_sharing', 'has_pending_shares', false);
+
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IUserSession::class, $this->userSession);
+		$this->overwriteService(ExternalManager::class, $this->externalManager);
+		$this->overwriteService(IFactory::class, $this->factory);
+
+		$listener->handle($this->event);
+	}
+
+	public function testProvideInitialStatesWithNoUser(): void {
+		$listener = new LoadAdditionalListener();
+
+		$this->userSession->method('getUser')->willReturn(null);
+
+		$this->initialStateService->expects($this->never())
+			->method('provideInitialState');
+
+		$this->shareManager->method('shareApiEnabled')->willReturn(true);
+
+		$this->overwriteService(IManager::class, $this->shareManager);
+		$this->overwriteService(InitialStateService::class, $this->initialStateService);
+		$this->overwriteService(IUserSession::class, $this->userSession);
+		$this->overwriteService(ExternalManager::class, $this->externalManager);
+		$this->overwriteService(IFactory::class, $this->factory);
+
+		$listener->handle($this->event);
 	}
 }
+

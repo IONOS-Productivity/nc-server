@@ -25,12 +25,12 @@ export const pendingSharesViewId = 'pendingshares'
 export const fileRequestViewId = 'filerequest'
 
 /**
- * Checks if share accept approval required by nextcloud configuration.
+ * Checks if the current user has any pending shares.
  *
- * @returns {boolean} True if share accept approval is required, otherwise false.
+ * @returns {boolean} True if the user has pending shares, otherwise false.
  */
-function isShareAcceptApprovalRequired(): boolean {
-	return loadState('files_sharing', 'accept_default', false)
+function hasPendingShares(): boolean {
+	return loadState('files_sharing', 'has_pending_shares', false)
 }
 
 export default () => {
@@ -146,7 +146,7 @@ export default () => {
 		getContents: () => getContents(false, false, false, true),
 	}))
 
-	if (!isShareAcceptApprovalRequired()) {
+	if (!hasPendingShares()) {
 		return
 	}
 
