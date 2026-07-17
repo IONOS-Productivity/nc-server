@@ -15,6 +15,7 @@ use OCA\Files_Sharing\AppInfo\Application;
 use OCA\Files_Sharing\External\Manager as ExternalManager;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
+use OCP\IConfig;
 use OCP\IUserSession;
 use OCP\Server;
 use OCP\Share\IManager;
@@ -49,8 +50,12 @@ class LoadAdditionalListener implements IEventListener {
 		}
 
 		$initialState = Server::get(InitialStateService::class);
+		$config = Server::get(IConfig::class);
 		$shareManager = Server::get(IManager::class);
 		$externalManager = Server::get(ExternalManager::class);
+
+		$acceptDefault = $config->getSystemValueBool('sharing.enable_share_accept');
+		$initialState->provideInitialState(Application::APP_ID, 'accept_default', $acceptDefault);
 
 		$hasPendingShares = $this->hasPendingShares($shareManager, $externalManager, $user->getUID());
 		$initialState->provideInitialState(Application::APP_ID, 'has_pending_shares', $hasPendingShares);

@@ -14,6 +14,7 @@ use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\Files_Sharing\External\Manager as ExternalManager;
 use OCA\Files_Sharing\Listener\LoadAdditionalListener;
 use OCP\EventDispatcher\Event;
+use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;
 use OCP\L10N\IFactory;
@@ -32,6 +33,7 @@ class LoadAdditionalListenerTest extends TestCase {
 	protected InitialStateService&MockObject $initialStateService;
 	protected IUserSession&MockObject $userSession;
 	protected ExternalManager&MockObject $externalManager;
+	protected IConfig&MockObject $config;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -43,6 +45,7 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->initialStateService = $this->createMock(InitialStateService::class);
 		$this->userSession = $this->createMock(IUserSession::class);
 		$this->externalManager = $this->createMock(ExternalManager::class);
+		$this->config = $this->createMock(IConfig::class);
 
 		/* Empty static array to avoid inter-test conflicts */
 		\OC_Util::$styles = [];
@@ -82,6 +85,7 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
 		$this->overwriteService(IUserSession::class, $this->userSession);
 		$this->overwriteService(ExternalManager::class, $this->externalManager);
+		$this->overwriteService(IConfig::class, $this->config);
 
 		$scriptsBefore = Util::getScripts();
 		$this->assertNotContains('files_sharing/l10n/language_mock', $scriptsBefore);
@@ -112,6 +116,7 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->overwriteService(IUserSession::class, $this->userSession);
 		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
+		$this->overwriteService(IConfig::class, $this->config);
 
 		$scriptsBefore = Util::getScripts();
 		$this->assertNotContains('files_sharing/js/init', $scriptsBefore);
@@ -145,16 +150,21 @@ class LoadAdditionalListenerTest extends TestCase {
 			});
 
 		$this->externalManager->method('getOpenShares')->willReturn([]);
+		$this->config->method('getSystemValueBool')->with('sharing.enable_share_accept')->willReturn(true);
 
-		$this->initialStateService->expects($this->once())
+		$this->initialStateService->expects($this->exactly(2))
 			->method('provideInitialState')
-			->with('files_sharing', 'has_pending_shares', true);
+			->withConsecutive(
+				['files_sharing', 'accept_default', true],
+				['files_sharing', 'has_pending_shares', true],
+			);
 
 		$this->overwriteService(IManager::class, $this->shareManager);
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
 		$this->overwriteService(IUserSession::class, $this->userSession);
 		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
+		$this->overwriteService(IConfig::class, $this->config);
 
 		$listener->handle($this->event);
 	}
@@ -170,16 +180,21 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->shareManager->method('getSharedWith')->willReturn([]);
 
 		$this->externalManager->method('getOpenShares')->willReturn([['id' => 1, 'remote' => 'example.com']]);
+		$this->config->method('getSystemValueBool')->with('sharing.enable_share_accept')->willReturn(true);
 
-		$this->initialStateService->expects($this->once())
+		$this->initialStateService->expects($this->exactly(2))
 			->method('provideInitialState')
-			->with('files_sharing', 'has_pending_shares', true);
+			->withConsecutive(
+				['files_sharing', 'accept_default', true],
+				['files_sharing', 'has_pending_shares', true],
+			);
 
 		$this->overwriteService(IManager::class, $this->shareManager);
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
 		$this->overwriteService(IUserSession::class, $this->userSession);
 		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
+		$this->overwriteService(IConfig::class, $this->config);
 
 		$listener->handle($this->event);
 	}
@@ -195,16 +210,21 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->shareManager->method('getSharedWith')->willReturn([]);
 
 		$this->externalManager->method('getOpenShares')->willReturn([]);
+		$this->config->method('getSystemValueBool')->with('sharing.enable_share_accept')->willReturn(false);
 
-		$this->initialStateService->expects($this->once())
+		$this->initialStateService->expects($this->exactly(2))
 			->method('provideInitialState')
-			->with('files_sharing', 'has_pending_shares', false);
+			->withConsecutive(
+				['files_sharing', 'accept_default', false],
+				['files_sharing', 'has_pending_shares', false],
+			);
 
 		$this->overwriteService(IManager::class, $this->shareManager);
 		$this->overwriteService(InitialStateService::class, $this->initialStateService);
 		$this->overwriteService(IUserSession::class, $this->userSession);
 		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
+		$this->overwriteService(IConfig::class, $this->config);
 
 		$listener->handle($this->event);
 	}
@@ -224,6 +244,7 @@ class LoadAdditionalListenerTest extends TestCase {
 		$this->overwriteService(IUserSession::class, $this->userSession);
 		$this->overwriteService(ExternalManager::class, $this->externalManager);
 		$this->overwriteService(IFactory::class, $this->factory);
+		$this->overwriteService(IConfig::class, $this->config);
 
 		$listener->handle($this->event);
 	}
