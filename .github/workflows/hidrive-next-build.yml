@@ -30,8 +30,8 @@ on:
       - '.gitmodules'
   push:
     branches:
-      - ionos-dev
-      - ionos-stable
+      - ionos-dev-v*
+      - ionos-stable-v*
       - 'rc/**'
       - '*/dev/*'
   workflow_dispatch:
@@ -56,11 +56,14 @@ on:
 # of the same source branch, so a `*/dev/*` branch with an open PR does not
 # produce two parallel runs. Protected branches (ionos-dev/stable/rc/*) use a
 # unique-per-run-id key so consecutive pushes never cancel each other.
+#
+# NOTE: env/vars are not allowed inside a `concurrency:` expression (see env block).
 concurrency:
   group: >-
     ${{ github.workflow }}-${{
       (
-        contains(fromJson('["refs/heads/ionos-dev","refs/heads/ionos-stable"]'), github.ref) ||
+        startsWith(github.ref, 'refs/heads/ionos-dev-v') ||
+        startsWith(github.ref, 'refs/heads/ionos-stable-v') ||
         startsWith(github.ref, 'refs/heads/rc/')
       ) && github.run_id ||
       (github.head_ref || github.ref_name)
@@ -75,6 +78,21 @@ env:
   # Cache version - increment to invalidate all caches when build tooling changes
   # Format: v<major>.<minor> (e.g., v1.0, v1.1, v2.0)
   CACHE_VERSION: v1.2
+  # ┌─ NC MAJOR VERSION ──────────────────────────────────────────────────────┐
+  # │ Branch-name version suffix (e.g. "v30" -> ionos-dev-v30/ionos-stable-v30).│
+  # │ Kept in the workflow file (not a repo variable) so each branch can carry  │
+  # │ its own version. Used directly in step run: scripts via env.NC_BRANCH_VERSION.
+  # │                                                                           │
+  # │ GitHub Actions does NOT allow env/vars in `on:`, `concurrency:` or        │
+  # │ job-level `if:`, so the value is ALSO hardcoded in these spots — bump     │
+  # │ them together with the value below:                                       │
+  # │   - on.push.branches            (ionos-dev-v30 / ionos-stable-v30)        │
+  # │   - concurrency.group fromJson  (refs/heads/ionos-dev-v30 / ...-stable-v30)│
+  # │   - upload-to-artifactory  if:  (github.ref_name checks)                  │
+  # │   - push-to-ghcr.io        if:  (github.ref_name checks)                  │
+  # │   - trigger-remote-dev     if:  (github.ref_name checks)                  │
+  # └───────────────────────────────────────────────────────────────────────────┘
+  NC_BRANCH_VERSION: v31
 
 permissions:
   contents: read
@@ -116,11 +134,14 @@ jobs:
         run: |
           echo "### 🔧 Remote Trigger Configuration" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**DISABLE_REMOTE_TRIGGER value:** \`${{ vars.DISABLE_REMOTE_TRIGGER }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**DISABLE_REMOTE_TRIGGER:** \`${{ vars.DISABLE_REMOTE_TRIGGER }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**REMOTE_TRIGGER_NC_VERSION:** \`${{ vars.REMOTE_TRIGGER_NC_VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**REMOTE_TRIGGER_RC_BRANCH:** \`${{ vars.REMOTE_TRIGGER_RC_BRANCH }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**ENABLE_REMOTE_TRIGGER_USER_DEV value:** \`${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}\`" >> $GITHUB_STEP_SUMMARY
           if [ "${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}" != "true" ]; then
             echo "  - 💡 To enable the GitLab trigger for \`*/dev/*\` branches, set repository variable \`ENABLE_REMOTE_TRIGGER_USER_DEV\` to \`true\` at [Settings → Variables → Actions](https://github.com/${{ github.repository }}/settings/variables/actions)." >> $GITHUB_STEP_SUMMARY
           fi
+
           echo "**Event type:** \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -130,6 +151,8 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "DISABLE_REMOTE_TRIGGER         = '${{ vars.DISABLE_REMOTE_TRIGGER }}'"
           echo "ENABLE_REMOTE_TRIGGER_USER_DEV = '${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}'"
+          echo "REMOTE_TRIGGER_NC_VERSION      = '${{ vars.REMOTE_TRIGGER_NC_VERSION }}'"
+          echo "REMOTE_TRIGGER_RC_BRANCH       = '${{ vars.REMOTE_TRIGGER_RC_BRANCH }}'"
           if [ "${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}" != "true" ]; then
             echo "  💡 To enable the GitLab trigger for '*/dev/*' branches,"
             echo "     set repository variable ENABLE_REMOTE_TRIGGER_USER_DEV to 'true' at:"
@@ -149,8 +172,9 @@ jobs:
             echo "To enable, delete the variable or set it to a value other than 'true' at:" >> $GITHUB_STEP_SUMMARY
             echo "https://github.com/${{ github.repository }}/settings/variables/actions" >> $GITHUB_STEP_SUMMARY
           else
-            echo "ℹ️  DISABLE_REMOTE_TRIGGER not set — checking trigger conditions..."
-            echo "**Status:** \`DISABLE_REMOTE_TRIGGER\` not set — actual outcome determined by conditions below." >> $GITHUB_STEP_SUMMARY
+            echo "✅ Remote trigger is ENABLED"
+            echo "   Checking if trigger conditions are met..."
+            echo "**Status:** ✅ Remote trigger is **ENABLED**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
 
             WILL_TRIGGER=true
@@ -166,11 +190,11 @@ jobs:
               echo "   ✅ Event type is 'push'"
             fi
 
-            VALID_BRANCH_PATTERN='^(ionos-dev|ionos-stable)$|^rc/.*$|^[^/]+/dev/.*$'
+            VALID_BRANCH_PATTERN='^ionos-dev-v|^ionos-stable-v|^rc/|^[^/]+/dev/'
             USER_DEV_PATTERN='^[^/]+/dev/.*$'
             if [[ ! "${{ github.ref_name }}" =~ $VALID_BRANCH_PATTERN ]]; then
-              echo "- ❌ Branch must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
-              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev', 'ionos-stable', 'rc/*' or '*/dev/*')"
+              echo "- ❌ Branch must match 'ionos-dev-v*', 'ionos-stable-v*', 'rc/*' or '*/dev/*' (current: \`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
+              echo "   ❌ Branch is '${{ github.ref_name }}' (must be 'ionos-dev-v*', 'ionos-stable-v*', 'rc/*' or '*/dev/*')"
               WILL_TRIGGER=false
             else
               echo "- ✅ Branch is '\`${{ github.ref_name }}\`'" >> $GITHUB_STEP_SUMMARY
@@ -186,6 +210,28 @@ jobs:
                 echo "   ❌ '*/dev/*' branch requires ENABLE_REMOTE_TRIGGER_USER_DEV='true' (current: '${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}')"
                 WILL_TRIGGER=false
               fi
+            fi
+
+            # Version gate check: branch must end with REMOTE_TRIGGER_NC_VERSION or match REMOTE_TRIGGER_RC_BRANCH
+            NC_VERSION="${{ vars.REMOTE_TRIGGER_NC_VERSION }}"
+            RC_BRANCH="${{ vars.REMOTE_TRIGGER_RC_BRANCH }}"
+            BRANCH="${{ github.ref_name }}"
+
+            if [ -z "$NC_VERSION" ]; then
+              echo "- ✅ Version gate: not set — all versions allowed" >> $GITHUB_STEP_SUMMARY
+              echo "   ✅ Version gate: not set — all versions allowed"
+            elif [[ "$BRANCH" == *"$NC_VERSION" ]]; then
+              echo "- ✅ Version gate: branch \`$BRANCH\` matches \`$NC_VERSION\`" >> $GITHUB_STEP_SUMMARY
+              echo "   ✅ Version gate: branch '$BRANCH' matches '$NC_VERSION'"
+            elif [ -n "$RC_BRANCH" ] && [ "$BRANCH" == "$RC_BRANCH" ]; then
+              echo "- ✅ Version gate: branch \`$BRANCH\` matches RC whitelist \`$RC_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+              echo "   ✅ Version gate: branch '$BRANCH' matches RC whitelist '$RC_BRANCH'"
+            else
+              echo "- ❌ Version gate: branch \`$BRANCH\` does not match version \`$NC_VERSION\` or RC branch \`$RC_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+              echo "   ❌ Version gate: branch '$BRANCH' does not match version '$NC_VERSION' or RC branch '$RC_BRANCH'"
+              echo "   ℹ️  Build & image push will still run — only QA deployment is skipped"
+              echo "- ℹ️  Build & image push will still run — only QA deployment is skipped" >> $GITHUB_STEP_SUMMARY
+              WILL_TRIGGER=false
             fi
 
             echo "- ℹ️  All dependent jobs must succeed (checked at job runtime)" >> $GITHUB_STEP_SUMMARY
@@ -633,7 +679,7 @@ jobs:
         run: php -i && php -m
 
       - name: Build Nextcloud (core only — apps restored from cache)
-        run: make -f IONOS/Makefile build_nextcloud_only
+        run: make -f IONOS/Makefile build_nextcloud
 
       - name: Add config partials
         run: make -f IONOS/Makefile add_config_partials
@@ -644,6 +690,7 @@ jobs:
         run: |
           echo "${{ github.run_number }}" > .buildnumber
           echo "✅ Build number injected: ${{ github.run_number }}"
+          echo "📄 File created: .buildnumber"
           cat .buildnumber
 
       - name: Zip dependencies
@@ -664,7 +711,7 @@ jobs:
           echo "NC_VERSION=$NC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Upload artifact result for job hidrive-next-build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           retention-days: 30
           name: hidrive_next_build_artifact
@@ -681,10 +728,12 @@ jobs:
     runs-on: self-hosted
     # Upload the artifact to the Artifactory repository on PR *OR* on
     # "ionos-dev|ionos-stable|rc/*|*/dev/*" branch push *OR* on manual workflow_dispatch
+    # NOTE: ionos-dev-vXX / ionos-stable-vXX are NC_BRANCH_VERSION literals —
+    # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
       (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ||
-       github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'ionos-dev-v') || startsWith(github.ref_name, 'ionos-stable-v') ||
        startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.prepare-matrix.result == 'success' &&
       (needs.build-apps.result == 'success' || needs.build-apps.result == 'skipped') &&
@@ -732,12 +781,12 @@ jobs:
           fetch-depth: 1
 
       - name: Download artifact zip
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hidrive_next_build_artifact
 
       # This action sets up the JFrog CLI with the Artifactory URL and access token
-      - uses: jfrog/setup-jfrog-cli@v4
+      - uses: jfrog/setup-jfrog-cli@1641575d87647fb969c0545f0b6a76873e328b7c # v5.0.0
         env:
           JF_URL: ${{ secrets.JF_ARTIFACTORY_URL }}
           JF_USER: ${{ secrets.JF_ARTIFACTORY_USER }}
@@ -765,8 +814,8 @@ jobs:
           # | Branch/Event     | Stage Prefix     | Artifact Path                                                                |
           # |------------------|------------------|------------------------------------------------------------------------------|
           # | Pull Request     | pr               | pr/hidrive-next-pr-<number>.zip                                              |
-          # | ionos-dev        | dev              | dev/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip         |
-          # | ionos-stable     | stable           | stable/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip      |
+          # | ionos-dev-v*     | dev              | dev/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip         |
+          # | ionos-stable-v*  | stable           | stable/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip      |
           # | rc/*             | <ref-name>       | rc/<branch>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
           # | */dev/*          | devs/<prefix>    | devs/<prefix>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
 
@@ -774,7 +823,7 @@ jobs:
 
           if [ -n "${{ github.event.pull_request.number }}" ]; then
               ARTIFACTORY_STAGE_PREFIX="pr"
-          elif [ "${{ github.ref_name }}" == "ionos-stable" ]; then
+          elif [ "${{ github.ref_name }}" == "ionos-stable-${{ env.NC_BRANCH_VERSION }}" ]; then
               ARTIFACTORY_STAGE_PREFIX="stable"
           elif [[ "${{ github.ref_name }}" =~ ^rc/.*$ ]]; then
               ARTIFACTORY_STAGE_PREFIX="${{ github.ref_name }}"
@@ -860,10 +909,12 @@ jobs:
 
     name: Push artifact to ghcr.io
     needs: [prepare-matrix, build-apps, hidrive-next-build]
+    # NOTE: ionos-dev-vXX / ionos-stable-vXX are NC_BRANCH_VERSION literals —
+    # env/vars are not allowed in a job-level `if:` (see env block).
     if: |
       always() &&
       (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ||
-       github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+       startsWith(github.ref_name, 'ionos-dev-v') || startsWith(github.ref_name, 'ionos-stable-v') ||
        startsWith(github.ref_name, 'rc/') || contains(github.ref_name, '/dev/')) &&
       needs.prepare-matrix.result == 'success' &&
       (needs.build-apps.result == 'success' || needs.build-apps.result == 'skipped') &&
@@ -871,7 +922,7 @@ jobs:
 
     steps:
       - name: Download artifact zip
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hidrive_next_build_artifact
 
@@ -903,7 +954,7 @@ jobs:
           EOF
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           push: true
@@ -922,19 +973,29 @@ jobs:
     name: Trigger remote workflow
     needs: [ hidrive-next-build, upload-to-artifactory ]
     # Trigger remote build on "ionos-dev|ionos-stable|rc/*|*/dev/*" branch *push* defined in on:push:branches
-    # Can be disabled entirely via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable)
-    # The "*/dev/*" branch class is gated by repository variable 'ENABLE_REMOTE_TRIGGER_USER_DEV'
-    #   (default off — set to 'true' to enable once GitLab supports BUILD_TYPE=dev-<prefix>)
+    # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable).
+    # Version-gate: only trigger QA deployment for the whitelisted NC major version.
+    #   Set repo variable 'REMOTE_TRIGGER_NC_VERSION' to the current release version (e.g. "v30").
+    #   Branches for other versions (e.g. ionos-dev-v31) will still build & push images but
+    #   will NOT trigger the remote QA workflow. Leave unset (empty) to allow all versions.
+    # RC-gate: rc/* branches carry no version suffix, so set 'REMOTE_TRIGGER_RC_BRANCH' to the
+    #   exact RC branch that should trigger QA (e.g. "rc/web-3.5"). Only one RC at a time.
+    #   When promoting a new RC, update the variable to the new branch name.
+    # */dev/* branches bypass the version gate and are controlled solely by ENABLE_REMOTE_TRIGGER_USER_DEV.
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
     if: |
       always() &&
       github.event_name == 'push' &&
-      (github.ref_name == 'ionos-dev' || github.ref_name == 'ionos-stable' ||
+      (startsWith(github.ref_name, 'ionos-dev-v') || startsWith(github.ref_name, 'ionos-stable-v') ||
        startsWith(github.ref_name, 'rc/') ||
        (contains(github.ref_name, '/dev/') && vars.ENABLE_REMOTE_TRIGGER_USER_DEV == 'true')) &&
       needs.hidrive-next-build.result == 'success' &&
       needs.upload-to-artifactory.result == 'success' &&
-      vars.DISABLE_REMOTE_TRIGGER != 'true'
+      vars.DISABLE_REMOTE_TRIGGER != 'true' &&
+      (contains(github.ref_name, '/dev/') ||
+       vars.REMOTE_TRIGGER_NC_VERSION == '' ||
+       endsWith(github.ref_name, vars.REMOTE_TRIGGER_NC_VERSION) ||
+       github.ref_name == vars.REMOTE_TRIGGER_RC_BRANCH)
     steps:
       - name: Check prerequisites
         run: |
@@ -992,16 +1053,16 @@ jobs:
           set -x
 
           # Branch to GitLab Trigger Mapping (see HDNEXT-1373):
-          # | ref_name     | GITLAB_REF | BUILD_TYPE        |
-          # |--------------|------------|-------------------|
-          # | ionos-dev    | main       | dev               |
-          # | ionos-stable | main       | stable            |
-          # | rc/*         | main       | rc                |
-          # | */dev/*      | main       | dev-<branch-pfx>  | (opt-in via ENABLE_REMOTE_TRIGGER_USER_DEV)
+          # | ref_name         | GITLAB_REF | BUILD_TYPE        |
+          # |------------------|------------|-------------------|
+          # | ionos-dev-v30    | main       | dev               |
+          # | ionos-stable-v30 | main       | stable            |
+          # | rc/*             | main       | rc                |
+          # | */dev/*          | main       | dev-<branch-pfx>  |
 
           BUILD_TYPE="dev"
 
-          if [ "${{ github.ref_name }}" == "ionos-stable" ]; then
+          if [ "${{ github.ref_name }}" == "ionos-stable-${{ env.NC_BRANCH_VERSION }}" ]; then
               BUILD_TYPE="stable"
           elif [[ "${{ github.ref_name }}" =~ ^rc/ ]]; then
               BUILD_TYPE="rc"
@@ -1011,7 +1072,7 @@ jobs:
           fi
 
           # Construct source build URL for traceability
-          SOURCE_BUILD_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SOURCE_BUILD_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo "Source Build URL: $SOURCE_BUILD_URL"
 
           # Trigger GitLab pipeline via webhook with retry logic (3 attempts with exponential backoff)

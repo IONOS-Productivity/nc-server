@@ -396,7 +396,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 			$subSelect->select('resourceid')
 				->from('dav_shares', 'd')
 				->where($subSelect->expr()->eq('d.access', $select->createNamedParameter(Backend::ACCESS_UNSHARED, IQueryBuilder::PARAM_INT), IQueryBuilder::PARAM_INT))
-				->andWhere($subSelect->expr()->in('d.principaluri', $select->createNamedParameter($principals, IQueryBuilder::PARAM_STR_ARRAY), IQueryBuilder::PARAM_STR_ARRAY));
+				->andWhere($subSelect->expr()->eq('d.principaluri', $select->createNamedParameter($principalUri, IQueryBuilder::PARAM_STR), IQueryBuilder::PARAM_STR));
 
 			$select->select($fields)
 				->from('dav_shares', 's')
@@ -1543,6 +1543,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				$targetShares = $this->getShares($targetCalendarId);
 				$sourceCalendarRow = $this->getCalendarById($sourceCalendarId);
 				$this->dispatcher->dispatchTyped(new CalendarObjectMovedEvent($sourceCalendarId, $sourceCalendarRow, $targetCalendarId, $targetCalendarRow, $sourceShares, $targetShares, $object));
+				$this->dispatcher->dispatchTyped(new LegacyCalendarObjectMovedEvent($sourceCalendarId, $sourceCalendarRow, $targetCalendarId, $targetCalendarRow, $sourceShares, $targetShares, $object));
 			}
 			return true;
 		}, $this->db);
@@ -1582,6 +1583,7 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 					$shares = $this->getShares($calendarId);
 
 					$this->dispatcher->dispatchTyped(new CalendarObjectDeletedEvent($calendarId, $calendarRow, $shares, $data));
+					$this->dispatcher->dispatchTyped(new LegacyCalendarObjectDeletedEvent($calendarId, $calendarRow, $shares, $data));
 				} else {
 					$subscriptionRow = $this->getSubscriptionById($calendarId);
 
@@ -1625,6 +1627,14 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 				if ($calendarData !== null) {
 					$this->dispatcher->dispatchTyped(
 						new CalendarObjectMovedToTrashEvent(
+							$calendarId,
+							$calendarData,
+							$this->getShares($calendarId),
+							$data
+						)
+					);
+					$this->dispatcher->dispatchTyped(
+						new LegacyCalendarObjectMovedToTrashEvent(
 							$calendarId,
 							$calendarData,
 							$this->getShares($calendarId),
@@ -1684,6 +1694,14 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 			}
 			$this->dispatcher->dispatchTyped(
 				new CalendarObjectRestoredEvent(
+					(int)$objectData['calendarid'],
+					$calendarRow,
+					$this->getShares((int)$row['calendarid']),
+					$row
+				)
+			);
+			$this->dispatcher->dispatchTyped(
+				new LegacyCalendarObjectRestoredEvent(
 					(int)$objectData['calendarid'],
 					$calendarRow,
 					$this->getShares((int)$row['calendarid']),

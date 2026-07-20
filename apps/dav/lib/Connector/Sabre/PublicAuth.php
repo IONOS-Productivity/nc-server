@@ -92,6 +92,15 @@ class PublicAuth extends AbstractBasic {
 				),
 			);
 			throw $e;
+		} catch (PreconditionFailed $e) {
+			$response->setHeader(
+				'Location',
+				$this->urlGenerator->linkToRoute(
+					'files_sharing.share.showShare',
+					[ 'token' => $this->getToken() ],
+				),
+			);
+			throw $e;
 		} catch (\Exception $e) {
 			$class = get_class($e);
 			$msg = $e->getMessage();

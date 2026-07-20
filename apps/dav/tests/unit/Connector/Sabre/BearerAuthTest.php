@@ -30,6 +30,8 @@ class BearerAuthTest extends TestCase {
 
 	private IConfig&MockObject $config;
 
+	private IConfig&MockObject $config;
+
 	protected function setUp(): void {
 		parent::setUp();
 

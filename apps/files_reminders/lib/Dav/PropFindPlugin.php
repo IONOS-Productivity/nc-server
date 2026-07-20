@@ -58,6 +58,15 @@ class PropFindPlugin extends ServerPlugin {
 			return;
 		}
 
+		if (
+			$node instanceof Directory
+			&& $propFind->getDepth() > 0
+			&& $propFind->getStatus(static::REMINDER_DUE_DATE_PROPERTY) !== null
+		) {
+			$folder = $node->getNode();
+			$this->cacheFolder($folder);
+		}
+
 		$propFind->handle(
 			static::REMINDER_DUE_DATE_PROPERTY,
 			function () use ($node) {
