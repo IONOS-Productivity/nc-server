@@ -4,9 +4,6 @@
 [submodule "3rdparty"]
 	path = 3rdparty
 	url = https://github.com/nextcloud/3rdparty.git
-[submodule "IONOS"]
-	path = IONOS
-	url = git@github.com:IONOS-Productivity/easystorage-config.git
 [submodule "apps-external/viewer"]
 	path = apps-external/viewer
 	url = git@github.com:IONOS-Productivity/nc-viewer.git
@@ -43,3 +40,6 @@
 [submodule "apps-external/notify_push"]
 	path = apps-external/notify_push
 	url = git@github.com:nextcloud/notify_push.git
+[submodule "IONOS"]
+	path = IONOS
+	url = git@github.com:IONOS-Productivity/nc-config.git
