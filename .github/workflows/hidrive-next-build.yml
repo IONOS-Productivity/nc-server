@@ -220,13 +220,13 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
-        run: make -f IONOS/Makefile build_dep_simplesettings_app
+        run: make -f IONOS/Makefile build_simplesettings_app
 
       - name: Install dependencies & build viewer app
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
-        run: make -f IONOS/Makefile build_dep_viewer_app
+        run: make -f IONOS/Makefile build_viewer_app
 
       - name: Install dependencies & build richdocuments app
         run: make -f IONOS/Makefile build_richdocuments_app
@@ -235,19 +235,19 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
-        run: make -f IONOS/Makefile build_dep_user_oidc_app
+        run: make -f IONOS/Makefile build_user_oidc_app
 
       - name: Install dependencies for external apps nc_ionos_processes
-        run: make -f IONOS/Makefile build_dep_nc_ionos_processes_app
+        run: make -f IONOS/Makefile build_nc_ionos_processes_app
 
       - name: Build Custom CSS
-        run: make -f IONOS/Makefile build_dep_theming_app
+        run: make -f IONOS/Makefile build_nc_theming_app
 
       - name: Install dependencies & build IONOS theme custom elements
         env:
           CYPRESS_INSTALL_BINARY: 0
           PUPPETEER_SKIP_DOWNLOAD: true
-        run: make -f IONOS/Makefile build_dep_ionos_theme
+        run: make -f IONOS/Makefile build_nc-ionos-theme_app
 
       - name: Install and build notify_push app
         run: make -f IONOS/Makefile build_notify_push_app
