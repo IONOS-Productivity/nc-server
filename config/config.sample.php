@@ -2927,4 +2927,22 @@ $CONFIG = [
 		'fe80::/10',
 		'10.0.0.1',
 	],
+
+	/**
+	 * Request path without /index.php/ maps to a controller path in the form
+	 * <app name>.<controller name>.<handler>.
+	 *
+	 * - For a FooController.php the controller name is "foo" (lowercase)
+	 * - A handler would be a method in FooController that was annotated with
+	 *   - either #[FrontpageRoute] attribute
+	 *   - or configured in routes.php
+	 *
+	 * Defaults to ``[]`` (no redirects)
+	 */
+	'redirects' => [
+		/**
+		 * Example:
+		 * '^\/settings' => 'acmesettings.page.index'
+		 */
+	],
 ];

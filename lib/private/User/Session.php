@@ -10,6 +10,7 @@ namespace OC\User;
 use OC;
 use OC\Authentication\Exceptions\PasswordlessTokenException;
 use OC\Authentication\Exceptions\PasswordLoginForbiddenException;
+use OC\Authentication\Exceptions\UserAgentForbidden;
 use OC\Authentication\Token\IProvider;
 use OC\Authentication\Token\IToken;
 use OC\Authentication\Token\PublicKeyToken;
@@ -559,6 +560,8 @@ class Session implements IUserSession, Emitter {
 		IThrottler $throttler) {
 		if (!empty($request->server['PHP_AUTH_USER']) && !empty($request->server['PHP_AUTH_PW'])) {
 			try {
+				$userAgent = $request->server['HTTP_USER_AGENT'] ?? '';
+				$this->validateUserAgent($userAgent);
 				if ($this->logClientIn($request->server['PHP_AUTH_USER'], $request->server['PHP_AUTH_PW'], $request, $throttler)) {
 					/**
 					 * Add DAV authenticated. This should in an ideal world not be
@@ -580,6 +583,19 @@ class Session implements IUserSession, Emitter {
 			}
 		}
 		return false;
+	}
+
+	private function validateUserAgent(string $clientUserAgent): void {
+		$allowedAgents = $this->config->getSystemValue('core.login_flow_v2.allowed_user_agents', []);
+		if (empty($allowedAgents)) {
+			return;
+		}
+		foreach ($allowedAgents as $allowedAgent) {
+			if (preg_match($allowedAgent, $clientUserAgent) === 1) {
+				return;
+			}
+		}
+		throw new UserAgentForbidden('Client not allowed');
 	}
 
 	/**

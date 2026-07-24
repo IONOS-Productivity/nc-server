@@ -4,3 +4,39 @@
 [submodule "3rdparty"]
 	path = 3rdparty
 	url = https://github.com/nextcloud/3rdparty.git
+[submodule "apps-custom/simplesettings"]
+	path = apps-custom/simplesettings
+	url = git@github.com:IONOS-Productivity/nc-simplesettings.git
+[submodule "apps-custom/googleanalytics"]
+	path = apps-custom/googleanalytics
+	url = git@github.com:IONOS-Productivity/nc-googleanalytics.git
+[submodule "apps-custom/nc_theming"]
+	path = apps-custom/nc_theming
+	url = git@github.com:IONOS-Productivity/nc-theming.git
+[submodule "apps-custom/nc_ionos_processes"]
+	path = apps-custom/nc_ionos_processes
+	url = git@github.com:IONOS-Productivity/nc-ionos-processes.git
+[submodule "themes/nc-ionos-theme"]
+	path = themes/nc-ionos-theme
+	url = git@github.com:IONOS-Productivity/nc-ionos-theme.git
+[submodule "apps-external/viewer"]
+	path = apps-external/viewer
+	url = git@github.com:IONOS-Productivity/nc-viewer.git
+[submodule "apps-external/richdocuments"]
+	path = apps-external/richdocuments
+	url = git@github.com:IONOS-Productivity/nc-richdocuments.git
+[submodule "apps-external/user_oidc"]
+	path = apps-external/user_oidc
+	url = git@github.com:nextcloud/user_oidc.git
+[submodule "apps-external/serverinfo"]
+	path = apps-external/serverinfo
+	url = git@github.com:nextcloud/serverinfo.git
+[submodule "apps-external/groupquota"]
+	path = apps-external/groupquota
+	url = git@github.com:nextcloud/groupquota.git
+[submodule "apps-external/files_downloadlimit"]
+	path = apps-external/files_downloadlimit
+	url = git@github.com:nextcloud/files_downloadlimit.git
+[submodule "IONOS"]
+	path = IONOS
+	url = git@github.com:IONOS-Productivity/nc-config.git

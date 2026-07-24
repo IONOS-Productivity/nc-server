@@ -70,7 +70,7 @@
 						{{ t('core', 'Custom date range') }}
 					</NcActionButton>
 				</NcActions>
-				<SearchableList
+				<SearchableList v-if="peopleSearchEnabled"
 					:label-text="t('core', 'Search people')"
 					:search-list="userContacts"
 					:empty-content-text="t('core', 'Not found')"
@@ -272,6 +272,14 @@ export default defineComponent({
 		 * If the current page / app supports local search
 		 */
 		localSearch: {
+			type: Boolean,
+			default: false,
+		},
+
+		/**
+		 * Show people search filter
+		 */
+		peopleSearchEnabled: {
 			type: Boolean,
 			default: false,
 		},
