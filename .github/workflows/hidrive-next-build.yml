@@ -633,10 +633,7 @@ jobs:
         run: php -i && php -m
 
       - name: Build Nextcloud (core only — apps restored from cache)
-        run: make -f IONOS/Makefile build_nextcloud_only
-
-      - name: Install and build notify_push app
-        run: make -f IONOS/Makefile build_notify_push_app
+        run: make -f IONOS/Makefile build_nextcloud
 
       - name: Add config partials
         run: make -f IONOS/Makefile add_config_partials
