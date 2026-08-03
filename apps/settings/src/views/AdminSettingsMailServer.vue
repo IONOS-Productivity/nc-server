@@ -44,6 +44,14 @@ const initialConfig = loadState<{
 }>('settings', 'settingsAdminMailConfig')
 const mailConfig = ref({ ...initialConfig })
 
+/**
+ * Mail delivery is turned off instance-wide via `mail_smtpmode` = "null".
+ * Checked against the raw config value rather than `smtpMode`, because "null"
+ * is deliberately not offered in `smtpModeOptions` and so never resolves to an
+ * option.
+ */
+const isMailDeliveryDisabled = computed(() => mailConfig.value.mail_smtpmode === 'null')
+
 const smtpMode = computed({
 	get() {
 		return settingsAdminMail.smtpModeOptions.find((option) => option.id === mailConfig.value.mail_smtpmode)
@@ -137,7 +145,7 @@ async function onSubmit() {
 			{{ t('settings', 'The server configuration is read-only so the mail settings cannot be changed using the web interface.') }}
 		</NcNoteCard>
 
-		<NcNoteCard v-if="smtpMode?.id === 'null'" type="info">
+		<NcNoteCard v-if="isMailDeliveryDisabled" type="info">
 			{{ t('settings', 'Mail delivery is disabled by instance config "{config}".', { config: 'mail_smtpmode' }) }}
 		</NcNoteCard>
 
