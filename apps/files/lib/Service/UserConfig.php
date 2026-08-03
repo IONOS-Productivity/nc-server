@@ -7,6 +7,7 @@
 namespace OCA\Files\Service;
 
 use OCA\Files\AppInfo\Application;
+use OCP\AppFramework\Services\IAppConfig;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -85,6 +86,7 @@ class UserConfig {
 	public function __construct(
 		protected IConfig $config,
 		IUserSession $userSession,
+		protected IAppConfig $appConfig,
 	) {
 		$this->user = $userSession->getUser();
 	}
@@ -146,7 +148,12 @@ class UserConfig {
 			throw new \InvalidArgumentException('Unknown config key');
 		}
 
-		if (!in_array($value, $this->getAllowedConfigValues($key))) {
+		$isBoolValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+		if ($isBoolValue !== null) {
+			$value = $isBoolValue;
+		}
+
+		if (!in_array($value, $this->getAllowedConfigValues($key), true)) {
 			throw new \InvalidArgumentException('Invalid config value');
 		}
 
@@ -169,9 +176,20 @@ class UserConfig {
 
 		$userId = $this->user->getUID();
 		$userConfigs = array_map(function (string $key) use ($userId) {
-			$value = $this->config->getUserValue($userId, Application::APP_ID, $key, $this->getDefaultConfigValue($key));
-			// If the default is expected to be a boolean, we need to cast the value
-			if (is_bool($this->getDefaultConfigValue($key)) && is_string($value)) {
+			$default = $this->getDefaultConfigValue($key);
+			$value = $this->config->getUserValue($userId, Application::APP_ID, $key, null);
+
+			// The user has no explicit preference, so fall back to the instance-wide
+			// default an admin can set with `occ config:app:set files <key>`, which in
+			// turn falls back to the shipped default
+			if ($value === null) {
+				$value = is_bool($default)
+					? $this->appConfig->getAppValueBool($key, $default)
+					: $this->appConfig->getAppValueString($key, (string)$default);
+			}
+
+			// If the default value is expected to be a boolean, we need to cast the value
+			if (is_bool($default) && is_string($value)) {
 				return $value === '1';
 			}
 			return $value;
