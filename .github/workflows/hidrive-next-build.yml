@@ -56,6 +56,12 @@ on:
 # of the same source branch, so a `*/dev/*` branch with an open PR does not
 # produce two parallel runs. Protected branches (ionos-dev/stable/rc/*) use a
 # unique-per-run-id key so consecutive pushes never cancel each other.
+#
+# Consequence: on a healthy PR the pull_request run is registered a few seconds
+# later and therefore CANCELS the push run, so the pull_request run is what
+# refreshes the pr/ slot. When the PR is CONFLICTING no pull_request run exists
+# at all, and the surviving push run refreshes the pr/ slot instead - see the
+# "Refresh PR slot in artifactory" step in upload-to-artifactory.
 concurrency:
   group: >-
     ${{ github.workflow }}-${{
@@ -693,8 +699,15 @@ jobs:
     name: Push to artifactory
     needs: [prepare-matrix, build-apps, hidrive-next-build]
 
+    # Job-level permissions REPLACE the workflow-level map, so contents:read must be
+    # repeated here for actions/checkout below.
+    permissions:
+      contents: read       # required by actions/checkout in this job
+      pull-requests: read  # required to resolve the open PR for a pushed branch
+
     outputs:
       ARTIFACTORY_LAST_BUILD_PATH: ${{ steps.artifactory_upload.outputs.ARTIFACTORY_LAST_BUILD_PATH }}
+      ARTIFACTORY_PR_SLOT_PATH: ${{ steps.artifactory_pr_slot.outputs.PR_SLOT_PATH }}
 
     env:
       BUILD_NAME: "hidrive_next-snapshot"
@@ -758,17 +771,69 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.run_id }}
 
+      # A `*/dev/*` branch with an open PR normally gets its flat pr/ slot refreshed by the
+      # pull_request run. When that PR is CONFLICTING, GitHub cannot compute
+      # refs/pull/<N>/merge and creates NO pull_request run at all, so the pr/ slot silently
+      # goes stale on every push. Resolve the PR number here so the push/dispatch run can
+      # refresh the slot itself (see the "Refresh PR slot in artifactory" step below).
+      #
+      # Gated to `*/dev/*` on purpose: protected branches (ionos-dev|ionos-stable|rc/*) use a
+      # unique-per-run-id concurrency key, so their push and pull_request runs execute in
+      # PARALLEL and would race for the same pr/ slot.
+      - name: Resolve open PR for branch
+        id: find_pr
+        if: github.event_name != 'pull_request' && contains(github.ref_name, '/dev/')
+        continue-on-error: true
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        with:
+          script: |
+            const branch = process.env.BRANCH_NAME;
+            try {
+              const prs = await github.paginate(github.rest.pulls.list, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: `${context.repo.owner}:${branch}`,
+                state: 'open',
+                per_page: 100,
+              });
+              if (prs.length === 0) {
+                core.info(`No open PR with head ${context.repo.owner}:${branch}`);
+                core.setOutput('pr_number', '');
+                return;
+              }
+              if (prs.length > 1) {
+                core.warning(`Multiple open PRs for ${branch}: ${prs.map(p => '#' + p.number).join(', ')} - using the lowest number`);
+              }
+              const pr = prs.sort((a, b) => a.number - b.number)[0];
+              core.info(`Resolved PR #${pr.number} (base ${pr.base.ref})`);
+              core.setOutput('pr_number', String(pr.number));
+            } catch (err) {
+              core.warning(`PR lookup failed (${err.status ?? ''} ${err.message}) - pr/ slot will NOT be refreshed`);
+              core.setOutput('pr_number', '');
+            }
+
       - name: Upload build to artifactory
         id: artifactory_upload
         run: |
           # Artifactory Build Storage Structure:
-          # | Branch/Event     | Stage Prefix     | Artifact Path                                                                |
-          # |------------------|------------------|------------------------------------------------------------------------------|
-          # | Pull Request     | pr               | pr/hidrive-next-pr-<number>.zip                                              |
-          # | ionos-dev        | dev              | dev/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip         |
-          # | ionos-stable     | stable           | stable/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip      |
-          # | rc/*             | <ref-name>       | rc/<branch>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
-          # | */dev/*          | devs/<prefix>    | devs/<prefix>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
+          # | Branch/Event             | Stage Prefix   | Artifact Path                                                                  |
+          # |--------------------------|----------------|--------------------------------------------------------------------------------|
+          # | Pull Request             | pr             | pr/hidrive-next-pr-<number>.zip                                                |
+          # | ionos-dev                | dev            | dev/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip           |
+          # | ionos-stable             | stable         | stable/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip        |
+          # | rc/*                     | <ref-name>     | rc/<branch>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip   |
+          # | */dev/* (push/dispatch)  | devs/<prefix>  | devs/<prefix>/hidrive-next-<ncVersion>/<shortSha>/hidrive-next-<ncVersion>.zip |
+          # |   ^ plus, if an open PR  | pr (mirror)    | pr/hidrive-next-pr-<number>.zip  <- server-side copy, see "Refresh PR slot"    |
+          #
+          # CAVEAT - the pr/ slot has two possible producers with DIFFERENT content:
+          #   pull_request run  -> built from refs/pull/<N>/merge  (branch head merged into base)
+          #   push/dispatch run -> built from the branch head ONLY (base changes NOT included)
+          # The artifact property build.from_merge_ref=(true|false) records which one produced it.
+          # Rationale for the push-side mirror: when a PR is CONFLICTING (mergeStateStatus DIRTY,
+          # e.g. a submodule gitlink conflict) GitHub cannot compute refs/pull/<N>/merge and creates
+          # NO pull_request run at all, so the pr/ slot would silently go stale on every push.
 
           ARTIFACTORY_STAGE_PREFIX="dev"
 
@@ -802,6 +867,14 @@ jobs:
           JFROG_PROPS_LIST+=("build.nc_version=${{ needs.hidrive-next-build.outputs.NC_VERSION }}")
           JFROG_PROPS_LIST+=("vcs.branch=${{ github.ref }}")
           JFROG_PROPS_LIST+=("vcs.revision=${{ github.sha }}")
+          # Records whether this zip was built from refs/pull/<N>/merge (head merged into base)
+          # or from a plain branch head - see the CAVEAT in the table above.
+          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+            JFROG_PROPS_LIST+=("build.from_merge_ref=true")
+          else
+            JFROG_PROPS_LIST+=("build.from_merge_ref=false")
+          fi
+          JFROG_PROPS_LIST+=("build.source_event=${GITHUB_EVENT_NAME}")
           JOB_URL="${{ steps.get_job_data.outputs.job_html_url }}"
           if [ -n "$JOB_URL" ]; then
             JFROG_PROPS_LIST+=("job.html_url=${JOB_URL}")
@@ -842,7 +915,89 @@ jobs:
             exit 1
           fi
 
+          # Re-used by the "Refresh PR slot in artifactory" step so the property set has a
+          # single definition. Never contains a newline, so a single-line output is safe.
+          echo "JFROG_PROPS=${JFROG_PROPS}" >> $GITHUB_OUTPUT
           echo "ARTIFACTORY_LAST_BUILD_PATH=${PATH_TO_LATEST_ARTIFACT}" >> $GITHUB_OUTPUT
+
+      # Publish the same build into the flat pr/ slot so pr/hidrive-next-pr-<N>.zip refreshes on
+      # every push, even when GitHub cannot create a pull_request run (see "Resolve open PR for
+      # branch" above). Server-side copy: the zip is not re-transferred.
+      #
+      # Deliberately NON-FATAL. trigger-remote-dev-workflow gates on
+      # `needs.upload-to-artifactory.result == 'success'`, so failing here would block GitLab dev
+      # deployments even though the canonical devs/<sha>/ artifact uploaded fine. A stale mirror
+      # is the lesser evil; it is reported via ::error:: and the step summary instead.
+      - name: Refresh PR slot in artifactory
+        id: artifactory_pr_slot
+        if: steps.find_pr.outputs.pr_number != ''
+        env:
+          PR_NUMBER: ${{ steps.find_pr.outputs.pr_number }}
+          SOURCE_PATH: ${{ steps.artifactory_upload.outputs.ARTIFACTORY_LAST_BUILD_PATH }}
+          BASE_PROPS: ${{ steps.artifactory_upload.outputs.JFROG_PROPS }}
+        run: |
+          set -uo pipefail
+
+          PR_SLOT_PATH="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/pr/hidrive-next-pr-${PR_NUMBER}.zip"
+          PR_PROPS="${BASE_PROPS};pr.number=${PR_NUMBER}"
+
+          echo "Mirroring ${SOURCE_PATH} -> ${PR_SLOT_PATH}"
+
+          # Retry logic mirrors the canonical upload above (3 attempts, backoff 10s/20s).
+          # --flat=true is load-bearing: without it a target with no trailing slash gets the
+          # source hierarchy recreated *underneath* it, producing a directory named like the slot.
+          # Properties are not reliably carried over by a copy, so stamp them explicitly with
+          # `jf rt sp`. No --build-name/--build-number here: `jf rt copy` cannot attach build-info,
+          # so build-info stays describing the canonical devs/ artifact only.
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          DELAY_SEC=10
+          PR_SLOT_SUCCESS=false
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "PR slot refresh attempt $ATTEMPT of $MAX_ATTEMPTS..."
+
+            if jf rt copy "$SOURCE_PATH" "$PR_SLOT_PATH" --flat=true \
+               && jf rt sp "$PR_SLOT_PATH" "$PR_PROPS" --include-dirs=false \
+               && jf rt s "$PR_SLOT_PATH" 2>/dev/null | grep -q "hidrive-next-pr-${PR_NUMBER}.zip"; then
+              PR_SLOT_SUCCESS=true
+              echo "✅ PR slot refreshed on attempt $ATTEMPT"
+              break
+            fi
+
+            echo "⚠️ PR slot refresh attempt $ATTEMPT failed"
+            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+              echo "Waiting $DELAY_SEC seconds before retry..."
+              sleep $DELAY_SEC
+              DELAY_SEC=$((DELAY_SEC * 2))
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          # Fallback: re-upload the local zip if the server-side copy is not permitted.
+          if [ "$PR_SLOT_SUCCESS" != "true" ]; then
+            echo "Server-side copy did not succeed - falling back to direct upload"
+            if jf rt upload "${{ env.TARGET_PACKAGE_NAME }}" "$PR_SLOT_PATH" \
+                 --target-props "$PR_PROPS" \
+               && jf rt s "$PR_SLOT_PATH" 2>/dev/null | grep -q "hidrive-next-pr-${PR_NUMBER}.zip"; then
+              PR_SLOT_SUCCESS=true
+              echo "✅ PR slot refreshed via fallback upload"
+            fi
+          fi
+
+          if [ "$PR_SLOT_SUCCESS" = "true" ]; then
+            echo "PR_SLOT_PATH=${PR_SLOT_PATH}" >> $GITHUB_OUTPUT
+            {
+              echo "### 📦 PR slot refreshed"
+              echo ""
+              echo "- Slot: \`${PR_SLOT_PATH}\` (PR #${PR_NUMBER})"
+              echo "- Source: \`${SOURCE_PATH}\`"
+              echo "- ⚠️ Built from the **branch head**, not from \`refs/pull/${PR_NUMBER}/merge\` - base-branch changes are NOT included."
+            } >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::error::Could not refresh ${PR_SLOT_PATH} - the pr/ slot may be STALE"
+            echo "### ❌ PR slot NOT refreshed (\`${PR_SLOT_PATH}\`) - it may be stale" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Show changes on failure
         if: failure()
