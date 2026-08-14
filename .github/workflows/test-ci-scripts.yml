@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2026 STRATO AG
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Tests the extracted CI shell scripts under .github/scripts/.
+#
+# The coordinate derivation these tests cover decides where a build publishes and
+# refuses builds whose branch and artifact disagree about the Nextcloud major.
+# Running it here means both naming eras and every fail-closed case are verified
+# without triggering a pipeline or touching a registry.
+
+name: Test CI scripts
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/**'
+      - '.github/workflows/test-ci-scripts.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-ci-scripts-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    name: shellcheck and unit tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      # shellcheck is preinstalled on the ubuntu-latest runner image. Scoped to
+      # the scripts that are known clean rather than to .github/scripts/**, so
+      # that pre-existing findings in older scripts do not block merges. Widen
+      # the list as those are cleaned up.
+      - name: Shellcheck
+        run: |
+          shellcheck \
+            .github/scripts/derive-coordinate.sh \
+            .github/scripts/tests/derive-coordinate.test.sh
+
+      # Invoked through `bash` rather than relying on the executable bit, matching
+      # how hidrive-next-build.yml calls detect-app-cache.sh.
+      - name: Derive coordinate — unit tests
+        run: bash .github/scripts/tests/derive-coordinate.test.sh
