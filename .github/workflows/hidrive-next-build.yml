@@ -29,9 +29,13 @@ on:
       - '**.vue'
       - '.gitmodules'
   push:
+    # Globbed so that a per-major dev lane matches when this block is read from
+    # its own branch's copy of the file — which is the only copy GitHub reads.
+    # The previous unsuffixed list matched no `-v<major>` lane, so pushes to
+    # ionos-dev-v32 and ionos-dev-v33 started no run at all.
     branches:
-      - ionos-dev
-      - ionos-stable
+      - 'ionos-dev-v*'
+      - 'ionos-stable-v*'
       - 'rc/**'
       - '*/dev/*'
   workflow_dispatch:
@@ -54,13 +58,14 @@ on:
 
 # Concurrency group is intentionally shared between push and pull_request runs
 # of the same source branch, so a `*/dev/*` branch with an open PR does not
-# produce two parallel runs. Protected branches (ionos-dev/stable/rc/*) use a
-# unique-per-run-id key so consecutive pushes never cancel each other.
+# produce two parallel runs. Protected branches (ionos-dev-v*/ionos-stable-v*/rc/*)
+# use a unique-per-run-id key so consecutive pushes never cancel each other.
 concurrency:
   group: >-
     ${{ github.workflow }}-${{
       (
-        contains(fromJson('["refs/heads/ionos-dev","refs/heads/ionos-stable"]'), github.ref) ||
+        startsWith(github.ref, 'refs/heads/ionos-dev-v') ||
+        startsWith(github.ref, 'refs/heads/ionos-stable-v') ||
         startsWith(github.ref, 'refs/heads/rc/')
       ) && github.run_id ||
       (github.head_ref || github.ref_name)
