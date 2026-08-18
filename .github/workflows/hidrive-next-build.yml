@@ -29,9 +29,17 @@ on:
       - '**.vue'
       - '.gitmodules'
   push:
+    # One converged list, identical on every branch. GitHub evaluates this block
+    # from the pushed branch's own copy, so the list must cover every live lane:
+    # the per-major globs, the legacy unsuffixed lanes (retired later), the trains
+    # in both naming eras, and user dev branches.
     branches:
+      - 'ionos-dev-v*'
+      - 'ionos-stable-v*'
       - ionos-dev
       - ionos-stable
+      - 'rc/**'
+      - '*/dev/*'
 
 env:
   TARGET_PACKAGE_NAME: hidrive-next.zip
