@@ -29,7 +29,13 @@ on:
       - '**.vue'
       - '.gitmodules'
   push:
+    # One converged list, identical on every branch. GitHub evaluates this block
+    # from the pushed branch's own copy, so the list must cover every live lane:
+    # the per-major globs, the legacy unsuffixed lanes (retired later), the trains
+    # in both naming eras, and user dev branches.
     branches:
+      - 'ionos-dev-v*'
+      - 'ionos-stable-v*'
       - ionos-dev
       - ionos-stable
       - 'rc/**'
@@ -60,7 +66,8 @@ concurrency:
   group: >-
     ${{ github.workflow }}-${{
       (
-        contains(fromJson('["refs/heads/ionos-dev","refs/heads/ionos-stable"]'), github.ref) ||
+        startsWith(github.ref, 'refs/heads/ionos-dev') ||
+        startsWith(github.ref, 'refs/heads/ionos-stable') ||
         startsWith(github.ref, 'refs/heads/rc/')
       ) && github.run_id ||
       (github.head_ref || github.ref_name)
