@@ -28,25 +28,23 @@ on:
       - '**.vue'
       - '.gitmodules'
   push:
+    # One converged list, identical on every branch. GitHub evaluates this block
+    # from the pushed branch's own copy, so the list must cover every live lane:
+    # the per-major globs, the legacy unsuffixed lanes (retired later), the trains
+    # in both naming eras, and user dev branches.
     branches:
-      # NC_BRANCH_VERSION literal — env/vars not allowed in `on:` (see env block)
-      - ionos-dev-v30
-      - ionos-stable-v30
+      - 'ionos-dev-v*'
+      - 'ionos-stable-v*'
+      - ionos-dev
+      - ionos-stable
       - 'rc/**'
       - '*/dev/*'
-
-# Concurrency group is intentionally shared between push and pull_request runs
-# of the same source branch, so a `*/dev/*` branch with an open PR does not
-# produce two parallel runs. Protected branches (ionos-dev/stable/rc/*) use a
-# unique-per-run-id key so consecutive pushes never cancel each other.
-#
-# NOTE: ionos-dev-v30 / ionos-stable-v30 below are NC_BRANCH_VERSION literals —
-# env/vars are not allowed inside a `concurrency:` expression (see env block).
 concurrency:
   group: >-
     ${{ github.workflow }}-${{
       (
-        contains(fromJson('["refs/heads/ionos-dev-v30","refs/heads/ionos-stable-v30"]'), github.ref) ||
+        startsWith(github.ref, 'refs/heads/ionos-dev') ||
+        startsWith(github.ref, 'refs/heads/ionos-stable') ||
         startsWith(github.ref, 'refs/heads/rc/')
       ) && github.run_id ||
       (github.head_ref || github.ref_name)
