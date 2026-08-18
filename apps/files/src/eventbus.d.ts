@@ -15,6 +15,8 @@ declare module '@nextcloud/event-bus' {
 
 		'files:filters:changed': undefined
 
+		'files:filters:changed': undefined
+
 		'files:node:created': Node
 		'files:node:deleted': Node
 		'files:node:updated': Node
