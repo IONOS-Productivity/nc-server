@@ -101,3 +101,7 @@
 		}
 	}
 }
+
+.app-navigation .app-navigation-entry__settings li[data-cy-files-navigation-settings-button] {
+	display: none;
+}
