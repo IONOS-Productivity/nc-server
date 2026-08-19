@@ -16,6 +16,7 @@ use OCA\Theming\Themes\DarkTheme;
 use OCA\Theming\Themes\DefaultTheme;
 use OCA\Theming\Themes\DyslexiaFont;
 use OCA\Theming\Themes\HighContrastTheme;
+use OCA\Theming\Themes\IonosTheme;
 use OCA\Theming\Themes\LightTheme;
 use OCA\Theming\ThemingDefaults;
 use OCA\Theming\Util;
@@ -73,6 +74,7 @@ class ThemesServiceTest extends TestCase {
 			'dark',
 			'light-highcontrast',
 			'dark-highcontrast',
+			'ionos',
 			'opendyslexic',
 		];
 		$this->assertEquals($expected, array_keys($this->themesService->getThemes()));
@@ -109,7 +111,25 @@ class ThemesServiceTest extends TestCase {
 			'dark',
 			'light-highcontrast',
 			'dark-highcontrast',
+			'ionos',
 			'opendyslexic',
+		];
+
+		$this->assertEquals($expected, array_keys($this->themesService->getThemes()));
+	}
+
+	public function testGetThemesEnforcedIonos(): void {
+		$this->config->expects($this->once())
+			->method('getSystemValueString')
+			->with('enforce_theme', '')
+			->willReturn('ionos');
+		$this->logger->expects($this->never())
+			->method('error');
+
+		$expected = [
+			'default',
+			'dark',
+			'ionos',
 		];
 
 		$this->assertEquals($expected, array_keys($this->themesService->getThemes()));
@@ -343,6 +363,17 @@ class ThemesServiceTest extends TestCase {
 				null,
 			),
 			'dark-highcontrast' => new DarkHighContrastTheme(
+				$util,
+				$this->themingDefaults,
+				$this->userSession,
+				$urlGenerator,
+				$imageManager,
+				$this->config,
+				$l10n,
+				$appManager,
+				null,
+			),
+			'ionos' => new IonosTheme(
 				$util,
 				$this->themingDefaults,
 				$this->userSession,
