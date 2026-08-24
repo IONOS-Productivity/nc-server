@@ -139,26 +139,43 @@ jobs:
               echo "   ✅ Event type is 'push'"
             fi
 
-            # Version gate check: branch must end with REMOTE_TRIGGER_NC_VERSION or match REMOTE_TRIGGER_RC_BRANCH
-            NC_VERSION="${{ vars.REMOTE_TRIGGER_NC_VERSION }}"
-            RC_BRANCH="${{ vars.REMOTE_TRIGGER_RC_BRANCH }}"
-            BRANCH="${{ github.ref_name }}"
-
-            if [ -z "$NC_VERSION" ]; then
-              echo "- ✅ Version gate: not set — all versions allowed" >> $GITHUB_STEP_SUMMARY
-              echo "   ✅ Version gate: not set — all versions allowed"
-            elif [[ "$BRANCH" == *"$NC_VERSION" ]]; then
-              echo "- ✅ Version gate: branch \`$BRANCH\` matches \`$NC_VERSION\`" >> $GITHUB_STEP_SUMMARY
-              echo "   ✅ Version gate: branch '$BRANCH' matches '$NC_VERSION'"
-            elif [ -n "$RC_BRANCH" ] && [ "$BRANCH" == "$RC_BRANCH" ]; then
-              echo "- ✅ Version gate: branch \`$BRANCH\` matches RC whitelist \`$RC_BRANCH\`" >> $GITHUB_STEP_SUMMARY
-              echo "   ✅ Version gate: branch '$BRANCH' matches RC whitelist '$RC_BRANCH'"
+            USER_DEV_PATTERN='^[^/]+/dev/.*$'
+            if [[ "${{ github.ref_name }}" =~ $USER_DEV_PATTERN ]]; then
+              # */dev/* branches bypass the version gate entirely — they're controlled solely
+              # by ENABLE_REMOTE_TRIGGER_USER_DEV, matching the real job `if:` condition.
+              if [ "${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}" == "true" ]; then
+                echo "- ✅ User-dev branch opt-in (\`ENABLE_REMOTE_TRIGGER_USER_DEV='true'\`)" >> $GITHUB_STEP_SUMMARY
+                echo "   ✅ ENABLE_REMOTE_TRIGGER_USER_DEV='true' — '*/dev/*' trigger is opted in"
+              else
+                echo "- ❌ User-dev branch requires \`ENABLE_REMOTE_TRIGGER_USER_DEV='true'\` (current: \`${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}\`)" >> $GITHUB_STEP_SUMMARY
+                echo "   ❌ '*/dev/*' branch requires ENABLE_REMOTE_TRIGGER_USER_DEV='true' (current: '${{ vars.ENABLE_REMOTE_TRIGGER_USER_DEV }}')"
+                WILL_TRIGGER=false
+              fi
             else
-              echo "- ❌ Version gate: branch \`$BRANCH\` does not match version \`$NC_VERSION\` or RC branch \`$RC_BRANCH\`" >> $GITHUB_STEP_SUMMARY
-              echo "   ❌ Version gate: branch '$BRANCH' does not match version '$NC_VERSION' or RC branch '$RC_BRANCH'"
-              echo "   ℹ️  Build & image push will still run — only QA deployment is skipped"
-              echo "- ℹ️  Build & image push will still run — only QA deployment is skipped" >> $GITHUB_STEP_SUMMARY
-              WILL_TRIGGER=false
+              # Version gate check: ionos-(dev|stable)-v* branches must end with
+              # REMOTE_TRIGGER_NC_VERSION; all other branches reaching here (rc/*) must match
+              # REMOTE_TRIGGER_RC_BRANCH exactly — the suffix check must NOT apply to rc/* or it
+              # could match by coincidence of name.
+              NC_VERSION="${{ vars.REMOTE_TRIGGER_NC_VERSION }}"
+              RC_BRANCH="${{ vars.REMOTE_TRIGGER_RC_BRANCH }}"
+              BRANCH="${{ github.ref_name }}"
+
+              if [ -z "$NC_VERSION" ]; then
+                echo "- ✅ Version gate: not set — all versions allowed" >> $GITHUB_STEP_SUMMARY
+                echo "   ✅ Version gate: not set — all versions allowed"
+              elif [[ "$BRANCH" == ionos-dev-v* || "$BRANCH" == ionos-stable-v* ]] && [[ "$BRANCH" == *"$NC_VERSION" ]]; then
+                echo "- ✅ Version gate: branch \`$BRANCH\` matches \`$NC_VERSION\`" >> $GITHUB_STEP_SUMMARY
+                echo "   ✅ Version gate: branch '$BRANCH' matches '$NC_VERSION'"
+              elif [ -n "$RC_BRANCH" ] && [ "$BRANCH" == "$RC_BRANCH" ]; then
+                echo "- ✅ Version gate: branch \`$BRANCH\` matches RC whitelist \`$RC_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+                echo "   ✅ Version gate: branch '$BRANCH' matches RC whitelist '$RC_BRANCH'"
+              else
+                echo "- ❌ Version gate: branch \`$BRANCH\` does not match version \`$NC_VERSION\` or RC branch \`$RC_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+                echo "   ❌ Version gate: branch '$BRANCH' does not match version '$NC_VERSION' or RC branch '$RC_BRANCH'"
+                echo "   ℹ️  Build & image push will still run — only QA deployment is skipped"
+                echo "- ℹ️  Build & image push will still run — only QA deployment is skipped" >> $GITHUB_STEP_SUMMARY
+                WILL_TRIGGER=false
+              fi
             fi
 
             echo "- ℹ️  All dependent jobs must succeed (checked at job runtime)" >> $GITHUB_STEP_SUMMARY
@@ -542,11 +559,15 @@ jobs:
     # Can be disabled via repository variable 'DISABLE_REMOTE_TRIGGER' (set to 'true' to disable).
     # Version-gate: only trigger QA deployment for the whitelisted NC major version.
     #   Set repo variable 'REMOTE_TRIGGER_NC_VERSION' to the current release version (e.g. "v30").
-    #   Branches for other versions (e.g. ionos-dev-v31) will still build & push images but
-    #   will NOT trigger the remote QA workflow. Leave unset (empty) to allow all versions.
-    # RC-gate: rc/* branches carry no version suffix, so set 'REMOTE_TRIGGER_RC_BRANCH' to the
-    #   exact RC branch that should trigger QA (e.g. "rc/web-3.5"). Only one RC at a time.
-    #   When promoting a new RC, update the variable to the new branch name.
+    #   Only 'ionos-dev-v*'/'ionos-stable-v*' branches are subject to this gate (matched by
+    #   prefix), and among those, only an exact suffix match on REMOTE_TRIGGER_NC_VERSION passes;
+    #   a same-prefix branch for a different version (e.g. 'ionos-dev-v31' when the variable is
+    #   set to "v33") will still build & push images but will NOT trigger the remote QA workflow.
+    #   Leave unset (empty) to allow all versions.
+    # RC-gate: rc/* branches carry no version suffix and are NOT covered by the NC-version
+    #   suffix check above, so set 'REMOTE_TRIGGER_RC_BRANCH' to the exact RC branch that should
+    #   trigger QA (e.g. "rc/web-3.5"). Only one RC at a time. When promoting a new RC, update
+    #   the variable to the new branch name.
     # */dev/* branches bypass the version gate and are controlled solely by ENABLE_REMOTE_TRIGGER_USER_DEV.
     # Configure at: https://github.com/IONOS-Productivity/nc-server/settings/variables/actions
     if: |
@@ -560,7 +581,8 @@ jobs:
       vars.DISABLE_REMOTE_TRIGGER != 'true' &&
       (contains(github.ref_name, '/dev/') ||
        vars.REMOTE_TRIGGER_NC_VERSION == '' ||
-       endsWith(github.ref_name, vars.REMOTE_TRIGGER_NC_VERSION) ||
+       ((startsWith(github.ref_name, 'ionos-dev-v') || startsWith(github.ref_name, 'ionos-stable-v')) &&
+        endsWith(github.ref_name, vars.REMOTE_TRIGGER_NC_VERSION)) ||
        github.ref_name == vars.REMOTE_TRIGGER_RC_BRANCH)
     steps:
       - name: Check prerequisites
