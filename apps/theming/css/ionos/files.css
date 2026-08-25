@@ -62,6 +62,9 @@
 					font-weight: 400;
 					color: var(--ion-breadcrumb-text-default);
 					background-color: transparent;
+					&.action-item__menutoggle:last-child {
+						padding: 2px calc(4 * var(--default-grid-baseline));
+					}
 
 					span.button-vue__text {
 						color: var(--ion-breadcrumb-text-default);
