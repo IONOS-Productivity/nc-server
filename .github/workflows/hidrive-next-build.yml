@@ -1062,6 +1062,10 @@ jobs:
           # | ionos-stable-v*  | main       | stable            |
           # | rc/*             | main       | rc                |
           # | */dev/*          | main       | dev-<branch-pfx>  | (opt-in via ENABLE_REMOTE_TRIGGER_USER_DEV)
+          #
+          # BUILD_TYPE only says which lane a build came from. The ref name is
+          # forwarded verbatim as well, so the downstream release report can name
+          # the RC or branch and link back to it.
 
           BUILD_TYPE="dev"
 
@@ -1100,6 +1104,8 @@ jobs:
               --form "variables[NC_VERSION]=${{ needs.hidrive-next-build.outputs.NC_VERSION }}" \
               --form "variables[BUILD_ID]=${{ github.run_id }}" \
               --form "variables[BUILD_TYPE]=${BUILD_TYPE}" \
+              --form "variables[GITHUB_REF_NAME]=${{ github.ref_name }}" \
+              --form "variables[GITHUB_REPOSITORY]=${{ github.repository }}" \
               --form "variables[SOURCE_BUILD_URL]=${SOURCE_BUILD_URL}" \
               "${{ secrets.GITLAB_TRIGGER_URL }}"; then
               TRIGGER_SUCCESS=true
