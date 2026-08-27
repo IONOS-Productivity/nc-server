@@ -274,6 +274,7 @@ class IonosTheme extends DefaultTheme implements ITheme {
 			'--background-invert-if-bright' => 'invert(100%)',
 			'--background-image-invert-if-bright' => 'no',
 			'--background-image-color-text' => '#ffffff',
+			'--current-year' => '"' . date('Y') . '"',
 		];
 
 		return array_merge(

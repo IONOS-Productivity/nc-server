@@ -1,0 +1,43 @@
+/**
+ * SPDX-FileCopyrightText: 2026 IONOS SE
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*
+ * Guest/login/share page footer.
+ *
+ * NC's .guest-box and .body-login-container share a box-shadow rule in
+ * core/css/guest.scss. Remove it from the <footer> only (the password
+ * form uses .body-login-container and keeps its shadow).
+ * Center the footer and make it full-width so it sits flush at the
+ * bottom of the viewport instead of appearing as an inline chip.
+ *
+ * The footer text "HiDrive Next" (getShortFooter entity) is replaced
+ * with "© YEAR IONOS SE" via a CSS pseudo-element; the year comes from the
+ * --current-year CSS variable set in IonosTheme::getCSSVariables(). The slogan is set to
+ * empty in nc-config so getShortFooter() only renders the entity <a>.
+ * The href still points to the configured ionos_homepage URL.
+ */
+body#body-login footer.guest-box {
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    max-width: none;
+    text-align: center;
+    border-radius: 0;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: calc(2 * var(--default-grid-baseline));
+}
+
+body#body-login footer.guest-box p.info a.entity-name {
+    font-size: 0;
+    color: transparent;
+}
+
+body#body-login footer.guest-box p.info a.entity-name::before {
+    content: '© ' var(--current-year) ' IONOS SE';
+    font-size: var(--default-font-size, 14px);
+    color: var(--color-text-maxcontrast);
+}
