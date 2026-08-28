@@ -258,7 +258,6 @@ class IonosTheme extends DefaultTheme implements ITheme {
 			'--border-radius-rounded' => '28px',
 			'--border-radius-pill' => '100px',
 			'--default-clickable-area' => '44px',
-			'--default-line-height' => '24px',
 			'--default-grid-baseline' => '4px',
 			'--header-height' => '64px',
 			'--body-container-margin' => '0px',
