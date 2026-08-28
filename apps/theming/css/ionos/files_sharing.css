@@ -33,36 +33,6 @@
 	}
 }
 
-/* No footer on public share pages. */
-body#body-public footer.guest-box {
-	display: none;
-}
-
-/*
- * Password-protected share form box and any other .guest-box card
- * (e.g. file drop upload form) on public share pages.
- */
-.guest-box {
-	background-color: light-dark(var(--ion-color-cool-grey-c1), var(--ion-color-cool-grey-c8));
-	color: var(--ion-text);
-	border-radius: 16px;
-	padding: 16px;
-	width: 85%;
-	max-width: 466px;
-	min-width: fit-content;
-
-	fieldset {
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 13px;
-
-		p {
-			width: 100%;
-		}
-	}
-}
-
 /*
  * Vue Select dropdown used by SharingInput.vue for share recipient search.
  */
