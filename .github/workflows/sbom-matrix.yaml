@@ -48,7 +48,6 @@ name: SBOM generation (matrix)
 #
 # Components processed:
 # - Main Nextcloud server (root directory)
-# - Custom legacy theme (themes/nc-ionos-theme/IONOS)
 # - Custom apps (apps-custom/*)
 # - External apps (apps-external/*)
 
@@ -123,12 +122,6 @@ jobs:
                 "npm_output": "bom.nextcloud.npm.json"
               },
               {
-                "name": "theme-nc-ionos-theme-legacy",
-                "project_name": "HiDrive NEXT Theme: nc-ionos-theme",
-                "path": "themes/nc-ionos-theme/IONOS",
-                "npm_output": "bom.theme-nc-ionos-theme-legacy.json"
-              },
-              {
                 "name": "app-simplesettings",
                 "project_name": "HiDrive NEXT App: simplesettings",
                 "path": "apps-custom/simplesettings",
@@ -146,12 +139,6 @@ jobs:
                 "project_name": "HiDrive NEXT App: nc_ionos_processes",
                 "path": "apps-custom/nc_ionos_processes",
                 "composer_output": "bom.app-ionos-processes.json"
-              },
-              {
-                "name": "app-theming",
-                "project_name": "HiDrive NEXT App: nc_theming",
-                "path": "apps-custom/nc_theming",
-                "composer_output": "bom.app-theming.json"
               },
               {
                 "name": "app-viewer",
