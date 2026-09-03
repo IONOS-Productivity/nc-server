@@ -1,0 +1,45 @@
+/**
+ * SPDX-FileCopyrightText: 2026 IONOS SE
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*
+ * Sharing sidebar tab (files app sidebar, #app-sidebar-vue).
+ * Targets SharingTab.vue (.sharingTab) and SharingDetailsTab.vue
+ * (.sharingTabDetailsView__quick-permissions) which are rendered in V33.
+ */
+#app-sidebar-vue.app-sidebar {
+	div.sharingTab {
+		.sharingTab__content {
+			ul {
+				padding: 4px 0;
+
+				&.sharing-link-list {
+					div.sharing-entry__desc {
+						gap: 5px;
+					}
+				}
+			}
+		}
+		div.sharingTabDetailsView__quick-permissions {
+			span.checkbox-radio-switch {
+				padding: 8px;
+
+				.checkbox-content__icon--checked svg {
+					color: #fff;
+				}
+			}
+		}
+	}
+}
+
+/*
+ * Vue Select dropdown used by SharingInput.vue for share recipient search.
+ */
+li.vs__dropdown-option {
+	background-color: var(--ion-button-sidebar-background);
+	color: var(--ion-button-sidebar-text);
+	&.vs__dropdown-option--highlight {
+		background-color: var(--ion-button-sidebar-background-hover);
+	}
+}

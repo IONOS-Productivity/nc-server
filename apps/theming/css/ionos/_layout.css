@@ -1,0 +1,34 @@
+body {
+	background-color: var(--ion-color-main-background);
+}
+
+#body-user {
+	div.files-list {
+		--row-height: 55px;
+
+		@media only screen and (max-width: 1023px) {
+			--row-height: 65px;
+		}
+	}
+}
+
+#content-vue {
+	margin-top: var(--header-height);
+	margin-left: 0;
+	margin-right: 0;
+	margin-bottom: 0;
+	width: 100%;
+	border-radius: 0;
+}
+
+#body-login {
+	overflow-x: hidden;
+
+	#header .logo {
+		background-image: none;
+	}
+
+.svg.icon-confirm {
+	background-size: 24px;
+ }
+}

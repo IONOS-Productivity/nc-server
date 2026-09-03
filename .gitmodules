@@ -10,15 +10,9 @@
 [submodule "apps-custom/googleanalytics"]
 	path = apps-custom/googleanalytics
 	url = git@github.com:IONOS-Productivity/nc-googleanalytics.git
-[submodule "apps-custom/nc_theming"]
-	path = apps-custom/nc_theming
-	url = git@github.com:IONOS-Productivity/nc-theming.git
 [submodule "apps-custom/nc_ionos_processes"]
 	path = apps-custom/nc_ionos_processes
 	url = git@github.com:IONOS-Productivity/nc-ionos-processes.git
-[submodule "themes/nc-ionos-theme"]
-	path = themes/nc-ionos-theme
-	url = git@github.com:IONOS-Productivity/nc-ionos-theme.git
 [submodule "apps-external/viewer"]
 	path = apps-external/viewer
 	url = git@github.com:IONOS-Productivity/nc-viewer.git
