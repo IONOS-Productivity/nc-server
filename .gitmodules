@@ -15,7 +15,7 @@
 	url = git@github.com:IONOS-Productivity/nc-simplesettings.git
 [submodule "apps-external/user_oidc"]
 	path = apps-external/user_oidc
-	url = git@github.com:nextcloud/user_oidc.git
+	url = git@github.com:IONOS-Productivity/nc-user_oidc.git
 [submodule "apps-custom/googleanalytics"]
 	path = apps-custom/googleanalytics
 	url = git@github.com:IONOS-Productivity/nc-googleanalytics.git
