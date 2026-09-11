@@ -78,7 +78,12 @@ class ServerFactory {
 		$useCollection = $isPublicShare && !$needsSharesInRoot;
 		$debugEnabled = $this->config->getSystemValue('debug', false);
 		[$tree, $rootCollection] = $this->getTree($useCollection);
+
+		// Set streaming of PROPFIND responses
+		Server::$streamMultiStatus = true;
+
 		$server = new Server($tree);
+
 		// Set URL explicitly due to reverse-proxy situations
 		$server->httpRequest->setUrl($requestUri);
 		$server->setBaseUri($baseUri);
@@ -180,7 +185,8 @@ class ServerFactory {
 				$server->addPlugin(new SharesPlugin(
 					$tree,
 					$this->userSession,
-					\OCP\Server::get(\OCP\Share\IManager::class)
+					\OCP\Server::get(\OCP\Share\IManager::class),
+					\OCP\Server::get(IRootFolder::class),
 				));
 				$server->addPlugin(new CommentPropertiesPlugin(\OCP\Server::get(ICommentsManager::class), $this->userSession));
 				$server->addPlugin(new FilesReportPlugin(

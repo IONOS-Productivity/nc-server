@@ -56,7 +56,7 @@ jobs:
           - 'capabilities_features'
           - 'collaboration_features'
           - 'comments_features'
-          - 'dav_features'
+          - '--tags ~@requires-s3 dav_features'
           - 'features'
           - 'federation_features'
           - '--tags ~@large files_features'
@@ -129,6 +129,7 @@ jobs:
           extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, imagick, intl, json, ldap, libxml, mbstring, openssl, pcntl, posix, redis, session, simplexml, xmlreader, xmlwriter, zip, zlib, sqlite, pdo_sqlite
           coverage: none
           ini-file: development
+          ini-values: disable_functions=""
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

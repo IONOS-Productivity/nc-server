@@ -1528,6 +1528,7 @@
     <UndefinedClass>
       <code><![CDATA[Circles]]></code>
       <code><![CDATA[Circles]]></code>
+      <code><![CDATA[Circles]]></code>
     </UndefinedClass>
     <UndefinedDocblockClass>
       <code><![CDATA[$this->getRoomShareHelper()]]></code>
@@ -1784,12 +1785,18 @@
   <file src="apps/files_trashbin/lib/Helper.php">
     <InternalClass>
       <code><![CDATA[new View('/' . $user . '/files_trashbin/files')]]></code>
+      <code><![CDATA[new View('/' . $user . '/files_trashbin/files')]]></code>
     </InternalClass>
     <InternalMethod>
       <code><![CDATA[getAbsolutePath]]></code>
       <code><![CDATA[getAbsolutePath]]></code>
+      <code><![CDATA[getAbsolutePath]]></code>
+      <code><![CDATA[getAbsolutePath]]></code>
+      <code><![CDATA[getMount]]></code>
       <code><![CDATA[getMount]]></code>
       <code><![CDATA[is_dir]]></code>
+      <code><![CDATA[is_dir]]></code>
+      <code><![CDATA[new View('/' . $user . '/files_trashbin/files')]]></code>
       <code><![CDATA[new View('/' . $user . '/files_trashbin/files')]]></code>
     </InternalMethod>
   </file>
@@ -1821,19 +1828,6 @@
     <MismatchingDocblockReturnType>
       <code><![CDATA[INode]]></code>
     </MismatchingDocblockReturnType>
-  </file>
-  <file src="apps/files_trashbin/lib/Sabre/TrashRoot.php">
-    <InvalidReturnStatement>
-      <code><![CDATA[$entry]]></code>
-    </InvalidReturnStatement>
-    <InvalidReturnType>
-      <code><![CDATA[ITrash]]></code>
-    </InvalidReturnType>
-  </file>
-  <file src="apps/files_trashbin/lib/Sabre/TrashbinPlugin.php">
-    <InternalMethod>
-      <code><![CDATA[free_space]]></code>
-    </InternalMethod>
   </file>
   <file src="apps/files_trashbin/lib/Storage.php">
     <DeprecatedMethod>
@@ -2201,7 +2195,6 @@
     </DeprecatedConstant>
     <DeprecatedMethod>
       <code><![CDATA[deleteUserValue]]></code>
-      <code><![CDATA[getAppValue]]></code>
       <code><![CDATA[getAppValue]]></code>
       <code><![CDATA[getAppValue]]></code>
       <code><![CDATA[getAppValue]]></code>
@@ -2920,11 +2913,7 @@
     <DeprecatedMethod>
       <code><![CDATA[\OC_App::getAllApps()]]></code>
       <code><![CDATA[getFilteredValues]]></code>
-      <code><![CDATA[getValues]]></code>
     </DeprecatedMethod>
-    <FalsableReturnStatement>
-      <code><![CDATA[$this->appConfig->getValues($app, false)]]></code>
-    </FalsableReturnStatement>
   </file>
   <file src="core/Command/Db/ConvertType.php">
     <DeprecatedMethod>
@@ -3877,7 +3866,7 @@
   </file>
   <file src="lib/private/Group/Manager.php">
     <LessSpecificReturnStatement>
-      <code><![CDATA[$groups]]></code>
+      <code><![CDATA[$this->getGroupsObjects($groupIds)]]></code>
     </LessSpecificReturnStatement>
     <MoreSpecificReturnType>
       <code><![CDATA[\OC\Group\Group[]]]></code>

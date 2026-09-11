@@ -1296,15 +1296,6 @@
                     }
                 }
             },
-            "CloudFederationApiCapabilities": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "object"
-                    }
-                }
-            },
             "CloudFederationApiError": {
                 "type": "object",
                 "required": [
@@ -1623,6 +1614,48 @@
                     "replacementUserDisplayName": {
                         "type": "string",
                         "nullable": true
+                    }
+                }
+            },
+            "DavPendingFederatedCalendar": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "displayName",
+                    "color",
+                    "sharedBy",
+                    "sharedByDisplayName",
+                    "remoteUrl",
+                    "permissions",
+                    "components"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "displayName": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sharedBy": {
+                        "type": "string"
+                    },
+                    "sharedByDisplayName": {
+                        "type": "string"
+                    },
+                    "remoteUrl": {
+                        "type": "string"
+                    },
+                    "permissions": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "components": {
+                        "type": "string"
                     }
                 }
             },
@@ -3850,6 +3883,21 @@
                     },
                     "websiteScope": {
                         "$ref": "#/components/schemas/ProvisioningApiUserDetailsScope"
+                    }
+                }
+            },
+            "ProvisioningApiUserDetailsGroupDisplayname": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "displayname"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "displayname": {
+                        "type": "string"
                     }
                 }
             },
@@ -7163,9 +7211,6 @@
                                                                 },
                                                                 {
                                                                     "$ref": "#/components/schemas/CorePublicCapabilities"
-                                                                },
-                                                                {
-                                                                    "$ref": "#/components/schemas/CloudFederationApiCapabilities"
                                                                 },
                                                                 {
                                                                     "$ref": "#/components/schemas/CommentsCapabilities"
@@ -16967,167 +17012,6 @@
                 }
             }
         },
-        "/index.php/ocm/invite-accepted": {
-            "post": {
-                "operationId": "cloud_federation_api-request_handler-invite-accepted",
-                "summary": "Inform the sender that an invitation was accepted to start sharing",
-                "description": "Inform about an accepted invitation so the user on the sender provider's side can initiate the OCM share creation. To protect the identity of the parties, for shares created following an OCM invitation, the user id MAY be hashed, and recipients implementing the OCM invitation workflow MAY refuse to process shares coming from unknown parties.\nhttps://cs3org.github.io/OCM-API/docs.html?branch=v1.1.0&repo=OCM-API&user=cs3org#/paths/~1invite-accepted/post\nNote: Not implementing 404 Invitation token does not exist, instead using 400",
-                "tags": [
-                    "cloud_federation_api/request_handler"
-                ],
-                "security": [
-                    {},
-                    {
-                        "bearer_auth": []
-                    },
-                    {
-                        "basic_auth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "recipientProvider",
-                                    "token",
-                                    "userID",
-                                    "email",
-                                    "name"
-                                ],
-                                "properties": {
-                                    "recipientProvider": {
-                                        "type": "string",
-                                        "description": "The address of the recipent's provider"
-                                    },
-                                    "token": {
-                                        "type": "string",
-                                        "description": "The token used for the invitation"
-                                    },
-                                    "userID": {
-                                        "type": "string",
-                                        "description": "The userID of the recipient at the recipient's provider"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "description": "The email address of the recipient"
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The display name of the recipient"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Invitation accepted",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": [
-                                        "userID",
-                                        "email",
-                                        "name"
-                                    ],
-                                    "properties": {
-                                        "userID": {
-                                            "type": "string"
-                                        },
-                                        "email": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Invitation token does not exist",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": [
-                                        "message",
-                                        "error"
-                                    ],
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "error": {
-                                            "type": "boolean",
-                                            "enum": [
-                                                true
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid token",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": [
-                                        "message",
-                                        "error"
-                                    ],
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "error": {
-                                            "type": "boolean",
-                                            "enum": [
-                                                true
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "User is already known by the OCM provider",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": [
-                                        "message",
-                                        "error"
-                                    ],
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "error": {
-                                            "type": "boolean",
-                                            "enum": [
-                                                true
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/ocs/v2.php/apps/dashboard/api/v1/widget-items": {
             "get": {
                 "operationId": "dashboard-dashboard_api-get-widget-items",
@@ -18060,6 +17944,377 @@
                     },
                     "403": {
                         "description": "Missing permissions to get direct link",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ocs/v2.php/apps/dav/api/v1/federated_calendars/pending": {
+            "get": {
+                "operationId": "dav-federated_calendar-get-pending",
+                "summary": "Get the pending federated calendar invitations of the current user",
+                "tags": [
+                    "dav/federated_calendar"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pending federated calendar invitations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/DavPendingFederatedCalendar"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "When the user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "ocs"
+                                            ],
+                                            "properties": {
+                                                "ocs": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "meta",
+                                                        "data"
+                                                    ],
+                                                    "properties": {
+                                                        "meta": {
+                                                            "$ref": "#/components/schemas/OCSMeta"
+                                                        },
+                                                        "data": {
+                                                            "nullable": true
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "ocs"
+                                            ],
+                                            "properties": {
+                                                "ocs": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "meta",
+                                                        "data"
+                                                    ],
+                                                    "properties": {
+                                                        "meta": {
+                                                            "$ref": "#/components/schemas/OCSMeta"
+                                                        },
+                                                        "data": {}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ocs/v2.php/apps/dav/api/v1/federated_calendars/pending/{id}": {
+            "post": {
+                "operationId": "dav-federated_calendar-accept",
+                "summary": "Accept a pending federated calendar invitation",
+                "tags": [
+                    "dav/federated_calendar"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id of the pending federated calendar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation accepted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "nullable": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The federated calendar was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "dav-federated_calendar-decline",
+                "summary": "Decline a pending federated calendar invitation",
+                "tags": [
+                    "dav/federated_calendar"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id of the pending federated calendar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation declined successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "nullable": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The federated calendar was not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -27400,7 +27655,7 @@
                         }
                     },
                     "303": {
-                        "description": "Redirect to login URL",
+                        "description": "Redirect to the login URL",
                         "headers": {
                             "Location": {
                                 "schema": {
@@ -27511,6 +27766,10 @@
                                         },
                                         "user_id": {
                                             "type": "string"
+                                        },
+                                        "x.nc-gss.secondary_url": {
+                                            "type": "string",
+                                            "nullable": true
                                         }
                                     }
                                 }
@@ -30651,7 +30910,8 @@
                                                 "data": {
                                                     "type": "object",
                                                     "required": [
-                                                        "users"
+                                                        "users",
+                                                        "groups"
                                                     ],
                                                     "properties": {
                                                         "users": {
@@ -30673,6 +30933,12 @@
                                                                         }
                                                                     }
                                                                 ]
+                                                            }
+                                                        },
+                                                        "groups": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/components/schemas/ProvisioningApiUserDetailsGroupDisplayname"
                                                             }
                                                         }
                                                     }
@@ -31116,7 +31382,8 @@
                                                 "data": {
                                                     "type": "object",
                                                     "required": [
-                                                        "users"
+                                                        "users",
+                                                        "groups"
                                                     ],
                                                     "properties": {
                                                         "users": {
@@ -31138,6 +31405,12 @@
                                                                         }
                                                                     }
                                                                 ]
+                                                            }
+                                                        },
+                                                        "groups": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/components/schemas/ProvisioningApiUserDetailsGroupDisplayname"
                                                             }
                                                         }
                                                     }
@@ -35880,7 +36153,9 @@
                         "description": "ID of the config",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "^.*$",
+                            "default": ""
                         }
                     },
                     {
@@ -36053,7 +36328,9 @@
                         "description": "ID of the config",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "^.*$",
+                            "default": ""
                         }
                     },
                     {
@@ -36237,7 +36514,9 @@
                         "description": "ID of the config",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "^.*$",
+                            "default": ""
                         }
                     },
                     {
@@ -36404,7 +36683,9 @@
                         "description": "ID of the LDAP config",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "^.*$",
+                            "default": ""
                         }
                     },
                     {
@@ -36571,7 +36852,9 @@
                         "description": "ID of the LDAP config",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "^.*$",
+                            "default": ""
                         }
                     },
                     {
