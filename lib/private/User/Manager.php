@@ -8,10 +8,12 @@
 namespace OC\User;
 
 use OC\Hooks\PublicEmitter;
+use OC\KnownUser\KnownUserService;
 use OC\Memcache\WithLocalCache;
 use OCP\Config\IUserConfig;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Federation\ICloudId;
 use OCP\HintException;
 use OCP\ICache;
 use OCP\ICacheFactory;
@@ -68,6 +70,9 @@ class Manager extends PublicEmitter implements IUserManager {
 
 	private DisplayNameCache $displayNameCache;
 
+	// These services cannot be injected through DI because user manager is used early in install process
+	private ?KnownUserService $knownUserService = null;
+
 	// This constructor can't autoload any class requiring a DB connection.
 	public function __construct(
 		private IConfig $config,
@@ -80,6 +85,10 @@ class Manager extends PublicEmitter implements IUserManager {
 			unset($this->cachedUsers[$user->getUID()]);
 		});
 		$this->displayNameCache = new DisplayNameCache($cacheFactory, $this);
+	}
+
+	private function getKnownUserService(): KnownUserService {
+		return $this->knownUserService ??= Server::get(KnownUserService::class);
 	}
 
 	/**
@@ -112,19 +121,25 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * @param string $uid
 	 * @return \OC\User\User|null Either the user or null if the specified user does not exist
 	 */
-	public function get($uid) {
+	public function get($uid, array $excludeBackends = []) {
 		if (is_null($uid) || $uid === '' || $uid === false) {
 			return null;
-		}
-		if (isset($this->cachedUsers[$uid])) { //check the cache first to prevent having to loop over the backends
-			return $this->cachedUsers[$uid];
 		}
 
 		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
 			return null;
 		}
 
+		// check the cache first to prevent having to loop over the backends
+		if ($excludeBackends === [] && isset($this->cachedUsers[$uid])) {
+			return $this->cachedUsers[$uid];
+		}
+
 		$cachedBackend = $this->cache->get(sha1($uid));
+		if (in_array($cachedBackend, $excludeBackends)) {
+			$cachedBackend = null;
+		}
+
 		if ($cachedBackend !== null && isset($this->backends[$cachedBackend])) {
 			// Cache has the info of the user backend already, so ask that one directly
 			$backend = $this->backends[$cachedBackend];
@@ -139,6 +154,10 @@ class Manager extends PublicEmitter implements IUserManager {
 				continue;
 			}
 
+			if (in_array($i, $excludeBackends)) {
+				continue;
+			}
+
 			if ($backend->userExists($uid)) {
 				// Hash $uid to ensure that only valid characters are used for the cache key
 				$this->cache->set(sha1($uid), $i, 300);
@@ -149,6 +168,10 @@ class Manager extends PublicEmitter implements IUserManager {
 	}
 
 	public function getDisplayName(string $uid): ?string {
+		if (isset($this->cachedUsers[$uid])) {
+			return $this->cachedUsers[$uid]->getDisplayName();
+		}
+
 		return $this->displayNameCache->getDisplayName($uid);
 	}
 
@@ -182,12 +205,12 @@ class Manager extends PublicEmitter implements IUserManager {
 	 * @param string $uid
 	 * @return bool
 	 */
-	public function userExists($uid) {
+	public function userExists($uid, array $excludeBackends = []) {
 		if (strlen($uid) > IUser::MAX_USERID_LENGTH) {
 			return false;
 		}
 
-		$user = $this->get($uid);
+		$user = $this->get($uid, $excludeBackends);
 		return ($user !== null);
 	}
 
@@ -347,12 +370,15 @@ class Manager extends PublicEmitter implements IUserManager {
 				$backendUsers = $backend->searchKnownUsersByDisplayName($searcher, $pattern, $limit, $offset);
 			} else {
 				// Better than nothing, but filtering after pagination can remove lots of results.
-				$backendUsers = $backend->getDisplayNames($pattern, $limit, $offset);
+				$backendUsers = array_filter(
+					$backend->getDisplayNames($pattern, $limit, $offset),
+					fn (string $uid): bool => $this->getKnownUserService()->isKnownToUser($searcher, $uid),
+					ARRAY_FILTER_USE_KEY,
+				);
+
 			}
-			if (is_array($backendUsers)) {
-				foreach ($backendUsers as $uid => $displayName) {
-					$users[] = $this->getUserObject($uid, $backend);
-				}
+			foreach ($backendUsers as $uid => $displayName) {
+				$users[] = $this->getUserObject($uid, $backend);
 			}
 		}
 
@@ -430,7 +456,16 @@ class Manager extends PublicEmitter implements IUserManager {
 		if ($state === false) {
 			throw new \InvalidArgumentException($l->t('Could not create account'));
 		}
-		$user = $this->getUserObject($uid, $backend);
+		try {
+			$user = $this->getUserObject($uid, $backend);
+		} catch (\RuntimeException $e) {
+			$this->logger->error('Failed to get user after creation', [
+				'exception' => $e,
+				'uid' => $uid,
+				'exists_backend' => $backend->userExists($uid),
+			]);
+			throw new \RuntimeException('Failed to get user after creation', previous: $e);
+		}
 		if ($user instanceof IUser) {
 			/** @deprecated 21.0.0 use UserCreatedEvent event with the IEventDispatcher instead */
 			$this->emit('\OC\User', 'postCreateUser', [$user, $password]);
@@ -836,5 +871,9 @@ class Manager extends PublicEmitter implements IUserManager {
 
 	public function getExistingUser(string $userId, ?string $displayName = null): IUser {
 		return new LazyUser($userId, $this, $displayName);
+	}
+
+	public function getFederatedUser(ICloudId $cloudId): IUser {
+		return new LazyUser($cloudId->getDisplayId(), $this, $cloudId->getDisplayId());
 	}
 }

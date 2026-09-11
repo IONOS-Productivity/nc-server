@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { configureNextcloud, docker, getContainer, getContainerName, runExec, runOcc, startNextcloud, stopNextcloud, waitOnNextcloud } from '@nextcloud/e2e-test-server'
+import { configureNextcloud, docker, getContainer, getContainerName, runOcc, startNextcloud, stopNextcloud, waitOnNextcloud } from '@nextcloud/e2e-test-server'
 import { defineConfig } from 'cypress'
 import cypressSplit from 'cypress-split'
 import vitePreprocessor from 'cypress-vite'
@@ -57,6 +57,11 @@ export default defineConfig({
 	e2e: {
 		// Disable session isolation
 		testIsolation: false,
+
+		// The default 4s regularly expires on plain rendering latency on slow
+		// CI runners. Prefer explicit waits where a request or state exists to
+		// wait on; this only buys headroom for rendering, which has neither.
+		defaultCommandTimeout: 10000,
 
 		requestTimeout: 30000,
 
@@ -165,14 +170,14 @@ export default defineConfig({
 			config.baseUrl = `http://localhost:${port}/index.php`
 			// if needed for the setup tests, connect to the actions network
 			await connectToActionsNetwork()
-			// make sure not to write into apps but use a local apps folder
-			runExec(['mkdir', 'apps-cypress'])
-			runExec(['cp', 'cypress/fixtures/app.config.php', 'config'])
 			// now wait until Nextcloud is ready and configure it
 			await waitOnNextcloud(ip)
 			await configureNextcloud()
 			// additionally we do not want to DoS the app store
 			runOcc(['config:system:set', 'appstoreenabled', '--value', 'false', '--type', 'boolean'])
+			// Disable the unsupported-browser redirect so Cypress (Chrome 118 / Electron 27)
+			// does not hit the "Your browser is not supported" page on every visit.
+			runOcc(['config:system:set', 'no_unsupported_browser_warning', '--value', 'true', '--type', 'boolean'])
 
 			// for later use in tests save the container name
 			// @ts-expect-error we are adding a custom property
