@@ -12,6 +12,7 @@ namespace OCA\Provisioning_API\Controller;
 
 use InvalidArgumentException;
 use OC\Authentication\Token\RemoteWipe;
+use OC\Group\DisplayNameCache as GroupDisplayNameCache;
 use OC\Group\Group;
 use OC\KnownUser\KnownUserService;
 use OC\User\Backend;
@@ -36,6 +37,7 @@ use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\IRootFolder;
 use OCP\Group\ISubAdmin;
 use OCP\HintException;
+use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IGroup;
 use OCP\IGroupManager;
@@ -56,6 +58,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @psalm-import-type Provisioning_APIGroupDetails from ResponseDefinitions
  * @psalm-import-type Provisioning_APIUserDetails from ResponseDefinitions
+ * @psalm-import-type Provisioning_APIUserDetailsGroupDisplayname from ResponseDefinitions
  */
 class UsersController extends AUserDataOCSController {
 
@@ -81,6 +84,8 @@ class UsersController extends AUserDataOCSController {
 		private IEventDispatcher $eventDispatcher,
 		private IPhoneNumberUtil $phoneNumberUtil,
 		private IAppManager $appManager,
+		private IAppConfig $appConfig,
+		GroupDisplayNameCache $groupDisplayNameCache,
 	) {
 		parent::__construct(
 			$appName,
@@ -93,6 +98,7 @@ class UsersController extends AUserDataOCSController {
 			$subAdminManager,
 			$l10nFactory,
 			$rootFolder,
+			$groupDisplayNameCache,
 		);
 
 		$this->l10n = $l10nFactory->get($appName);
@@ -146,7 +152,7 @@ class UsersController extends AUserDataOCSController {
 	 * @param string $search Text to search for
 	 * @param int|null $limit Limit the amount of groups returned
 	 * @param int $offset Offset for searching for groups
-	 * @return DataResponse<Http::STATUS_OK, array{users: array<string, Provisioning_APIUserDetails|array{id: string}>}, array{}>
+	 * @return DataResponse<Http::STATUS_OK, array{users: array<string, Provisioning_APIUserDetails|array{id: string}>, groups: list<Provisioning_APIUserDetailsGroupDisplayname>}, array{}>
 	 *
 	 * 200: Users details returned
 	 */
@@ -198,7 +204,8 @@ class UsersController extends AUserDataOCSController {
 		}
 
 		return new DataResponse([
-			'users' => $usersDetails
+			'users' => $usersDetails,
+			'groups' => $this->findGroupsWithDisplayname($usersDetails),
 		]);
 	}
 
@@ -591,7 +598,7 @@ class UsersController extends AUserDataOCSController {
 			// Send new user mail only if a mail is set
 			if ($email !== '') {
 				$newUser->setSystemEMailAddress($email);
-				if ($this->config->getAppValue('core', 'newUser.sendEmail', 'yes') === 'yes') {
+				if ($this->appConfig->getValueBool('core', 'newUser.sendEmail', true)) {
 					try {
 						$emailTemplate = $this->newUserMailHelper->generateTemplate($newUser, $generatePasswordResetToken);
 						$this->newUserMailHelper->sendMail($newUser, $emailTemplate);
@@ -1125,7 +1132,8 @@ class UsersController extends AUserDataOCSController {
 				$this->config->setUserValue($targetUser->getUID(), 'core', 'locale', $value);
 				break;
 			case self::USER_FIELD_TIMEZONE:
-				if (!in_array($value, \DateTimeZone::listIdentifiers())) {
+				// Older browsers still report deprecated aliases like Europe/Kiev.
+				if (!in_array($value, \DateTimeZone::listIdentifiers(\DateTimeZone::ALL_WITH_BC))) {
 					throw new OCSException($this->l10n->t('Invalid timezone'), 101);
 				}
 				$this->config->setUserValue($targetUser->getUID(), 'core', 'timezone', $value);

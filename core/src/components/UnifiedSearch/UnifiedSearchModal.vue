@@ -102,12 +102,13 @@
 				</NcCheckboxRadioSwitch>
 			</div>
 			<div class="unified-search-modal__filters-applied">
-				<FilterChip
+				<NcChip
 					v-for="filter in filters"
 					:key="filter.id"
 					:text="filter.name ?? filter.text"
 					pretext=""
-					@delete="removeFilter(filter)">
+					:aria-label-close="t('core', 'Remove filter: {text}', { text: filter.name ?? filter.text })"
+					@close="removeFilter(filter)">
 					<template #icon>
 						<NcAvatar
 							v-if="filter.type === 'person'"
@@ -117,9 +118,13 @@
 							hide-user-status
 							:hide-favorite="false" />
 						<IconCalendarRange v-else-if="filter.type === 'date'" />
-						<img v-else :src="filter.icon" alt="">
+						<img
+							v-else
+							:src="filter.icon"
+							class="unified-search-modal__filter-icon"
+							alt="">
 					</template>
-				</FilterChip>
+				</NcChip>
 			</div>
 		</div>
 
@@ -208,6 +213,7 @@ import NcActions from '@nextcloud/vue/components/NcActions'
 import NcAvatar from '@nextcloud/vue/components/NcAvatar'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import NcChip from '@nextcloud/vue/components/NcChip'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcInputField from '@nextcloud/vue/components/NcInputField'
@@ -220,7 +226,6 @@ import IconListBox from 'vue-material-design-icons/ListBox.vue'
 import IconMagnify from 'vue-material-design-icons/Magnify.vue'
 import CustomDateRangeModal from './CustomDateRangeModal.vue'
 import SearchableList from './SearchableList.vue'
-import FilterChip from './SearchFilterChip.vue'
 import SearchResult from './SearchResult.vue'
 import { unifiedSearchLogger } from '../../logger.js'
 import { getContacts, getProviders, search as unifiedSearch } from '../../services/UnifiedSearchService.js'
@@ -238,11 +243,11 @@ export default defineComponent({
 		IconMagnify,
 
 		CustomDateRangeModal,
-		FilterChip,
 		NcActions,
 		NcActionButton,
 		NcAvatar,
 		NcButton,
+		NcChip,
 		NcEmptyContent,
 		NcDialog,
 		NcInputField,
@@ -585,6 +590,9 @@ export default defineComponent({
 
 					this.updateResults(newResults)
 					this.searching = false
+				}).catch((error) => {
+					unifiedSearchLogger.error(error)
+					this.searching = false
 				})
 			}
 
@@ -778,11 +786,13 @@ export default defineComponent({
 				case '7days':
 				// For 'Last 7 days', start date is 7 days ago, end is today
 					startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6, 0, 0, 0, 0)
+					endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
 					this.dateFilter.text = t('core', 'Last 7 days')
 					break
 				case '30days':
 				// For 'Last 30 days', start date is 30 days ago, end is today
 					startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29, 0, 0, 0, 0)
+					endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
 					this.dateFilter.text = t('core', 'Last 30 days')
 					break
 				case 'thisyear':
@@ -939,6 +949,7 @@ export default defineComponent({
 		padding-top: 4px;
 		display: flex;
 		flex-wrap: wrap;
+		gap: 4px;
 	}
 
 	&__no-content {
@@ -949,7 +960,7 @@ export default defineComponent({
 	}
 
 	&__results {
-		overflow: hidden scroll;
+		overflow: hidden auto;
 		// Adjust padding to match container but keep the scrollbar on the very end
 		padding-inline: 0 12px;
 		padding-block: 0 12px;

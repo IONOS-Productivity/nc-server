@@ -18,8 +18,6 @@ use OCP\Share\IShare;
 use Psr\Log\LoggerInterface;
 
 class LookupPlugin implements ISearchPlugin {
-	/** @var string remote part of the current user's cloud id */
-	private string $currentUserRemote;
 
 	public function __construct(
 		private IConfig $config,
@@ -30,7 +28,6 @@ class LookupPlugin implements ISearchPlugin {
 		private ?TrustedServers $trustedServers,
 	) {
 		$currentUserCloudId = $userSession->getUser()->getCloudId();
-		$this->currentUserRemote = $cloudIdManager->resolveCloudId($currentUserCloudId)->getRemote();
 	}
 
 	public function search($search, $limit, $offset, ISearchResult $searchResult): bool {
@@ -54,11 +51,16 @@ class LookupPlugin implements ISearchPlugin {
 
 		try {
 			$client = $this->clientService->newClient();
+			/**
+			 * @psalm-suppress TypeDoesNotContainType - $isGlobalScaleEnabled always true at this point
+			 * @psalm-suppress RedundantCondition - guard rail in case we re-activate LUS out of GlobalScale
+			 */
 			$response = $client->get(
 				$lookupServerUrl . '/users?search=' . urlencode($search),
 				[
 					'timeout' => 10,
 					'connect_timeout' => 3,
+					'verify' => !($isGlobalScaleEnabled && $this->config->getSystemValueBool('gss.selfsigned.allow', false) === true)
 				]
 			);
 
@@ -71,9 +73,6 @@ class LookupPlugin implements ISearchPlugin {
 					$this->logger->error('Can not parse federated cloud ID "' . $lookup['federationId'] . '"', [
 						'exception' => $e,
 					]);
-					continue;
-				}
-				if ($this->currentUserRemote === $remote) {
 					continue;
 				}
 				$name = $lookup['name']['value'] ?? '';

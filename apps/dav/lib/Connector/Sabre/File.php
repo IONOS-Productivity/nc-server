@@ -206,8 +206,15 @@ class File extends Node implements IFile {
 				}
 			}
 
-			$lengthHeader = $this->request->getHeader('content-length');
-			$expected = $lengthHeader !== '' ? (int)$lengthHeader : null;
+			// Methods other than PUT carry no Content-Length describing the data written
+			// here: the chunked upload assembly is a MOVE or COPY with no body of its own.
+			$expected = null;
+			if ($this->request->getMethod() === 'PUT') {
+				$lengthHeader = $this->request->getHeader('content-length');
+				if ($lengthHeader !== '') {
+					$expected = (int)$lengthHeader;
+				}
+			}
 
 			if ($partStorage->instanceOfStorage(IWriteStreamStorage::class)) {
 				$isEOF = false;
@@ -257,7 +264,6 @@ class File extends Node implements IFile {
 			// compare expected and actual size
 			if ($expected !== null
 				&& $expected !== $count
-				&& $this->request->getMethod() === 'PUT'
 			) {
 				throw new BadRequest(
 					$this->l10n->t(
@@ -314,7 +320,14 @@ class File extends Node implements IFile {
 					$renameOkay = $storage->moveFromStorage($partStorage, $internalPartPath, $internalPath);
 					$fileExists = $storage->file_exists($internalPath);
 					if ($renameOkay === false || $fileExists === false) {
-						Server::get(LoggerInterface::class)->error('renaming part file to final file failed $renameOkay: ' . ($renameOkay ? 'true' : 'false') . ', $fileExists: ' . ($fileExists ? 'true' : 'false') . ')', ['app' => 'webdav']);
+						Server::get(LoggerInterface::class)
+							->error('renaming part file to final file failed $renameOkay: ' . ($renameOkay ? 'true' : 'false') . ', $fileExists: ' . ($fileExists ? 'true' : 'false') . ')', [
+								'app' => 'webdav',
+								'source_storage' => $partStorage->getId(),
+								'target_storage' => $storage->getId(),
+								'source_internal_path' => $internalPartPath,
+								'target_internal_path' => $internalPath,
+							]);
 						throw new Exception($this->l10n->t('Could not rename part file to final file'));
 					}
 				} catch (ForbiddenException $ex) {

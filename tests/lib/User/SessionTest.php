@@ -439,7 +439,7 @@ class SessionTest extends \Test\TestCase {
 			->method('getRemoteAddress')
 			->willReturn('192.168.0.1');
 		$this->throttler
-			->expects($this->once())
+			->expects($this->exactly(2))
 			->method('sleepDelayOrThrowOnMax')
 			->with('192.168.0.1');
 		$this->throttler
@@ -447,6 +447,15 @@ class SessionTest extends \Test\TestCase {
 			->method('getDelay')
 			->with('192.168.0.1')
 			->willReturn(0);
+
+		$this->throttler
+			->expects($this->once())
+			->method('registerAttempt')
+			->with('login', '192.168.0.1', ['user' => 'john']);
+		$this->dispatcher
+			->expects($this->once())
+			->method('dispatchTyped')
+			->with(new LoginFailed('john', 'doe'));
 
 		$userSession->logClientIn('john', 'doe', $request, $this->throttler);
 	}
@@ -550,7 +559,7 @@ class SessionTest extends \Test\TestCase {
 			->method('getRemoteAddress')
 			->willReturn('192.168.0.1');
 		$this->throttler
-			->expects($this->once())
+			->expects($this->exactly(2))
 			->method('sleepDelayOrThrowOnMax')
 			->with('192.168.0.1');
 		$this->throttler
@@ -558,6 +567,15 @@ class SessionTest extends \Test\TestCase {
 			->method('getDelay')
 			->with('192.168.0.1')
 			->willReturn(0);
+
+		$this->throttler
+			->expects($this->once())
+			->method('registerAttempt')
+			->with('login', '192.168.0.1', ['user' => 'john']);
+		$this->dispatcher
+			->expects($this->once())
+			->method('dispatchTyped')
+			->with(new LoginFailed('john', 'doe'));
 
 		$userSession->logClientIn('john', 'doe', $request, $this->throttler);
 	}
@@ -712,8 +730,14 @@ class SessionTest extends \Test\TestCase {
 			->with($oldSessionId, $sessionId)
 			->willReturn($tokenObject);
 
-		$this->tokenProvider->expects($this->never())
-			->method('getToken');
+		$oldTokenObject = $this->createMock(IToken::class);
+		$oldTokenObject->expects($this->once())
+			->method('getUID')
+			->willReturn('foo');
+
+		$this->tokenProvider->expects($this->once())
+			->method('getToken')
+			->willReturn($oldTokenObject);
 
 		$user->expects($this->any())
 			->method('getUID')
@@ -790,7 +814,16 @@ class SessionTest extends \Test\TestCase {
 			->with($oldSessionId, $sessionId)
 			->willThrowException(new InvalidTokenException());
 
-		$user->expects($this->never())
+		$oldTokenObject = $this->createMock(IToken::class);
+		$oldTokenObject->expects($this->once())
+			->method('getUID')
+			->willReturn('foo');
+
+		$this->tokenProvider->expects($this->once())
+			->method('getToken')
+			->willReturn($oldTokenObject);
+
+		$user->expects($this->once())
 			->method('getUID')
 			->willReturn('foo');
 		$userSession->expects($this->never())
