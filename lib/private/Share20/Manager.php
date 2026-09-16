@@ -1411,8 +1411,8 @@ class Manager implements IManager {
 
 	#[Override]
 	public function getShareByToken(string $token): IShare {
-		// tokens cannot be valid local usernames
-		if ($this->userManager->userExists($token)) {
+		// tokens cannot be valid local usernames or empty
+		if ($token === '' || $this->userManager->userExists($token)) {
 			throw new ShareNotFound();
 		}
 		$share = null;
@@ -1489,8 +1489,8 @@ class Manager implements IManager {
 			$added--;
 			throw new ShareNotFound($this->l->t('The requested share does not exist anymore'));
 		}
-		if ($this->config->getAppValue('files_sharing', 'hide_disabled_user_shares', 'no') === 'yes') {
-			$uids = array_unique([$share->getShareOwner(),$share->getSharedBy()]);
+		if ($this->config->getAppValue('files_sharing', 'hide_disabled_user_shares', 'yes') === 'yes') {
+			$uids = array_unique([$share->getShareOwner(), $share->getSharedBy()]);
 			foreach ($uids as $uid) {
 				$user = $this->userManager->get($uid);
 				if ($user?->isEnabled() === false) {

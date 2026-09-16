@@ -262,27 +262,6 @@ export default {
 		},
 
 		/**
-		 * Note changed, let's save it to a different key
-		 *
-		 * @param {string} note the share note
-		 */
-		onNoteChange(note) {
-			this.$set(this.share, 'newNote', note.trim())
-		},
-
-		/**
-		 * When the note change, we trim, save and dispatch
-		 *
-		 */
-		onNoteSubmit() {
-			if (this.share.newNote) {
-				this.share.note = this.share.newNote
-				this.$delete(this.share, 'newNote')
-				this.queueUpdate('note')
-			}
-		},
-
-		/**
 		 * Display delete share confirmation dialog
 		 * @returns {Promise<boolean>}
 		 */
@@ -327,9 +306,10 @@ export default {
 				this.open = false
 				await this.deleteShare(this.share.id)
 				logger.debug('Share deleted', { shareId: this.share.id })
+				const path = this.share.path.replace(/^\//, '')
 				const message = this.share.itemType === 'file'
-					? t('files_sharing', 'File "{path}" has been unshared', { path: this.share.path })
-					: t('files_sharing', 'Folder "{path}" has been unshared', { path: this.share.path })
+					? t('files_sharing', 'File "{path}" has been unshared', { path })
+					: t('files_sharing', 'Folder "{path}" has been unshared', { path })
 				showSuccess(message)
 				this.$emit('remove:share', this.share)
 				await this.getNode()
@@ -383,7 +363,7 @@ export default {
 						if (propertyNames.includes('password')) {
 							// reset password state after sync
 							this.share.password = this.share.newPassword || undefined
-							this.$delete(this.share, 'newPassword')
+							this.$set(this.share, 'newPassword', undefined)
 
 							// updates password expiration time after sync
 							this.share.passwordExpirationTime = updatedShare.password_expiration_time
@@ -454,7 +434,7 @@ export default {
 				if (this.share.newPassword === this.share.password) {
 					this.share.password = ''
 				}
-				this.$delete(this.share, 'newPassword')
+				this.$set(this.share, 'newPassword', undefined)
 			}
 
 			// re-open menu if closed
