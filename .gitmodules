@@ -27,7 +27,7 @@
 	url = git@github.com:IONOS-Productivity/nc-richdocuments.git
 [submodule "apps-external/user_oidc"]
 	path = apps-external/user_oidc
-	url = git@github.com:nextcloud/user_oidc.git
+	url = git@github.com:IONOS-Productivity/nc-user_oidc.git
 [submodule "apps-external/serverinfo"]
 	path = apps-external/serverinfo
 	url = git@github.com:nextcloud/serverinfo.git
