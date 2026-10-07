@@ -700,6 +700,28 @@ jobs:
             exit 1
           fi
 
+          echo "::group::version.json"
+          jq . version.json
+          echo "::endgroup::"
+
+          # escape for the workflow-command protocol so branch names cannot break the annotation
+          BUILD_INFO=$(jq -r '"\(.project // "unknown-project") \(.ncVersion) (\(.buildBranch // "n/a") @ \(.buildRef // "n/a"))"' version.json)
+          BUILD_INFO=${BUILD_INFO//'%'/'%25'}
+          BUILD_INFO=${BUILD_INFO//$'\r'/'%0D'}
+          BUILD_INFO=${BUILD_INFO//$'\n'/'%0A'}
+          echo "::notice title=Build version::${BUILD_INFO}"
+
+          {
+            echo "### Build version"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            jq -r 'def md: tostring | gsub("[\r\n]+"; " ") | gsub("\\|"; "\\|") | gsub("`"; "\u0027");
+              to_entries[] | select(.key != "_notice") | "| \(.key) | `\(.value | md)` |"' version.json
+            jq -r 'def md: tostring | gsub("[\r\n]+"; " ");
+              select(._notice) | "\n> \(._notice | md)"' version.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
           echo "NC_VERSION=$NC_VERSION" >> $GITHUB_OUTPUT
 
       - name: Upload artifact result for job hidrive-next-build
