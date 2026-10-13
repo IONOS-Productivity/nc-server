@@ -40,3 +40,11 @@
 [submodule "apps-custom/simplenavigation"]
 	path = apps-custom/simplenavigation
 	url = git@github.com:IONOS-Productivity/nc-simplenavigation.git
+[submodule "apps-custom/momentum-doc-mgr"]
+	# This submodule is the whole doc-mgr monorepo, not a dedicated app repo
+	# like the others above -- the actual Nextcloud app is its glue-app/
+	# subfolder. apps/momentum is a symlink into that subfolder rather than
+	# a second submodule entry, since git submodules can't target a
+	# subdirectory of a repo on their own.
+	path = apps-custom/momentum-doc-mgr
+	url = git@gitlab.ionos.org:momentum/document-manager/document-manager-app.git

@@ -51,6 +51,12 @@ node_modules/
 !/apps/weather_status
 !/apps/webhook_listeners
 !/apps/workflowengine
+# momentum's app source lives in the apps-custom/momentum-doc-mgr submodule
+# (a monorepo, not a dedicated app repo -- see .gitmodules), nested under
+# its glue-app/ subfolder. This tracks only the symlink apps/momentum ->
+# apps-custom/momentum-doc-mgr/glue-app itself, not a second copy of its
+# contents.
+!/apps/momentum
 /apps/files_external/3rdparty/irodsphp/PHPUnitTest
 /apps/files_external/3rdparty/irodsphp/web
 /apps/files_external/3rdparty/irodsphp/prods/test

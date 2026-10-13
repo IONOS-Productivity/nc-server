@@ -9,9 +9,9 @@ services:
       - ..:/var/www/html
     command: /var/www/html/.devcontainer/entrypoint.sh
     ports:
-      - 80:80
-      - 8080:8080
-      - 8025:8025
+      - 8880:80
+      - 8888:8080
+      - 8825:8025
 
   db:
     image: postgres
