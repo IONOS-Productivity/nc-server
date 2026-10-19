@@ -21,12 +21,12 @@ class SecurityTxtHandler implements IHandler {
 			return $previousResponse;
 		}
 
-		$response = 'Contact: https://hackerone.com/nextcloud
-Expires: 2026-12-31T23:00:00.000Z
-Acknowledgments: https://hackerone.com/nextcloud/thanks
-Acknowledgments: https://github.com/nextcloud/security-advisories/security/advisories
-Policy: https://hackerone.com/nextcloud
+		$response = 'Contact: mailto:security@ionos.com
+Expires: 2028-02-11T23:30:00.000Z
+Encryption: https://keys.openpgp.org/search?q=security%40ionos.com
 Preferred-Languages: en
+Policy: https://www.ionos.com/it-security
+Hiring: https://jobs.ionos.com/
 ';
 
 		return new GenericResponse(new TextPlainResponse($response, 200));
