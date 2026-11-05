@@ -43,10 +43,6 @@
 		right: 50%;
 	}
 
-	.breadcrumb nav {
-		flex-grow: 1;
-	}
-
 	.files-list__column-sort-button-icon {
 		svg {
 			width: 18px;
@@ -112,27 +108,6 @@
 
 				.vue-crumb__separator {
 					color: var(--ion-breadcrumb-text);
-				}
-			}
-		}
-
-		@media only screen and (max-width: 767px) {
-			margin-inline: 0;
-
-			div.breadcrumb {
-				flex-direction: column-reverse;
-				align-items: flex-start;
-
-				nav {
-					margin-left: 8px;
-				}
-
-				div.breadcrumb__actions {
-					align-self: flex-end;
-
-					&:has(div.v-popper) {
-						position: sticky;
-					}
 				}
 			}
 		}
