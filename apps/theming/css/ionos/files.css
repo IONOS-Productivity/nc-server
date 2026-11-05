@@ -448,3 +448,13 @@
 		}
 	}
 }
+
+#body-user, #body-public {
+	/* the bold IONOS header font needs more room than core's default widths for longer
+	   labels. "ch" scales with the font in use instead of a fixed px guess,
+	   so it keeps working if font-size/weight changes */
+	--ionos-header-width-buffer: 4ch;
+	.files-list__row-size { width: calc(var(--row-height) * 2 + var(--ionos-header-width-buffer)); }
+	.files-list__row-mtime,
+	.files-list__row-column-custom { width: calc(var(--row-height) * 2.5 + var(--ionos-header-width-buffer)); }
+}
