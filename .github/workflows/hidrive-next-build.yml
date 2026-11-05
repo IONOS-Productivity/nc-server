@@ -40,6 +40,7 @@ on:
       - ionos-stable
       - 'rc/**'
       - '*/dev/*'
+  workflow_dispatch:
 
 env:
   TARGET_PACKAGE_NAME: hidrive-next.zip
