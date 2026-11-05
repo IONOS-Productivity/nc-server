@@ -169,6 +169,21 @@
 				.material-design-icon{
 					color: var(--ion-files-list-icon);
 				}
+				.files-list__row-action-sharing-status {
+					.button-vue__icon, .files-list__row-action-icon {
+						color: var(--ion-files-list-icon);
+					}
+					svg, svg path {
+						color: var(--ion-files-list-icon);
+						fill: var(--ion-files-list-icon);
+					}
+					&.button-vue--icon-only:hover {
+						.button-vue__icon, .files-list__row-action-icon, svg, svg path {
+							color: #fff;
+							fill: #fff;
+						}
+					}
+				}
 				.button-vue--icon-and-text {
 					background-color: var(--ion-button-secondary-background-default);
 					border: 2px solid transparent;
