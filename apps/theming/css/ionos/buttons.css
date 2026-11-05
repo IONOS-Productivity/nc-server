@@ -2,6 +2,44 @@
 	.button-vue {
 		border-radius: 30px;
 
+		&.button-vue--warning {
+			background-color: var(--ion-button-warning-background-default) !important;
+			border: 1px solid var(--ion-button-warning-text) !important;
+			border-bottom-width: 2px !important;
+			color: var(--ion-button-warning-text) !important;
+
+			.button-vue__text, .button-vue__icon svg {
+				color: var(--ion-button-warning-text) !important;
+			}
+
+			&:hover:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-warning-background-hover) !important;
+			}
+
+			&:active:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-warning-background-active) !important;
+			}
+		}
+
+		&.button-vue--error {
+			background-color: var(--ion-button-error-background-default) !important;
+			border: 1px solid var(--ion-button-error-text) !important;
+			border-bottom-width: 2px !important;
+			color: var(--ion-button-error-text) !important;
+
+			.button-vue__text, .button-vue__icon svg {
+				color: var(--ion-button-error-text) !important;
+			}
+
+			&:hover:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-error-background-hover) !important;
+			}
+
+			&:active:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-error-background-active) !important;
+			}
+		}
+
 		&.button-vue--icon-and-text {
 			min-height: 36px;
 			min-width: 98px;

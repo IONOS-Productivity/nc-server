@@ -26,6 +26,16 @@
 	--ion-context-menu-item-text: light-dark(var(--ion-color-secondary), var(--ion-color-cool-grey-c1));
 	--ion-context-menu-item-text-disabled: light-dark(var(--ion-color-cool-grey-c4), var(--ion-color-cool-grey-c6));
 
+	--ion-button-warning-background-default: var(--color-warning);
+	--ion-button-warning-background-hover: var(--color-warning-hover);
+	--ion-button-warning-background-active: var(--color-warning-hover);
+	--ion-button-warning-text: var(--color-warning-text);
+
+	--ion-button-error-background-default: var(--color-error);
+	--ion-button-error-background-hover: var(--color-error-hover);
+	--ion-button-error-background-active: var(--color-error-hover);
+	--ion-button-error-text: var(--color-error-text);
+
 	--ion-button-primary-background-default: light-dark(var(--ion-color-blue-b7), var(--ion-color-blue-b4));
 	--ion-button-primary-background-hover: light-dark(var(--ion-color-blue-b4), var(--ion-color-blue-b5));
 	--ion-button-primary-background-active: light-dark(var(--ion-color-blue-b5), var(--ion-color-blue-b6));
