@@ -58,6 +58,8 @@ const modules = {
 		'settings-personal': resolve(import.meta.dirname, 'apps/theming/src', 'settings-personal.ts'),
 		'settings-admin': resolve(import.meta.dirname, 'apps/theming/src', 'settings-admin.ts'),
 		theming: resolve(import.meta.dirname, 'apps/theming/src', 'theming.ts'),
+		// IONOS: runtime fixes and enhancements (NSW-1024)
+		ionos: resolve(import.meta.dirname, 'apps/theming/src', 'ionos.js'),
 	},
 	twofactor_backupcodes: {
 		'settings-personal': resolve(import.meta.dirname, 'apps/twofactor_backupcodes/src', 'settings-personal.ts'),

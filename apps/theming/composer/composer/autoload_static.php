@@ -36,6 +36,7 @@ class ComposerStaticInitTheming
         'OCA\\Theming\\Jobs\\RestoreBackgroundImageColor' => __DIR__ . '/..' . '/../lib/Jobs/RestoreBackgroundImageColor.php',
         'OCA\\Theming\\Listener\\BeforePreferenceListener' => __DIR__ . '/..' . '/../lib/Listener/BeforePreferenceListener.php',
         'OCA\\Theming\\Listener\\BeforeTemplateRenderedListener' => __DIR__ . '/..' . '/../lib/Listener/BeforeTemplateRenderedListener.php',
+        'OCA\\Theming\\Listener\\LoadFilesScriptListener' => __DIR__ . '/..' . '/../lib/Listener/LoadFilesScriptListener.php',
         'OCA\\Theming\\Migration\\InitBackgroundImagesMigration' => __DIR__ . '/..' . '/../lib/Migration/InitBackgroundImagesMigration.php',
         'OCA\\Theming\\Migration\\Version2006Date20240905111627' => __DIR__ . '/..' . '/../lib/Migration/Version2006Date20240905111627.php',
         'OCA\\Theming\\ResponseDefinitions' => __DIR__ . '/..' . '/../lib/ResponseDefinitions.php',

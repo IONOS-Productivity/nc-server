@@ -31,13 +31,6 @@
 		}
 	}
 
-	.files-list__header-grid-button {
-		position: absolute;
-		top: 88px;
-		right: 20px;
-		z-index: 33;
-	}
-
 	.files-list__refresh-icon {
 		position: absolute;
 		right: 50%;
@@ -457,4 +450,13 @@
 	.files-list__row-size { width: calc(var(--row-height) * 2 + var(--ionos-header-width-buffer)); }
 	.files-list__row-mtime,
 	.files-list__row-column-custom { width: calc(var(--row-height) * 2.5 + var(--ionos-header-width-buffer)); }
+}
+
+/* Keep the grid-view toggle aligned with the sticky thead. The script in src/ionos.js
+   tracks the files-list__before height and exposes --files-list-grid-button-top. */
+#app-content-vue button.files-list__header-grid-button {
+	position: absolute;
+	top: var(--files-list-grid-button-top, 88px);
+	right: 20px;
+	z-index: 33;
 }

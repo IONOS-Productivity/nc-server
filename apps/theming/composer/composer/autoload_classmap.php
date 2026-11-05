@@ -21,6 +21,7 @@ return array(
     'OCA\\Theming\\Jobs\\RestoreBackgroundImageColor' => $baseDir . '/../lib/Jobs/RestoreBackgroundImageColor.php',
     'OCA\\Theming\\Listener\\BeforePreferenceListener' => $baseDir . '/../lib/Listener/BeforePreferenceListener.php',
     'OCA\\Theming\\Listener\\BeforeTemplateRenderedListener' => $baseDir . '/../lib/Listener/BeforeTemplateRenderedListener.php',
+    'OCA\\Theming\\Listener\\LoadFilesScriptListener' => $baseDir . '/../lib/Listener/LoadFilesScriptListener.php',
     'OCA\\Theming\\Migration\\InitBackgroundImagesMigration' => $baseDir . '/../lib/Migration/InitBackgroundImagesMigration.php',
     'OCA\\Theming\\Migration\\Version2006Date20240905111627' => $baseDir . '/../lib/Migration/Version2006Date20240905111627.php',
     'OCA\\Theming\\ResponseDefinitions' => $baseDir . '/../lib/ResponseDefinitions.php',
