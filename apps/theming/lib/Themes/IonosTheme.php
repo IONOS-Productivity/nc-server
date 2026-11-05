@@ -201,6 +201,21 @@ class IonosTheme extends DefaultTheme implements ITheme {
 		$colorWarning = $ionColorAmberY3;
 		$colorSuccess = $ionColorGreenG3;
 		$colorInfo = $ionColorSkyS3;
+		// text on these backgrounds uses --color-*-text: a darkened brand colour in light mode (the brand colours
+		// themselves are far below 4.5:1 on the pale backgrounds; info uses the IONOS blue so it stays apart from the
+		// green success), the brand colour itself in dark mode
+		// solid backgrounds usable at full opacity (equivalent to the
+		// previous rgba($color*, 0.1) legacy note-card tint), one tinted
+		// towards the light background and one towards the dark background
+		// so the card stays legible and on-theme in both color schemes
+		$colorErrorBackgroundLight = $this->util->mix($colorError, $colorMainBackground, -80);
+		$colorErrorBackgroundDark = $this->util->mix($colorError, $ionColorBlueB9, -80);
+		$colorWarningBackgroundLight = $this->util->mix($colorWarning, $colorMainBackground, -80);
+		$colorWarningBackgroundDark = $this->util->mix($colorWarning, $ionColorBlueB9, -80);
+		$colorSuccessBackgroundLight = $this->util->mix($colorSuccess, $colorMainBackground, -80);
+		$colorSuccessBackgroundDark = $this->util->mix($colorSuccess, $ionColorBlueB9, -80);
+		$colorInfoBackgroundLight = $this->util->mix($colorInfo, $colorMainBackground, -80);
+		$colorInfoBackgroundDark = $this->util->mix($colorInfo, $ionColorBlueB9, -80);
 
 		$variables = [
 			'--color-main-background' => $ionColorMainBackground,
@@ -223,22 +238,25 @@ class IonosTheme extends DefaultTheme implements ITheme {
 			'--color-text-light' => 'var(--color-main-text)',
 			'--color-text-lighter' => 'var(--color-text-maxcontrast)',
 			'--color-scrollbar' => $ionColorTypoMild,
-			'--color-error' => $colorError,
-			'--color-error-rgb' => join(',', $this->util->hexToRGB($colorError)),
-			'--color-error-hover' => $this->util->mix($colorError, $colorMainBackground, 75),
-			'--color-error-text' => $this->util->darken($colorError, 5),
-			'--color-warning' => $colorWarning,
-			'--color-warning-rgb' => join(',', $this->util->hexToRGB($colorWarning)),
-			'--color-warning-hover' => $this->util->darken($colorWarning, 5),
-			'--color-warning-text' => $this->util->darken($colorWarning, 7),
-			'--color-success' => $colorSuccess,
-			'--color-success-rgb' => join(',', $this->util->hexToRGB($colorSuccess)),
-			'--color-success-hover' => $this->util->mix($colorSuccess, $colorMainBackground, 80),
-			'--color-success-text' => $this->util->darken($colorSuccess, 4),
-			'--color-info' => $colorInfo,
-			'--color-info-rgb' => join(',', $this->util->hexToRGB($colorInfo)),
-			'--color-info-hover' => $this->util->mix($colorInfo, $colorMainBackground, 80),
-			'--color-info-text' => $this->util->darken($colorInfo, 4),
+			'--color-error' => 'light-dark(' . $colorErrorBackgroundLight . ', ' . $colorErrorBackgroundDark . ')',
+			'--color-error-rgb' => 'light-dark(' . join(',', $this->util->hexToRGB($colorErrorBackgroundLight)) . ', ' . join(',', $this->util->hexToRGB($colorErrorBackgroundDark)) . ')',
+			'--color-error-hover' => 'light-dark(' . $this->util->mix($colorErrorBackgroundLight, $colorMainBackground, 40) . ', ' . $this->util->mix($colorError, $ionColorBlueB9, -60) . ')',
+			'--color-error-text' => 'light-dark(' . $this->util->darken($colorError, 26) . ', ' . $colorError . ')',
+			'--color-warning' => 'light-dark(' . $colorWarningBackgroundLight . ', ' . $colorWarningBackgroundDark . ')',
+			'--color-warning-rgb' => 'light-dark(' . join(',', $this->util->hexToRGB($colorWarningBackgroundLight)) . ', ' . join(',', $this->util->hexToRGB($colorWarningBackgroundDark)) . ')',
+			'--color-warning-hover' => 'light-dark(' . $this->util->mix($colorWarningBackgroundLight, $colorMainBackground, 40) . ', ' . $this->util->mix($colorWarning, $ionColorBlueB9, -60) . ')',
+			'--color-warning-text' => 'light-dark(' . $this->util->darken($colorWarning, 21) . ', ' . $colorWarning . ')',
+			'--color-success' => 'light-dark(' . $colorSuccessBackgroundLight . ', ' . $colorSuccessBackgroundDark . ')',
+			'--color-success-rgb' => 'light-dark(' . join(',', $this->util->hexToRGB($colorSuccessBackgroundLight)) . ', ' . join(',', $this->util->hexToRGB($colorSuccessBackgroundDark)) . ')',
+			'--color-success-hover' => 'light-dark(' . $this->util->mix($colorSuccessBackgroundLight, $colorMainBackground, 40) . ', ' . $this->util->mix($colorSuccess, $ionColorBlueB9, -60) . ')',
+			'--color-success-text' => 'light-dark(' . $this->util->darken($colorSuccess, 18) . ', ' . $colorSuccess . ')',
+			'--color-info' => 'light-dark(' . $colorInfoBackgroundLight . ', ' . $colorInfoBackgroundDark . ')',
+			'--color-info-rgb' => 'light-dark(' . join(',', $this->util->hexToRGB($colorInfoBackgroundLight)) . ', ' . join(',', $this->util->hexToRGB($colorInfoBackgroundDark)) . ')',
+			'--color-info-hover' => 'light-dark(' . $this->util->mix($colorInfoBackgroundLight, $colorMainBackground, 40) . ', ' . $this->util->mix($colorInfo, $ionColorBlueB9, -60) . ')',
+			'--color-info-text' => 'light-dark(' . $ionColorBlueB5 . ', ' . $colorInfo . ')',
+			// the recommended v33 text tokens only know the light variants, so pick the brand colour for dark mode
+			'--color-text-error' => 'light-dark(' . $defaultVariables['--color-text-error'] . ', ' . $colorError . ')',
+			'--color-text-success' => 'light-dark(' . $defaultVariables['--color-text-success'] . ', ' . $colorSuccess . ')',
 			'--color-favorite' => $ionColorAmberY3,
 			'--color-loading-light' => '#cccccc',
 			'--color-loading-dark' => '#444444',
