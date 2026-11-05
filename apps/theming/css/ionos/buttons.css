@@ -120,8 +120,8 @@
 				}
 			}
 
-			&.button-vue--vue-tertiary:not(.files-list__row-action-sharing-status):not(table th button):not(li.vue-crumb a):not([aria-label="Cancel"]),
-			&[class*="files-list__row-actions-"] {
+			&.button-vue--vue-tertiary:not(.files-list__row-action-sharing-status):not(table th button):not(li.vue-crumb a):not([aria-label="Cancel"]):not([class*="_fileListFilters__popover"] *),
+			&[class*="files-list__row-actions-"]:not([class*="_fileListFilters__popover"] *) {
 				background-color: var(--ion-button-tertiary-background-default);
 				border: none;
 
