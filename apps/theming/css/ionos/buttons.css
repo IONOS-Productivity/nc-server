@@ -364,6 +364,7 @@
 #body-user, #body-public {
 	div.modal-mask .modal-header {
 		.modal-header__name {
+			display: block !important;
 			color: var(--background-image-color-text);
 		}
 		div.icons-menu {
