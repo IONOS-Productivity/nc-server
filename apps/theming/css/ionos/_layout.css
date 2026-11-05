@@ -23,6 +23,11 @@ body {
 	border-radius: 0;
 }
 
+.header-end .unified-search-menu .button-vue__icon svg,
+.header-end .contactsmenu .contactsmenu__trigger-icon svg {
+	fill: var(--ion-text);
+}
+
 #body-login {
 	overflow-x: hidden;
 
