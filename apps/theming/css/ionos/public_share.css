@@ -47,6 +47,11 @@ body#body-public footer.guest-box {
 	display: none;
 }
 
+/* Align the files list header with the header margin of the Files app. */
+#body-public #app-content-vue div.files-list__header {
+	margin-left: 16px;
+}
+
 /*
  * Password-protected share form box and any other .guest-box card
  * (e.g. file drop upload form) on public share pages.
