@@ -15,7 +15,7 @@ set -o pipefail  # Exit if any command in pipeline fails
 : "${GH_TOKEN:?GH_TOKEN not set}"
 : "${CACHE_VERSION:?CACHE_VERSION not set}"
 : "${FORCE_REBUILD:?FORCE_REBUILD not set}"
-: "${ARTIFACTORY_REPOSITORY_SNAPSHOT:?ARTIFACTORY_REPOSITORY_SNAPSHOT not set}"
+: "${ARTIFACTORY_REPOSITORY_SHARED_APPS:?ARTIFACTORY_REPOSITORY_SHARED_APPS not set}"
 
 # Optional variables
 APPS_TO_REBUILD="${APPS_TO_REBUILD:-}"
@@ -71,7 +71,7 @@ if [ -n "$JF_URL" ] && [ -n "$JF_USER" ] && [ -n "$JF_ACCESS_TOKEN" ]; then
     if jf rt ping; then
       JFROG_AVAILABLE="true"
       echo "✓ JFrog connection successful"
-      echo "Repository: $ARTIFACTORY_REPOSITORY_SNAPSHOT"
+      echo "Repository: $ARTIFACTORY_REPOSITORY_SHARED_APPS"
     else
       echo "⚠ JFrog ping failed, will fall back to GitHub cache"
     fi
@@ -147,7 +147,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$UNKNOWN_SUFFIX" \
       --arg archive_name "${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
     continue
@@ -160,7 +160,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$UNKNOWN_SUFFIX" \
       --arg archive_name "${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${UNKNOWN_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
     continue
@@ -183,7 +183,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$CURRENT_SHA" \
       --arg archive_name "${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
     continue
@@ -204,7 +204,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$CURRENT_SHA" \
       --arg archive_name "${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
     continue
@@ -212,7 +212,7 @@ while IFS= read -r app_json; do
 
   # Check JFrog first before GitHub cache (available for all branches)
   if [ "$JFROG_AVAILABLE" == "true" ]; then
-    JFROG_PATH="${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz"
+    JFROG_PATH="${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz"
     FOUND_IN_JFROG="false"
 
     echo ""
@@ -255,7 +255,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$CURRENT_SHA" \
       --arg archive_name "${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
     continue
@@ -269,7 +269,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$CURRENT_SHA" \
       --arg archive_name "${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
     continue
@@ -287,7 +287,7 @@ while IFS= read -r app_json; do
     APPS_TO_BUILD=$(echo "$APPS_TO_BUILD" | jq -c \
       --arg app "$APP_NAME" --arg sha "$CURRENT_SHA" \
       --arg archive_name "${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
-      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SNAPSHOT}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
+      --arg jfrog_path "${ARTIFACTORY_REPOSITORY_SHARED_APPS}/apps/${CACHE_VERSION}/${APP_NAME}/${APP_NAME}-${ARCHIVE_SUFFIX}.tar.gz" \
       '. + [{name: $app, sha: $sha, archive_name: $archive_name, jfrog_path: $jfrog_path}]')
     APPS_TO_BUILD_COUNT=$((APPS_TO_BUILD_COUNT + 1))
   fi
