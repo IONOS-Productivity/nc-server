@@ -79,6 +79,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   ARTIFACTORY_REPOSITORY_SNAPSHOT: ionos-productivity-hdnext-snapshot
+  ARTIFACTORY_REPOSITORY_SHARED_APPS: ionos-productivity-nc-shared-apps
   # Cache version - increment to invalidate all caches when build tooling changes
   # Format: v<major>.<minor> (e.g., v1.0, v1.1, v2.0)
   CACHE_VERSION: v1.2
@@ -297,6 +298,7 @@ jobs:
           JF_USER: ${{ secrets.JF_ARTIFACTORY_USER }}
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
           ARTIFACTORY_REPOSITORY_SNAPSHOT: ${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}
+          ARTIFACTORY_REPOSITORY_SHARED_APPS: ${{ env.ARTIFACTORY_REPOSITORY_SHARED_APPS }}
           GITHUB_REF: ${{ github.ref }}
         run: |
           bash .github/scripts/detect-app-cache.sh '${{ steps.set_matrix.outputs.matrix }}'
@@ -438,7 +440,7 @@ jobs:
           APP_PATH="${{ steps.app-config.outputs.path }}"
           EFFECTIVE_VERSION="${{ needs.prepare-matrix.outputs.effective_cache_version }}"
           ARCHIVE_NAME="${{ steps.app-cache-key.outputs.archive_name }}"
-          JFROG_PATH="${{ env.ARTIFACTORY_REPOSITORY_SNAPSHOT }}/apps/${EFFECTIVE_VERSION}/${APP_NAME}/${ARCHIVE_NAME}"
+          JFROG_PATH="${{ env.ARTIFACTORY_REPOSITORY_SHARED_APPS }}/apps/${EFFECTIVE_VERSION}/${APP_NAME}/${ARCHIVE_NAME}"
 
           echo "Packaging $APP_NAME..."
           tar -czf "$ARCHIVE_NAME" \
