@@ -230,7 +230,7 @@ class IonosTheme extends DefaultTheme implements ITheme {
 			'--color-primary-text' => 'var(--color-text-maxcontrast)',
 			'--gradient-main-background' => 'var(--color-main-background) 0%, var(--color-main-background-translucent) 85%, transparent 100%',
 			'--color-background-hover' => 'light-dark(var(--ion-color-blue-b1), var(--ion-color-cool-grey-c7))',
-			'--color-background-dark' => $this->util->darken($colorMainBackground, 7),
+			'--color-background-dark' => 'light-dark( ' . $this->util->darken($colorMainBackground, 7) . ', var(--ion-color-blue-b6))',
 			'--color-background-darker' => $this->util->darken($colorMainBackground, 14),
 			'--color-placeholder-light' => $this->util->darken($colorMainBackground, 10),
 			'--color-placeholder-dark' => $this->util->darken($colorMainBackground, 20),
