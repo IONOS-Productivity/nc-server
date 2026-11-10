@@ -454,6 +454,28 @@
 	}
 }
 
+/*
+ * Chips (e.g. the active filters above the files list) size their remove
+ * button by --button-size. The generic 32px icon-only rule above would
+ * enlarge it and push the "x" below the chip's text line.
+ */
+#body-user, #body-public {
+	.nc-chip .nc-chip__actions.button-vue--icon-only {
+		width: var(--button-size) !important;
+		height: var(--button-size) !important;
+		min-width: var(--button-size);
+		min-height: var(--button-size);
+		margin: 0;
+
+		.button-vue__icon {
+			width: var(--button-inner-size) !important;
+			height: var(--button-inner-size) !important;
+			min-width: var(--button-inner-size);
+			min-height: var(--button-inner-size);
+		}
+	}
+}
+
 #body-login {
 	a.button:hover {
 		background-color: var(--ion-button-tertiary-background-hover);
