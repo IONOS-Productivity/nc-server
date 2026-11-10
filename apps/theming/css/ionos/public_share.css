@@ -53,6 +53,22 @@ body#body-public footer.guest-box {
 }
 
 /*
+ * Vertically center the header action buttons ("Public share", "Type",
+ * "Modified") with the "New" upload button. The breadcrumb centering in
+ * files.css (.vue-crumb) is scoped to #body-user and never reaches public
+ * share pages (body#body-public); the filter buttons additionally sit in a
+ * top-aligned fileListFilters wrapper that ncw v33 leaves uncentered, too.
+ */
+#body-public .files-list__header--public {
+	.vue-crumb {
+		align-items: center;
+	}
+	> [class*='fileListFilters'] {
+		align-items: center;
+	}
+}
+
+/*
  * Password-protected share form box and any other .guest-box card
  * (e.g. file drop upload form) on public share pages.
  */
