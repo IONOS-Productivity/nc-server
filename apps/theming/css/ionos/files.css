@@ -1,7 +1,4 @@
 #body-user {
-	.files-list__filters {
-		display: none;
-	}
 	.files-list__thead, .files-list__thead-overlay {
 		top: 0;
 		.files-list__row-head .files-list__column--sortable .button-vue__text {

@@ -7,6 +7,8 @@
 // Everything above the table (files-list__before with workspace/folder-description headers,
 // files-list__filters with the active filter chips) has variable height, so we measure where
 // the table starts relative to the list, and expose a CSS variable for the button's top position.
+// The button is centered vertically on the header row, whose height differs between the Files app
+// and public shares.
 ;(function() {
 	'use strict'
 
@@ -21,7 +23,10 @@
 			rafHandle = null
 			const table = fl.querySelector('.files-list__table')
 			const offset = table ? Math.max(0, table.getBoundingClientRect().top - fl.getBoundingClientRect().top) : 0
-			ac.style.setProperty('--files-list-grid-button-top', (fl.offsetTop + offset) + 'px')
+			const thead = fl.querySelector('.files-list__thead')
+			const button = ac.querySelector('.files-list__header-grid-button')
+			const centering = thead && button ? Math.max(0, (thead.offsetHeight - button.offsetHeight) / 2) : 0
+			ac.style.setProperty('--files-list-grid-button-top', (fl.offsetTop + offset + centering) + 'px')
 		}
 
 		function scheduleUpdate() {
