@@ -194,6 +194,8 @@ OC.L10N.register(
     "{usedQuotaByte} used" : "{usedQuotaByte} utilisés",
     "{used} of {quota} used" : "{used} utilisés sur {quota}",
     "{relative}% used" : "{relative}% utilisés",
+    "Storage used" : "Stockage utilisé",
+    "of {quota}" : "de {quota}",
     "Could not refresh storage stats" : "Impossible de rafraîchir les statistiques de stockage",
     "Your storage is full, files can not be updated or synced anymore!" : "Votre espace de stockage est plein. Les fichiers ne peuvent plus être mis à jour ni synchronisés !",
     "Storage information" : "Informations sur le stockage",
