@@ -192,6 +192,8 @@
     "{usedQuotaByte} used" : "{usedQuotaByte} använt",
     "{used} of {quota} used" : "{used} av {quota} använt",
     "{relative}% used" : "{relative}% använt",
+    "Storage used" : "Förvaring används",
+    "of {quota}" : "av {quota}",
     "Could not refresh storage stats" : "Det gick inte att uppdatera lagringsstatistiken",
     "Your storage is full, files can not be updated or synced anymore!" : "Ditt lagringsutrymme är fullt, filer kan inte längre uppdateras eller synkroniseras!",
     "Storage information" : "Lagringsinformation",
