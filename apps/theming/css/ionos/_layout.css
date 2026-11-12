@@ -23,6 +23,15 @@ body {
 	border-radius: 0;
 }
 
+/*
+ * Collabora full-screen editor (richdocuments) is shifted up by a hardcoded
+ * -50px to cover the default header. Use the actual header height, otherwise
+ * a gap shows at the top and the bottom is cut off.
+ */
+body .viewer__content:not(.viewer--split) .office-viewer:not(.viewer__file--hidden):not(.widget-file) {
+	top: calc(-1 * var(--header-height));
+}
+
 .header-end .unified-search-menu .button-vue__icon svg,
 .header-end .contactsmenu .contactsmenu__trigger-icon svg {
 	fill: var(--ion-text);
