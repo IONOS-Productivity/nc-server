@@ -146,3 +146,9 @@ path = ["img/background/zoltan-voros-rhythm-and-blues.jpg", "img/background/prev
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2021 Zoltán Vörös <https://flickr.com/photos/v923z/51634409289/>"
 SPDX-License-Identifier = "CC-BY-2.0"
+
+[[annotations]]
+path = ["l10n-ionos/**.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 STRATO AG"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
