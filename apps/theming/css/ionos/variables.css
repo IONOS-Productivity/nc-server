@@ -5,12 +5,13 @@
 	--ion-text-dimm: var(--ion-color-blue-b9);
 	--ion-text-disabled: var(--ion-color-cool-grey-c4);
 	--ion-text-high-contrast: #000;
+	--background-image-color-text: light-dark(#fff, var(--ion-color-cool-grey-c1));
 
 	--color-background-plain: var(--ion-color-main-background);
 
 	--ion-breadcrumb-text-default: light-dark(var(--ion-color-secondary), var(--ion-color-cool-grey-c1));
-	--ion-breadcrumb-text-hover: var(--ion-color-blue-b4);
-	--ion-breadcrumb-text-active: var(--ion-color-blue-b5);
+	--ion-breadcrumb-text-hover: light-dark(var(--ion-color-blue-b4), var(--ion-color-blue-b2));
+	--ion-breadcrumb-text-active: light-dark(var(--ion-color-blue-b5), var(--ion-color-blue-b3));
 	--ion-breadcrumb-text-disabled: var(--ion-color-cool-grey-c4);
 
 	--ion-files-list-background-hover: light-dark(var(--ion-color-blue-b1), var(--ion-color-cool-grey-c8));
@@ -24,6 +25,16 @@
 	--ion-context-menu-item-background-disabled: var(--ion-context-menu-background);
 	--ion-context-menu-item-text: light-dark(var(--ion-color-secondary), var(--ion-color-cool-grey-c1));
 	--ion-context-menu-item-text-disabled: light-dark(var(--ion-color-cool-grey-c4), var(--ion-color-cool-grey-c6));
+
+	--ion-button-warning-background-default: var(--color-warning);
+	--ion-button-warning-background-hover: var(--color-warning-hover);
+	--ion-button-warning-background-active: var(--color-warning-hover);
+	--ion-button-warning-text: var(--color-warning-text);
+
+	--ion-button-error-background-default: var(--color-error);
+	--ion-button-error-background-hover: var(--color-error-hover);
+	--ion-button-error-background-active: var(--color-error-hover);
+	--ion-button-error-text: var(--color-error-text);
 
 	--ion-button-primary-background-default: light-dark(var(--ion-color-blue-b7), var(--ion-color-blue-b4));
 	--ion-button-primary-background-hover: light-dark(var(--ion-color-blue-b4), var(--ion-color-blue-b5));
@@ -50,8 +61,8 @@
 
 	--ion-button--icon-only-background: transparent;
 	--ion-button--icon-only-text: light-dark(var(--ion-color-blue-b4), var(--ion-color-cool-grey-c3));
-	--ion-button--icon-only-background-hover: light-dark(var(--ion-color-blue-b4), var(--ion-color-blue-b4));
-	--ion-button--icon-only-background-active: light-dark(var(--ion-color-blue-b6), var(--ion-color-blue-b3));
+	--ion-button--icon-only-background-hover: light-dark(var(--ion-color-blue-b4), var(--ion-color-blue-b5));
+	--ion-button--icon-only-background-active: light-dark(var(--ion-color-blue-b6), var(--ion-color-blue-b4));
 	--ion-button--icon-only-text-hover: #fff;
 
 	--ion-button-sidebar-background: transparent;

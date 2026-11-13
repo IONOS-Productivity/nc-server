@@ -1,6 +1,44 @@
-#body-user {
+#body-user, #body-public {
 	.button-vue {
 		border-radius: 30px;
+
+		&.button-vue--warning {
+			background-color: var(--ion-button-warning-background-default) !important;
+			border: 1px solid var(--ion-button-warning-text) !important;
+			border-bottom-width: 2px !important;
+			color: var(--ion-button-warning-text) !important;
+
+			.button-vue__text, .button-vue__icon svg {
+				color: var(--ion-button-warning-text) !important;
+			}
+
+			&:hover:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-warning-background-hover) !important;
+			}
+
+			&:active:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-warning-background-active) !important;
+			}
+		}
+
+		&.button-vue--error {
+			background-color: var(--ion-button-error-background-default) !important;
+			border: 1px solid var(--ion-button-error-text) !important;
+			border-bottom-width: 2px !important;
+			color: var(--ion-button-error-text) !important;
+
+			.button-vue__text, .button-vue__icon svg {
+				color: var(--ion-button-error-text) !important;
+			}
+
+			&:hover:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-error-background-hover) !important;
+			}
+
+			&:active:not(:disabled):not(.button-vue--disabled) {
+				background-color: var(--ion-button-error-background-active) !important;
+			}
+		}
 
 		&.button-vue--icon-and-text {
 			min-height: 36px;
@@ -82,8 +120,8 @@
 				}
 			}
 
-			&.button-vue--vue-tertiary:not(.files-list__row-action-sharing-status):not(table th button):not(li.vue-crumb a):not([aria-label="Cancel"]),
-			&[class*="files-list__row-actions-"] {
+			&.button-vue--vue-tertiary:not(.files-list__row-action-sharing-status):not(table th button):not(li.vue-crumb a):not([aria-label="Cancel"]):not([class*="_fileListFilters__popover"] *),
+			&[class*="files-list__row-actions-"]:not([class*="_fileListFilters__popover"] *) {
 				background-color: var(--ion-button-tertiary-background-default);
 				border: none;
 
@@ -326,6 +364,7 @@
 #body-user, #body-public {
 	div.modal-mask .modal-header {
 		.modal-header__name {
+			display: block !important;
 			color: var(--background-image-color-text);
 		}
 		div.icons-menu {
@@ -411,6 +450,28 @@
 
 		.SfxCrossButton-root svg path {
 			transform: scale(1);
+		}
+	}
+}
+
+/*
+ * Chips (e.g. the active filters above the files list) size their remove
+ * button by --button-size. The generic 32px icon-only rule above would
+ * enlarge it and push the "x" below the chip's text line.
+ */
+#body-user, #body-public {
+	.nc-chip .nc-chip__actions.button-vue--icon-only {
+		width: var(--button-size) !important;
+		height: var(--button-size) !important;
+		min-width: var(--button-size);
+		min-height: var(--button-size);
+		margin: 0;
+
+		.button-vue__icon {
+			width: var(--button-inner-size) !important;
+			height: var(--button-inner-size) !important;
+			min-width: var(--button-inner-size);
+			min-height: var(--button-inner-size);
 		}
 	}
 }
