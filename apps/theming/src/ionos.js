@@ -22,7 +22,12 @@
 		function update() {
 			rafHandle = null
 			const table = fl.querySelector('.files-list__table')
-			const offset = table ? Math.max(0, table.getBoundingClientRect().top - fl.getBoundingClientRect().top) : 0
+			// An empty list renders the empty view above a hidden (but space-taking) table.
+			// Anchor on the empty view then, otherwise the toggle ends up below it.
+			const anchor = table && !table.classList.contains('files-list__table--hidden')
+				? table
+				: fl.querySelector('.files-list__empty') || table
+			const offset = anchor ? Math.max(0, anchor.getBoundingClientRect().top - fl.getBoundingClientRect().top) : 0
 			const thead = fl.querySelector('.files-list__thead')
 			const button = ac.querySelector('.files-list__header-grid-button')
 			const centering = thead && button ? Math.max(0, (thead.offsetHeight - button.offsetHeight) / 2) : 0
@@ -33,8 +38,8 @@
 			rafHandle = rafHandle || requestAnimationFrame(update)
 		}
 
-		// Elements above the table come and go (e.g. the filter chips), so observe every
-		// non-table child of the list and re-observe whenever the children change.
+		// Elements above the table come and go (e.g. the filter chips, the empty view), so
+		// observe every non-table child of the list and re-observe whenever the children change.
 		const resizeObserver = new ResizeObserver(scheduleUpdate)
 		function observeChildren() {
 			resizeObserver.disconnect()
