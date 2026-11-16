@@ -192,6 +192,8 @@
     "{usedQuotaByte} used" : "{usedQuotaByte} gebruikt",
     "{used} of {quota} used" : "{used} van {quota} gebruikt",
     "{relative}% used" : "{relative}% gebruikt",
+    "Storage used" : "Gebruikte opslag",
+    "of {quota}" : "van {quota}",
     "Could not refresh storage stats" : "Kan opslagstatistieken niet vernieuwen",
     "Your storage is full, files can not be updated or synced anymore!" : "Je opslagruimte zit vol. Bestanden kunnen niet meer worden gewijzigd of gesynchroniseerd!",
     "Storage information" : "Opslaginformatie",
