@@ -9,12 +9,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 		:class="{ 'app-navigation-entry__settings-quota--not-unlimited': storageStats.quota >= 0}"
 		:loading="loadingStorageStats"
 		:name="storageStatsTitle"
-		:title="storageStatsTitle + ': ' + storageStatsTextUsed + ' ' + storageStatsTextOf"
+		:title="storageStatsTitle + ': ' + (storageStats.quota >= 0 ? storageStatsTextOf : storageStatsTextUsed)"
 		class="app-navigation-entry__settings-quota"
 		data-cy-files-navigation-settings-quota
 		@click.stop.prevent="debounceUpdateStorageStats">
 		<CloudIcon slot="icon" :size="16" />
-		<NcProgressBar v-if="storageStats.quota >= 0"
+		<NcProgressBar
+			v-if="storageStats.quota >= 0"
 			slot="extra"
 			size="7"
 			:error="storageStats.relative > 80"
@@ -22,8 +23,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			:color="barColor"
 			:style="{'background-color': backgroundColor}" />
 		<div slot="extra" class="quota-text">
-			<span class="quota-text-bold">{{ storageStatsTextUsed }}</span>
-			<span>{{ storageStatsTextOf }}</span>
+			<span v-if="storageStats.quota < 0" class="quota-text-bold">
+				{{ storageStatsTextUsed }}
+			</span>
+			<span v-if="storageStats.quota >= 0">
+				{{ storageStatsTextOf }}
+			</span>
 		</div>
 	</NcAppNavigationItem>
 </template>
@@ -60,15 +65,21 @@ export default {
 	},
 
 	computed: {
-		storageStatsTitle() {
-			return this.t('core', 'Storage used')
-		},
-		storageStatsTextUsed() {
+		used() {
 			return formatFileSize(this.storageStats?.used, false, false)
 		},
+
+		storageStatsTitle() {
+			return this.t('files', 'Storage information')
+		},
+
+		storageStatsTextUsed() {
+			return this.t('files', '{usedQuotaByte} used', { usedQuotaByte: this.used })
+		},
+
 		storageStatsTextOf() {
 			return this.storageStats?.quota >= 0
-				? this.t('core', 'of {quota}', { quota: formatFileSize(this.storageStats?.quota, false, false) })
+				? this.t('files', '{used} of {quota} used', { used: this.used, quota: formatFileSize(this.storageStats?.quota, false, false) })
 				: ''
 		},
 	},
@@ -91,6 +102,7 @@ export default {
 		debounceUpdateStorageStats: debounce(200, function(event) {
 			this.updateStorageStats(event)
 		}),
+
 		// From interval or event bus
 		throttleUpdateStorageStats: throttle(1000, function(event) {
 			this.updateStorageStats(event)
