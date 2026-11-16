@@ -12,13 +12,20 @@ body {
 	}
 }
 
+/*
+ * App container, rendered by NcContent as <div id="content-vue" class="content app-<appid>">
+ * in place of the core #content wrapper (e.g. Files).
+ * Edge-to-edge, below the header.
+ */
 #content-vue {
-	margin-top: var(--header-height);
-	margin-left: 0;
-	margin-right: 0;
-	margin-bottom: 0;
 	width: 100%;
+	margin: var(--header-height) 0 0;
 	border-radius: 0;
+}
+
+.header-end .unified-search-menu .button-vue__icon svg,
+.header-end .contactsmenu .contactsmenu__trigger-icon svg {
+	fill: var(--ion-text);
 }
 
 #body-login {

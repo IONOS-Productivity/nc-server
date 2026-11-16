@@ -1,7 +1,4 @@
 #body-user {
-	.files-list__filters {
-		display: none;
-	}
 	.files-list__thead, .files-list__thead-overlay {
 		top: 0;
 		.files-list__row-head .files-list__column--sortable .button-vue__text {
@@ -31,20 +28,9 @@
 		}
 	}
 
-	.files-list__header-grid-button {
-		position: absolute;
-		top: 88px;
-		right: 20px;
-		z-index: 33;
-	}
-
 	.files-list__refresh-icon {
 		position: absolute;
 		right: 50%;
-	}
-
-	.breadcrumb nav {
-		flex-grow: 1;
 	}
 
 	.files-list__column-sort-button-icon {
@@ -115,27 +101,6 @@
 				}
 			}
 		}
-
-		@media only screen and (max-width: 767px) {
-			margin-inline: 0;
-
-			div.breadcrumb {
-				flex-direction: column-reverse;
-				align-items: flex-start;
-
-				nav {
-					margin-left: 8px;
-				}
-
-				div.breadcrumb__actions {
-					align-self: flex-end;
-
-					&:has(div.v-popper) {
-						position: sticky;
-					}
-				}
-			}
-		}
 	}
 
 	div[data-cy-files-list].files-list {
@@ -168,6 +133,21 @@
 				}
 				.material-design-icon{
 					color: var(--ion-files-list-icon);
+				}
+				.files-list__row-action-sharing-status {
+					.button-vue__icon, .files-list__row-action-icon {
+						color: var(--ion-files-list-icon);
+					}
+					svg, svg path {
+						color: var(--ion-files-list-icon);
+						fill: var(--ion-files-list-icon);
+					}
+					&.button-vue--icon-only:hover {
+						.button-vue__icon, .files-list__row-action-icon, svg, svg path {
+							color: #fff;
+							fill: #fff;
+						}
+					}
 				}
 				.button-vue--icon-and-text {
 					background-color: var(--ion-button-secondary-background-default);
@@ -264,7 +244,6 @@
 	/* Dialogs */
 	div.modal-container {
 		background-color: var(--ion-surface-dialog);
-		min-width: min-content;
 
 		&:has(.viewer__content) {
 			background-color: transparent;
@@ -458,4 +437,23 @@
 			min-width: 0;
 		}
 	}
+}
+
+#body-user, #body-public {
+	/* the bold IONOS header font needs more room than core's default widths for longer
+	   labels. "ch" scales with the font in use instead of a fixed px guess,
+	   so it keeps working if font-size/weight changes */
+	--ionos-header-width-buffer: 4ch;
+	.files-list__row-size { width: calc(var(--row-height) * 2 + var(--ionos-header-width-buffer)); }
+	.files-list__row-mtime,
+	.files-list__row-column-custom { width: calc(var(--row-height) * 2.5 + var(--ionos-header-width-buffer)); }
+}
+
+/* Keep the grid-view toggle aligned with the sticky thead. The script in src/ionos.js
+   tracks the files-list__before height and exposes --files-list-grid-button-top. */
+#app-content-vue button.files-list__header-grid-button {
+	position: absolute;
+	top: var(--files-list-grid-button-top, 88px);
+	right: 20px;
+	z-index: 33;
 }
