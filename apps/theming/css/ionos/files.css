@@ -1,7 +1,4 @@
 #body-user {
-	.files-list__filters {
-		display: none;
-	}
 	.files-list__thead, .files-list__thead-overlay {
 		top: 0;
 		.files-list__row-head .files-list__column--sortable .button-vue__text {
@@ -20,22 +17,9 @@
 		}
 	}
 
-	thead.files-list__thead tr,
-	div[data-cy-files-list]:not(.files-list--grid) tbody.files-list__tbody tr.files-list__row,
-	tfoot.files-list__tfoot tr {
-		padding-right: 44px;
-		padding-left: 4px;
-
-		@media only screen and (max-width: 512px) {
-			padding-right: 16px;
-		}
-	}
-
-	.files-list__header-grid-button {
-		position: absolute;
-		top: 88px;
-		right: 20px;
-		z-index: 33;
+	.files-list__header :is(.v-popper, .action-item) {
+		display: flex;
+		align-items: center;
 	}
 
 	.files-list__refresh-icon {
